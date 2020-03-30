@@ -1,0 +1,16 @@
+{
+	"name": "pickup_files_from_landing",
+	"properties": {
+		"parameters": {
+			"sourceFolder": {
+				"type": "string",
+				"defaultValue": "/oltp/sales/buyinggroups/"
+			},
+			"sourceFile": {
+				"type": "string",
+				"defaultValue": "buyinggroups.avro"
+			}
+		},
+		"annotations": []
+	}
+}
