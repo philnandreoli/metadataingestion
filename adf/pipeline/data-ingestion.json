@@ -125,8 +125,7 @@
 		],
 		"parameters": {
 			"sourceFolder": {
-				"type": "string",
-				"defaultValue": "/oltp/sales/buyinggroups/"
+				"type": "string"
 			},
 			"sourceFile": {
 				"type": "string",
