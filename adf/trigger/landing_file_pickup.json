@@ -6,7 +6,7 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "pickup_files_from_landing",
+					"referenceName": "data-ingestion",
 					"type": "PipelineReference"
 				},
 				"parameters": {
