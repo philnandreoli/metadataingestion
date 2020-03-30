@@ -111,7 +111,7 @@
 				"typeProperties": {
 					"variableName": "lookupObject",
 					"value": {
-						"value": "@activity('File Lookup').output",
+						"value": "@activity('File Lookup').output.value",
 						"type": "Expression"
 					}
 				}
