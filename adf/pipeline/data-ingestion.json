@@ -50,7 +50,12 @@
 												}
 											}
 										},
-										"fieldList": [],
+										"fieldList": [
+											"columnCount",
+											"size",
+											"itemName",
+											"itemType"
+										],
 										"storeSettings": {
 											"type": "AzureBlobFSReadSettings",
 											"recursive": true
