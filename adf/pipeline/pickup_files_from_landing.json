@@ -45,12 +45,6 @@
 				"defaultValue": "buyinggroups.avro"
 			}
 		},
-		"variables": {
-			"fileExtension": {
-				"type": "String",
-				"defaultValue": ".csv"
-			}
-		},
 		"annotations": []
 	}
 }
