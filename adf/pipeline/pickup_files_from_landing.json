@@ -1,6 +1,21 @@
 {
 	"name": "pickup_files_from_landing",
 	"properties": {
+		"activities": [
+			{
+				"name": "Switch1",
+				"type": "Switch",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@substring(pipeline().parameters.sourceFile, lastindexof(pipeline().parameters.sourceFile, '.'), 7)",
+						"type": "Expression"
+					},
+					"cases": []
+				}
+			}
+		],
 		"parameters": {
 			"sourceFolder": {
 				"type": "string",
@@ -9,6 +24,12 @@
 			"sourceFile": {
 				"type": "string",
 				"defaultValue": "buyinggroups.avro"
+			}
+		},
+		"variables": {
+			"fileExtension": {
+				"type": "String",
+				"defaultValue": ".csv"
 			}
 		},
 		"annotations": []
