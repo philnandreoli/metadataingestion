@@ -12,7 +12,26 @@
 						"value": "@substring(pipeline().parameters.sourceFile, lastindexof(pipeline().parameters.sourceFile, '.'), 7)",
 						"type": "Expression"
 					},
-					"cases": []
+					"cases": [
+						{
+							"value": "Avro_Data_Ingestion",
+							"activities": [
+								{
+									"name": "Execute Pipeline1",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "avro_data_ingestion",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true
+									}
+								}
+							]
+						}
+					]
 				}
 			}
 		],
