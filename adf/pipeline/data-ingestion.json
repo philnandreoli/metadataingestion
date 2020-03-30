@@ -57,10 +57,28 @@
 				}
 			},
 			{
-				"name": "If Condition1",
-				"type": "IfCondition",
-				"dependsOn": [],
-				"userProperties": []
+				"name": "Switch1",
+				"type": "Switch",
+				"dependsOn": [
+					{
+						"activity": "Set Variable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@substring(pipeline().parameters.sourceFile, add(lastindexof(pipeline().parameters.sourceFile, '.'),1), sub(length(pipeline().parameters.sourceFile), add(lastindexof(pipeline().parameters.sourceFile, '.'),1)))",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "avro"
+						}
+					]
+				}
 			}
 		],
 		"parameters": {
