@@ -14,22 +14,7 @@
 					},
 					"cases": [
 						{
-							"value": "Avro_Data_Ingestion",
-							"activities": [
-								{
-									"name": "Execute Pipeline1",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "avro_data_ingestion",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true
-									}
-								}
-							]
+							"value": "Avro_Data_Ingestion"
 						}
 					]
 				}
