@@ -5,6 +5,14 @@
 			"referenceName": "data_lake_storage_account",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"filePath": {
+				"type": "string"
+			},
+			"fileName": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Avro",
 		"typeProperties": {
