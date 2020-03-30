@@ -1,5 +1,5 @@
 {
-	"name": "pickup_files_from_landing",
+	"name": "data-ingestion",
 	"properties": {
 		"activities": [
 			{
