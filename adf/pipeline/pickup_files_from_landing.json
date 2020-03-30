@@ -7,7 +7,7 @@
 				"type": "Switch",
 				"dependsOn": [
 					{
-						"activity": "Set variable1",
+						"activity": "Set Variable",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -96,7 +96,7 @@
 				}
 			},
 			{
-				"name": "Set variable1",
+				"name": "Set Variable",
 				"type": "SetVariable",
 				"dependsOn": [
 					{
@@ -108,7 +108,11 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": ""
+					"variableName": "lookupObject",
+					"value": {
+						"value": "@activity('File Lookup').output",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -120,6 +124,11 @@
 			"sourceFile": {
 				"type": "string",
 				"defaultValue": "buyinggroups.avro"
+			}
+		},
+		"variables": {
+			"lookupObject": {
+				"type": "Array"
 			}
 		},
 		"annotations": []
