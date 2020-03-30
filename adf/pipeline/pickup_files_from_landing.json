@@ -92,7 +92,8 @@
 					"dataset": {
 						"referenceName": "configuration_lookup",
 						"type": "DatasetReference"
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
