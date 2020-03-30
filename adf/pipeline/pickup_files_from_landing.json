@@ -31,7 +31,17 @@
 									"typeProperties": {
 										"dataset": {
 											"referenceName": "avro_ingestion_file",
-											"type": "DatasetReference"
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.sourceFolder",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.sourceFile",
+													"type": "Expression"
+												}
+											}
 										},
 										"fieldList": [],
 										"storeSettings": {
