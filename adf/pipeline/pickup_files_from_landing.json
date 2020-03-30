@@ -63,7 +63,7 @@
 				}
 			},
 			{
-				"name": "Lookup1",
+				"name": "File Lookup",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -100,7 +100,7 @@
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "Lookup1",
+						"activity": "File Lookup",
 						"dependencyConditions": [
 							"Succeeded"
 						]
