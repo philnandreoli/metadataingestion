@@ -26,6 +26,10 @@
 							"fileName": {
 								"value": "@pipeline().parameters.fileName",
 								"type": "Expression"
+							},
+							"containerName": {
+								"value": "@pipeline().parameters.ingestionContainerName",
+								"type": "Expression"
 							}
 						}
 					},
