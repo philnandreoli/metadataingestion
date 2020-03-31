@@ -60,7 +60,7 @@
 					},
 					"ifTrueActivities": [
 						{
-							"name": "Copy Avro to Transient",
+							"name": "Copy Avro to Raw",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
