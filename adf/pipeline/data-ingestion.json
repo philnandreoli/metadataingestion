@@ -89,6 +89,9 @@
 			"sourceFile": {
 				"type": "string",
 				"defaultValue": "buyinggroups.avro"
+			},
+			"containerName": {
+				"type": "string"
 			}
 		},
 		"variables": {
