@@ -76,6 +76,18 @@
 											"filePath": {
 												"value": "@pipeline().parameters.sourceFolder",
 												"type": "Expression"
+											},
+											"transientDestination": {
+												"value": "@activity('File Lookup').output.value[0].SourceDatabase",
+												"type": "Expression"
+											},
+											"transientDestinationFileName": {
+												"value": "@activity('File Lookup').output.value[0].SourceObject",
+												"type": "Expression"
+											},
+											"columnCount": {
+												"value": "@activity('File Lookup').output.value[0].ColumnCount",
+												"type": "Expression"
 											}
 										}
 									}
