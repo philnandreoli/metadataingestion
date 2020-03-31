@@ -70,11 +70,11 @@
 										"waitOnCompletion": true,
 										"parameters": {
 											"fileName": "buyinggroups.avro",
-											"transientDestination": {
+											"rawDestination": {
 												"value": "@activity('File Lookup').output.value[0].SourceDatabase",
 												"type": "Expression"
 											},
-											"transientDestinationFileName": {
+											"rawDestinationFileName": {
 												"value": "@activity('File Lookup').output.value[0].SourceObjectName",
 												"type": "Expression"
 											},
