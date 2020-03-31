@@ -69,13 +69,20 @@
 										},
 										"waitOnCompletion": true,
 										"parameters": {
-											"fileName": "buyinggroups.avro",
+											"fileName": {
+												"value": "@pipeline().parameters.sourceFile",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.sourceFolder",
+												"type": "Expression"
+											},
 											"rawDestination": {
-												"value": "@activity('File Lookup').output.value[0].SourceDatabase",
+												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
 												"type": "Expression"
 											},
 											"rawDestinationFileName": {
-												"value": "@activity('File Lookup').output.value[0].SourceObjectName",
+												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
 												"type": "Expression"
 											},
 											"columnCount": {
@@ -83,11 +90,7 @@
 												"type": "Expression"
 											},
 											"loadType": {
-												"value": "@activity('File Lookup').output.value[0].LoadType",
-												"type": "Expression"
-											},
-											"ingestionContainerName": {
-												"value": "@pipeline().parameters.containerName",
+												"value": "@activity('File Lookup').output",
 												"type": "Expression"
 											}
 										}
@@ -120,11 +123,6 @@
 			"ingestionContainerName": {
 				"type": "string",
 				"defaultValue": "landing"
-			}
-		},
-		"variables": {
-			"lookupObject": {
-				"type": "Array"
 			}
 		},
 		"folder": {
