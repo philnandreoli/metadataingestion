@@ -80,6 +80,9 @@
 			},
 			"loadType": {
 				"type": "string"
+			},
+			"ingestionContainerName": {
+				"type": "string"
 			}
 		},
 		"folder": {
