@@ -13,6 +13,9 @@
 				"type": "string"
 			}
 		},
+		"folder": {
+			"name": "data-ingestion-datasets"
+		},
 		"annotations": [],
 		"type": "Parquet",
 		"typeProperties": {
