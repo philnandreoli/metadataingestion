@@ -1,8 +1,7 @@
-# Azure Data Factory Meta Data Ingestion
-When doing analytics in the cloud 
+# Azure Data Factory - Meta Data Ingestion
+Coming Soon!
 
 ## Getting Started
 
-
-
-### Prerequisites
+## Prerequisites
+1.  Azure Subscription
