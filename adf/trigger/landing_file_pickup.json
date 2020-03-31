@@ -11,7 +11,8 @@
 				},
 				"parameters": {
 					"sourceFolder": "@triggerBody().folderPath",
-					"sourceFile": "@triggerBody().fileName"
+					"sourceFile": "@triggerBody().fileName",
+					"containerName": "landing"
 				}
 			}
 		],
