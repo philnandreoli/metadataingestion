@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "avro_ingestion_file",
+						"referenceName": "avro_ingestion_input_file",
 						"type": "DatasetReference",
 						"parameters": {
 							"filePath": {
