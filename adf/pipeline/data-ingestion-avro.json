@@ -131,7 +131,7 @@
 							]
 						},
 						{
-							"name": "Delete1",
+							"name": "Delete Ingestion FIle",
 							"type": "Delete",
 							"dependsOn": [
 								{
