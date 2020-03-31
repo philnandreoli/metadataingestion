@@ -69,7 +69,38 @@
 										},
 										"waitOnCompletion": true,
 										"parameters": {
-											"fileName": "buyinggroups.avro"
+											"fileName": {
+												"value": "@pipeline().parameters.sourceFile",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.sourceFolder",
+												"type": "Expression"
+											},
+											"rawDestination": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
+												"type": "Expression"
+											},
+											"rawDestinationFileName": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
+												"type": "Expression"
+											},
+											"columnCount": {
+												"value": "@activity('File Lookup').output.value[0].ColumnCount",
+												"type": "Expression"
+											},
+											"loadType": {
+												"value": "@activity('File Lookup').output.value[0].LoadType",
+												"type": "Expression"
+											},
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.ingestionContainerName",
+												"type": "Expression"
+											},
+											"ingestionOutputContainerName": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
+												"type": "Expression"
+											}
 										}
 									}
 								}
