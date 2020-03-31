@@ -57,7 +57,25 @@
 					"expression": {
 						"value": "@and(greater(activity('Get Avro File Metadata').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.columnCount))",
 						"type": "Expression"
-					}
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Copy Avro to Transient",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"enableStaging": false
+							}
+						}
+					]
 				}
 			}
 		],
@@ -69,10 +87,10 @@
 			"filePath": {
 				"type": "string"
 			},
-			"transientDestination": {
+			"rawDestination": {
 				"type": "string"
 			},
-			"transientDestinationFileName": {
+			"rawDestinationFileName": {
 				"type": "string"
 			},
 			"columnCount": {

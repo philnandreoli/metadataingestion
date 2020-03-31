@@ -17,7 +17,7 @@
 			}
 		},
 		"folder": {
-			"name": "data-ingestion-input-datasets"
+			"name": "data-ingestion-input"
 		},
 		"annotations": [],
 		"type": "Avro",
