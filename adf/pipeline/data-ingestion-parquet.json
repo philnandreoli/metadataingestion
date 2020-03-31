@@ -1,0 +1,9 @@
+{
+	"name": "data-ingestion-parquet",
+	"properties": {
+		"folder": {
+			"name": "data-ingestion"
+		},
+		"annotations": []
+	}
+}

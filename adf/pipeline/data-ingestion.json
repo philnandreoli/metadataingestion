@@ -1,0 +1,97 @@
+{
+	"name": "data-ingestion",
+	"properties": {
+		"activities": [
+			{
+				"name": "File Lookup",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.06:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "[dbo].[GetFileInformation]",
+						"storedProcedureParameters": {
+							"FileName": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.sourceFile",
+									"type": "Expression"
+								}
+							}
+						},
+						"queryTimeout": "02:00:00"
+					},
+					"dataset": {
+						"referenceName": "configuration_lookup",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Switch1",
+				"type": "Switch",
+				"dependsOn": [
+					{
+						"activity": "File Lookup",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@toUpper(activity('File Lookup').output.value[0].FileType)",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "AVRO"
+						},
+						{
+							"value": "DELIMITED"
+						},
+						{
+							"value": "JSON"
+						},
+						{
+							"value": "PARQUET"
+						}
+					]
+				}
+			}
+		],
+		"concurrency": 10,
+		"parameters": {
+			"sourceFolder": {
+				"type": "string"
+			},
+			"sourceFile": {
+				"type": "string",
+				"defaultValue": "buyinggroups.avro"
+			},
+			"containerName": {
+				"type": "string",
+				"defaultValue": "landing"
+			}
+		},
+		"variables": {
+			"lookupObject": {
+				"type": "Array"
+			}
+		},
+		"folder": {
+			"name": "data-ingestion"
+		},
+		"annotations": []
+	}
+}

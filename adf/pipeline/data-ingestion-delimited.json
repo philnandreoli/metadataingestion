@@ -1,0 +1,9 @@
+{
+	"name": "data-ingestion-delimited",
+	"properties": {
+		"folder": {
+			"name": "data-ingestion"
+		},
+		"annotations": []
+	}
+}

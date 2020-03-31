@@ -1,0 +1,10 @@
+{
+	"name": "data_lake_storage_account",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://mtcchidatalake001d.dfs.core.windows.net"
+		}
+	}
+}

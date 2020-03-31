@@ -1,0 +1,12 @@
+{
+	"name": "configuration_lookup",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "meta_data_configuration_db",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
