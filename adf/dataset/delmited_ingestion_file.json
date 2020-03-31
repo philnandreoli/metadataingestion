@@ -11,6 +11,9 @@
 			},
 			"fileName": {
 				"type": "string"
+			},
+			"containerName": {
+				"type": "string"
 			}
 		},
 		"folder": {
