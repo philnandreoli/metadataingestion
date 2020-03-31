@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get Metadata1",
+				"name": "Get Delimited File MetaData",
 				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
@@ -13,20 +13,56 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "delmited_ingestion_input_file",
+						"type": "DatasetReference",
+						"parameters": {
+							"filePath": {
+								"value": "@pipeline().parameters.filePath",
+								"type": "Expression"
+							},
+							"fileName": {
+								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							},
+							"containerName": {
+								"value": "@pipeline().parameters.ingestionContainerName",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"size",
+						"columnCount",
+						"itemName",
+						"structure"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
 			},
 			{
 				"name": "Set variable1",
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "Get Metadata1",
+						"activity": "Get Delimited File MetaData",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					}
 				],
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": ""
+				}
 			},
 			{
 				"name": "If Condition1",
@@ -42,6 +78,45 @@
 				"userProperties": []
 			}
 		],
+		"parameters": {
+			"fileName": {
+				"type": "string",
+				"defaultValue": "buyinggroups.csv"
+			},
+			"filePath": {
+				"type": "string",
+				"defaultValue": "/"
+			},
+			"rawDestination": {
+				"type": "string",
+				"defaultValue": "WorldWideImporters/buyinggroups/"
+			},
+			"rawDestinationFileName": {
+				"type": "string",
+				"defaultValue": "buyinggroups.parquet"
+			},
+			"columnCount": {
+				"type": "int",
+				"defaultValue": 5
+			},
+			"loadType": {
+				"type": "string",
+				"defaultValue": "FULL"
+			},
+			"ingestionContainerName": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"ingestionOutputContainerName": {
+				"type": "string",
+				"defaultValue": "raw"
+			}
+		},
+		"variables": {
+			"calculatedPath": {
+				"type": "String"
+			}
+		},
 		"folder": {
 			"name": "data-ingestion"
 		},
