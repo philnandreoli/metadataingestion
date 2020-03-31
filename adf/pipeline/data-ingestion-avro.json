@@ -59,7 +59,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@and(greater(activity('Get Avro File Metadata').output.value.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.value.columnCount))",
+						"value": "@and(greater(activity('Get Avro File Metadata').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.columnCount))",
 						"type": "Expression"
 					},
 					"ifTrueActivities": [
@@ -201,7 +201,7 @@
 			},
 			"columnCount": {
 				"type": "int",
-				"defaultValue": 12
+				"defaultValue": 5
 			},
 			"loadType": {
 				"type": "string",
