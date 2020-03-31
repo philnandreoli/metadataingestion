@@ -1,6 +1,9 @@
 {
 	"name": "data-ingestion-error",
 	"properties": {
+		"folder": {
+			"name": "data-ingestion"
+		},
 		"annotations": []
 	}
 }

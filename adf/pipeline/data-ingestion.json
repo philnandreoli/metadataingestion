@@ -81,6 +81,7 @@
 				}
 			}
 		],
+		"concurrency": 10,
 		"parameters": {
 			"sourceFolder": {
 				"type": "string"
@@ -94,6 +95,9 @@
 			"lookupObject": {
 				"type": "Array"
 			}
+		},
+		"folder": {
+			"name": "data-ingestion"
 		},
 		"annotations": []
 	}
