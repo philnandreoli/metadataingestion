@@ -120,10 +120,6 @@
 			"ingestionContainerName": {
 				"type": "string",
 				"defaultValue": "landing"
-			},
-			"rawContainerName": {
-				"type": "string",
-				"defaultValue": "raw"
 			}
 		},
 		"variables": {
