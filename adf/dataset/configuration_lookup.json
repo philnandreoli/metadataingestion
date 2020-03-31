@@ -5,9 +5,6 @@
 			"referenceName": "meta_data_configuration_db",
 			"type": "LinkedServiceReference"
 		},
-		"folder": {
-			"name": "data-ingestion-datasets"
-		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": []
