@@ -127,7 +127,8 @@
 		"concurrency": 10,
 		"parameters": {
 			"sourceFolder": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "/"
 			},
 			"sourceFile": {
 				"type": "string",
