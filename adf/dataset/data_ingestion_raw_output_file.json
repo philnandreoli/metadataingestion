@@ -1,0 +1,34 @@
+{
+	"name": "data_ingestion_raw_output_file",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data_lake_storage_account",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"containerName": {
+				"type": "string",
+				"defaultValue": "raw"
+			},
+			"filePath": {
+				"type": "string"
+			},
+			"fileName": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "data-ingestion-output"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "raw"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
