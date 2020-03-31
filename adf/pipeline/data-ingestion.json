@@ -119,15 +119,6 @@
 									}
 								}
 							]
-						},
-						{
-							"value": "DELIMITED"
-						},
-						{
-							"value": "JSON"
-						},
-						{
-							"value": "PARQUET"
 						}
 					]
 				}
