@@ -72,8 +72,63 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
+								"source": {
+									"type": "AvroSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": false,
+										"enablePartitionDiscovery": false
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"blockSizeInMB": 75
+									}
+								},
 								"enableStaging": false
-							}
+							},
+							"inputs": [
+								{
+									"referenceName": "avro_ingestion_input_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"filePath": {
+											"value": "@pipeline().parameters.filePath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "data_ingestion_raw_output_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionOutputContainerName",
+											"type": "Expression"
+										},
+										"filePath": {
+											"value": "@pipeline().parameters.rawDestination",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.rawDestinationFileName",
+											"type": "Expression"
+										}
+									}
+								}
+							]
 						}
 					]
 				}
@@ -100,6 +155,9 @@
 				"type": "string"
 			},
 			"ingestionContainerName": {
+				"type": "string"
+			},
+			"ingestionOutputContainerName": {
 				"type": "string"
 			}
 		},
