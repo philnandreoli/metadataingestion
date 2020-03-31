@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "avro_ingestion_file",
+						"referenceName": "avro_ingestion_input_file",
 						"type": "DatasetReference",
 						"parameters": {
 							"filePath": {
@@ -25,6 +25,10 @@
 							},
 							"fileName": {
 								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							},
+							"containerName": {
+								"value": "@pipeline().parameters.ingestionContainerName",
 								"type": "Expression"
 							}
 						}
@@ -46,7 +50,7 @@
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "Get Avro File Metadata",
+						"activity": "Create The New Path Based On Load Type",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -56,6 +60,144 @@
 				"typeProperties": {
 					"expression": {
 						"value": "@and(greater(activity('Get Avro File Metadata').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.columnCount))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Copy Avro to Raw Zone",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AvroSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": false,
+										"enablePartitionDiscovery": false
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"blockSizeInMB": 75
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "avro_ingestion_input_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"filePath": {
+											"value": "@pipeline().parameters.filePath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "data_ingestion_raw_output_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionOutputContainerName",
+											"type": "Expression"
+										},
+										"filePath": {
+											"value": "@variables('calculatedPath')",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.rawDestinationFileName",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete Ingestion FIle",
+							"type": "Delete",
+							"dependsOn": [
+								{
+									"activity": "Copy Avro to Raw Zone",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "avro_ingestion_input_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"filePath": {
+											"value": "@pipeline().parameters.filePath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										}
+									}
+								},
+								"enableLogging": false,
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Create The New Path Based On Load Type",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Avro File Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "calculatedPath",
+					"value": {
+						"value": "@if(equals(pipeline().parameters.loadType,'FULL'), pipeline().parameters.rawDestination, concat(pipeline().parameters.rawDestination, formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/'))",
 						"type": "Expression"
 					}
 				}
@@ -69,14 +211,34 @@
 			"filePath": {
 				"type": "string"
 			},
-			"transientDestination": {
-				"type": "string"
+			"rawDestination": {
+				"type": "string",
+				"defaultValue": "WorldWideImporters/buyinggroups/"
 			},
-			"transientDestinationFileName": {
-				"type": "string"
+			"rawDestinationFileName": {
+				"type": "string",
+				"defaultValue": "buyinggroups.parquet"
 			},
 			"columnCount": {
-				"type": "int"
+				"type": "int",
+				"defaultValue": 5
+			},
+			"loadType": {
+				"type": "string",
+				"defaultValue": "FULL"
+			},
+			"ingestionContainerName": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"ingestionOutputContainerName": {
+				"type": "string",
+				"defaultValue": "raw"
+			}
+		},
+		"variables": {
+			"calculatedPath": {
+				"type": "String"
 			}
 		},
 		"folder": {

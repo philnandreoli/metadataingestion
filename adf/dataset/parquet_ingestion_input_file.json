@@ -1,5 +1,5 @@
 {
-	"name": "json_ingestion_file",
+	"name": "parquet_ingestion_input_file",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "data_lake_storage_account",
@@ -17,10 +17,10 @@
 			}
 		},
 		"folder": {
-			"name": "data-ingestion-datasets"
+			"name": "data-ingestion-input"
 		},
 		"annotations": [],
-		"type": "Json",
+		"type": "Parquet",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
@@ -36,7 +36,9 @@
 					"value": "@dataset().containerName",
 					"type": "Expression"
 				}
-			}
-		}
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
 	}
 }

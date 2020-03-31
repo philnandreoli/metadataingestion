@@ -1,5 +1,5 @@
 {
-	"name": "delmited_ingestion_file",
+	"name": "delmited_ingestion_input_file",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "data_lake_storage_account",
@@ -17,7 +17,7 @@
 			}
 		},
 		"folder": {
-			"name": "data-ingestion-datasets"
+			"name": "data-ingestion-input"
 		},
 		"annotations": [],
 		"type": "DelimitedText",

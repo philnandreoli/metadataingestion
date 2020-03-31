@@ -19,6 +19,20 @@
 						"type": "AzureSqlSource",
 						"sqlReaderStoredProcedureName": "[dbo].[GetFileInformation]",
 						"storedProcedureParameters": {
+							"DataFactoryRunId": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().RunId",
+									"type": "Expression"
+								}
+							},
+							"ExecutionStartDateTime": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().TriggerTime",
+									"type": "Expression"
+								}
+							},
 							"FileName": {
 								"type": "String",
 								"value": {
@@ -37,7 +51,7 @@
 				}
 			},
 			{
-				"name": "Switch1",
+				"name": "Data-Ingestion-By-FileType",
 				"type": "Switch",
 				"dependsOn": [
 					{
@@ -55,38 +69,110 @@
 					},
 					"cases": [
 						{
-							"value": "AVRO"
-						},
-						{
-							"value": "DELIMITED"
-						},
-						{
-							"value": "JSON"
-						},
-						{
-							"value": "PARQUET"
+							"value": "AVRO",
+							"activities": [
+								{
+									"name": "execute data ingestion avro",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-avro",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"fileName": {
+												"value": "@pipeline().parameters.sourceFile",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.sourceFolder",
+												"type": "Expression"
+											},
+											"rawDestination": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
+												"type": "Expression"
+											},
+											"rawDestinationFileName": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
+												"type": "Expression"
+											},
+											"columnCount": {
+												"value": "@activity('File Lookup').output.value[0].ColumnCount",
+												"type": "Expression"
+											},
+											"loadType": {
+												"value": "@activity('File Lookup').output.value[0].LoadType",
+												"type": "Expression"
+											},
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.ingestionContainerName",
+												"type": "Expression"
+											},
+											"ingestionOutputContainerName": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
 						}
 					]
+				}
+			},
+			{
+				"name": "End Execution Log",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Data-Ingestion-By-FileType",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[EndExecutionLog]",
+					"storedProcedureParameters": {
+						"ExecutionLogId": {
+							"value": {
+								"value": "@activity('File Lookup').output.value[0].ExecutionLogId",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "meta_data_configuration_db",
+					"type": "LinkedServiceReference"
 				}
 			}
 		],
 		"concurrency": 10,
 		"parameters": {
 			"sourceFolder": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "/"
 			},
 			"sourceFile": {
 				"type": "string",
 				"defaultValue": "buyinggroups.avro"
 			},
-			"containerName": {
+			"ingestionContainerName": {
 				"type": "string",
 				"defaultValue": "landing"
-			}
-		},
-		"variables": {
-			"lookupObject": {
-				"type": "Array"
 			}
 		},
 		"folder": {

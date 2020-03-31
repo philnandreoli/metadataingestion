@@ -1,23 +1,24 @@
 {
-	"name": "parquet_ingestion_file",
+	"name": "data_ingestion_raw_output_file",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "data_lake_storage_account",
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
+			"containerName": {
+				"type": "string",
+				"defaultValue": "raw"
+			},
 			"filePath": {
 				"type": "string"
 			},
 			"fileName": {
 				"type": "string"
-			},
-			"containerName": {
-				"type": "string"
 			}
 		},
 		"folder": {
-			"name": "data-ingestion-datasets"
+			"name": "data-ingestion-output"
 		},
 		"annotations": [],
 		"type": "Parquet",
