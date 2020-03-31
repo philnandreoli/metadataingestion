@@ -32,7 +32,10 @@
 					"value": "@dataset().filePath",
 					"type": "Expression"
 				},
-				"fileSystem": "landing"
+				"fileSystem": {
+					"value": "@dataset().containerName",
+					"type": "Expression"
+				}
 			}
 		}
 	}
