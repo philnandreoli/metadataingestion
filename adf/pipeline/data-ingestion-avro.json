@@ -1,6 +1,18 @@
 {
 	"name": "data-ingestion-avro",
 	"properties": {
+		"parameters": {
+			"fileName": {
+				"type": "string",
+				"defaultValue": "buyinggroups.avro"
+			},
+			"filePath": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "data-ingestion"
+		},
 		"annotations": []
 	}
 }
