@@ -37,8 +37,8 @@
 				}
 			},
 			{
-				"name": "Set Variable",
-				"type": "SetVariable",
+				"name": "Switch1",
+				"type": "Switch",
 				"dependsOn": [
 					{
 						"activity": "File Lookup",
@@ -49,33 +49,13 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "lookupObject",
-					"value": {
-						"value": "@activity('File Lookup').output.value",
-						"type": "Expression"
-					}
-				}
-			},
-			{
-				"name": "Switch1",
-				"type": "Switch",
-				"dependsOn": [
-					{
-						"activity": "Set Variable",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
 					"on": {
-						"value": "@substring(pipeline().parameters.sourceFile, add(lastindexof(pipeline().parameters.sourceFile, '.'),1), sub(length(pipeline().parameters.sourceFile), add(lastindexof(pipeline().parameters.sourceFile, '.'),1)))",
+						"value": "@activity('File Lookup').output.value[0].FileType",
 						"type": "Expression"
 					},
 					"cases": [
 						{
-							"value": "avro"
+							"value": "AVRO"
 						}
 					]
 				}
