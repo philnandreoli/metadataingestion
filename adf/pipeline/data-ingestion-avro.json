@@ -60,7 +60,7 @@
 					},
 					"ifTrueActivities": [
 						{
-							"name": "Copy Avro to Raw",
+							"name": "Copy Avro to Raw Zone",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
