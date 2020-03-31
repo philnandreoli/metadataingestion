@@ -37,7 +37,7 @@
 				}
 			},
 			{
-				"name": "Switch1",
+				"name": "Data-Ingestion-By-FileType",
 				"type": "Switch",
 				"dependsOn": [
 					{
@@ -55,7 +55,32 @@
 					},
 					"cases": [
 						{
-							"value": "AVRO"
+							"value": "AVRO",
+							"activities": [
+								{
+									"name": "execute data ingestion avro",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-avro",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"fileName": {
+												"value": "@pipeline().parameters.sourceFile",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.sourceFolder",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
 						},
 						{
 							"value": "DELIMITED"
