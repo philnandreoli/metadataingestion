@@ -69,24 +69,21 @@
 										},
 										"waitOnCompletion": true,
 										"parameters": {
-											"fileName": {
-												"value": "@pipeline().parameters.sourceFile",
-												"type": "Expression"
-											},
-											"filePath": {
-												"value": "@pipeline().parameters.sourceFolder",
-												"type": "Expression"
-											},
+											"fileName": "buyinggroups.avro",
 											"transientDestination": {
 												"value": "@activity('File Lookup').output.value[0].SourceDatabase",
 												"type": "Expression"
 											},
 											"transientDestinationFileName": {
-												"value": "@activity('File Lookup').output.value[0].SourceObject",
+												"value": "@activity('File Lookup').output.value[0].SourceObjectName",
 												"type": "Expression"
 											},
 											"columnCount": {
 												"value": "@activity('File Lookup').output.value[0].ColumnCount",
+												"type": "Expression"
+											},
+											"loadType": {
+												"value": "@activity('File Lookup').output.value[0].LoadType",
 												"type": "Expression"
 											}
 										}
