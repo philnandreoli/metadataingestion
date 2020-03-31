@@ -50,12 +50,21 @@
 				"userProperties": [],
 				"typeProperties": {
 					"on": {
-						"value": "@activity('File Lookup').output.value[0].FileType",
+						"value": "@toUpper(activity('File Lookup').output.value[0].FileType)",
 						"type": "Expression"
 					},
 					"cases": [
 						{
 							"value": "AVRO"
+						},
+						{
+							"value": "DELIMITED"
+						},
+						{
+							"value": "JSON"
+						},
+						{
+							"value": "PARQUET"
 						}
 					]
 				}
