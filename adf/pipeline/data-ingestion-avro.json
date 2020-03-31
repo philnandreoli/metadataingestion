@@ -188,22 +188,28 @@
 				"type": "string"
 			},
 			"rawDestination": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "WorldWideImporters/buyinggroups/"
 			},
 			"rawDestinationFileName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "buyinggroups.parquet"
 			},
 			"columnCount": {
-				"type": "int"
+				"type": "int",
+				"defaultValue": 12
 			},
 			"loadType": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "FULL"
 			},
 			"ingestionContainerName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "landing"
 			},
 			"ingestionOutputContainerName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "raw"
 			}
 		},
 		"folder": {
