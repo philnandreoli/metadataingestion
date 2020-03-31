@@ -85,6 +85,10 @@
 											"loadType": {
 												"value": "@activity('File Lookup').output.value[0].LoadType",
 												"type": "Expression"
+											},
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.containerName",
+												"type": "Expression"
 											}
 										}
 									}
