@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get Metadata1",
+				"name": "Get Avro File Metadata",
 				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
@@ -40,6 +40,25 @@
 						"recursive": true
 					}
 				}
+			},
+			{
+				"name": "FileSize gt 0 and ColumnCount Expected",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Get Avro File Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@and(greater(activity('Get Avro File Metadata').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.columnCount))",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -55,6 +74,9 @@
 			},
 			"transientDestinationFileName": {
 				"type": "string"
+			},
+			"columnCount": {
+				"type": "int"
 			}
 		},
 		"folder": {
