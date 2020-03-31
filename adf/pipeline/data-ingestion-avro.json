@@ -1,12 +1,59 @@
 {
 	"name": "data-ingestion-avro",
 	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "avro_ingestion_file",
+						"type": "DatasetReference",
+						"parameters": {
+							"filePath": {
+								"value": "@pipeline().parameters.filePath",
+								"type": "Expression"
+							},
+							"fileName": {
+								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"size",
+						"columnCount",
+						"itemName",
+						"structure"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true
+					}
+				}
+			}
+		],
 		"parameters": {
 			"fileName": {
 				"type": "string",
 				"defaultValue": "buyinggroups.avro"
 			},
 			"filePath": {
+				"type": "string"
+			},
+			"transientDestination": {
+				"type": "string"
+			},
+			"transientDestinationFileName": {
 				"type": "string"
 			}
 		},
