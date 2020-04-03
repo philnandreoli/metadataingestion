@@ -221,6 +221,34 @@
 			"ingestionOutputContainerName": {
 				"type": "string",
 				"defaultValue": "raw"
+			},
+			"compressionType": {
+				"type": "string",
+				"defaultValue": "none"
+			},
+			"compressionLevel": {
+				"type": "string",
+				"defaultValue": "Optimal"
+			},
+			"columnDelimiter": {
+				"type": "string",
+				"defaultValue": ","
+			},
+			"encoding": {
+				"type": "string",
+				"defaultValue": "UTF-8"
+			},
+			"escapeCharacter": {
+				"type": "string",
+				"defaultValue": "\\"
+			},
+			"quoteCharacter": {
+				"type": "string",
+				"defaultValue": "\""
+			},
+			"firstRowAsHeader": {
+				"type": "bool",
+				"defaultValue": true
 			}
 		},
 		"variables": {
