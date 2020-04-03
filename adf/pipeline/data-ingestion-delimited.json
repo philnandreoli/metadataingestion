@@ -175,7 +175,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "data_ingestion_raw_output_file",
+									"referenceName": "data_ingestion_raw_output_file_parquet",
 									"type": "DatasetReference",
 									"parameters": {
 										"containerName": {
