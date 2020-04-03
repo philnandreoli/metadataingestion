@@ -143,25 +143,58 @@
 												"value": "@pipeline().parameters.sourceFolder",
 												"type": "Expression"
 											},
-											"rawDestination": "WorldWideImporters/buyinggroups/",
-											"rawDestinationFileName": "buyinggroups.parquet",
+											"rawDestination": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
+												"type": "Expression"
+											},
+											"rawDestinationFileName": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
+												"type": "Expression"
+											},
 											"columnCount": {
 												"value": "@activity('File Lookup').output.value[0].ColumnCount",
 												"type": "Expression"
 											},
-											"loadType": "FULL",
+											"loadType": {
+												"value": "@activity('File Lookup').output.value[0].LoadType",
+												"type": "Expression"
+											},
 											"ingestionContainerName": {
 												"value": "@pipeline().parameters.ingestionContainerName",
 												"type": "Expression"
 											},
-											"ingestionOutputContainerName": "raw",
-											"compressionType": "none",
-											"compressionLevel": "Optimal",
-											"columnDelimiter": ",",
-											"encoding": "UTF-8",
-											"escapeCharacter": "\\",
-											"quoteCharacter": "\"",
-											"firstRowAsHeader": true
+											"ingestionOutputContainerName": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
+												"type": "Expression"
+											},
+											"compressionType": {
+												"value": "@activity('File Lookup').output.value[0].CompressionType",
+												"type": "Expression"
+											},
+											"compressionLevel": {
+												"value": "@activity('File Lookup').output.value[0].CompressionLevel",
+												"type": "Expression"
+											},
+											"columnDelimiter": {
+												"value": "@activity('File Lookup').output.value[0].ColumnDelimiter",
+												"type": "Expression"
+											},
+											"encoding": {
+												"value": "@activity('File Lookup').output.value[0].Encoding",
+												"type": "Expression"
+											},
+											"escapeCharacter": {
+												"value": "@activity('File Lookup').output.value[0].EscapeCharacter",
+												"type": "Expression"
+											},
+											"quoteCharacter": {
+												"value": "@activity('File Lookup').output.value[0].QuoteCharacter",
+												"type": "Expression"
+											},
+											"firstRowAsHeader": {
+												"value": "@activity('File Lookup').output.value[0].FirstRowAsHeader",
+												"type": "Expression"
+											}
 										}
 									}
 								}
