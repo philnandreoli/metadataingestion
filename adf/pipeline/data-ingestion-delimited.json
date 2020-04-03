@@ -30,7 +30,14 @@
 							"containerName": {
 								"value": "@pipeline().parameters.ingestionContainerName",
 								"type": "Expression"
-							}
+							},
+							"compressionType": "none",
+							"compressionLevel": "Optimal",
+							"columnDelimiter": ",",
+							"encoding": "UTF-8",
+							"escapeCharacter": "\\",
+							"quoteCharacter": "\"",
+							"firstRowAsHeader": true
 						}
 					},
 					"fieldList": [

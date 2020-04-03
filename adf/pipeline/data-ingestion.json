@@ -119,6 +119,50 @@
 									}
 								}
 							]
+						},
+						{
+							"value": "DELIMITED",
+							"activities": [
+								{
+									"name": "Execute Pipeline1",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-delimited",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"fileName": {
+												"value": "@pipeline().parameters.sourceFile",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.sourceFolder",
+												"type": "Expression"
+											},
+											"rawDestination": "WorldWideImporters/buyinggroups/",
+											"rawDestinationFileName": "buyinggroups.parquet",
+											"columnCount": "5",
+											"loadType": "FULL",
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.ingestionContainerName",
+												"type": "Expression"
+											},
+											"ingestionOutputContainerName": "raw",
+											"compressionType": "none",
+											"compressionLevel": "Optimal",
+											"columnDelimiter": ",",
+											"encoding": "UTF-8",
+											"escapeCharacter": "\\",
+											"quoteCharacter": "\"",
+											"firstRowAsHeader": true
+										}
+									}
+								}
+							]
 						}
 					]
 				}
