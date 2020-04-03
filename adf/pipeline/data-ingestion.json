@@ -124,7 +124,7 @@
 							"value": "DELIMITED",
 							"activities": [
 								{
-									"name": "Execute data-ingestion-delimited",
+									"name": "execute data ingestion delimited",
 									"type": "ExecutePipeline",
 									"dependsOn": [],
 									"userProperties": [],
@@ -193,6 +193,58 @@
 											},
 											"firstRowAsHeader": {
 												"value": "@activity('File Lookup').output.value[0].FirstRowAsHeader",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						},
+						{
+							"value": "JSON",
+							"activities": [
+								{
+									"name": "execute data ingestion json",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-json",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"fileName": {
+												"value": "@pipeline().parameters.sourceFile",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.sourceFolder",
+												"type": "Expression"
+											},
+											"rawDestination": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
+												"type": "Expression"
+											},
+											"rawDestinationFileName": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
+												"type": "Expression"
+											},
+											"columnCount": {
+												"value": "@activity('File Lookup').output.value[0].ColumnCount",
+												"type": "Expression"
+											},
+											"loadType": {
+												"value": "@activity('File Lookup').output.value[0].LoadType",
+												"type": "Expression"
+											},
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.ingestionContainerName",
+												"type": "Expression"
+											},
+											"ingestionOutputContainerName": {
+												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
 												"type": "Expression"
 											}
 										}
