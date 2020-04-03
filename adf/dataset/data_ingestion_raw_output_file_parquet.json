@@ -1,5 +1,5 @@
 {
-	"name": "data_ingestion_raw_output_file",
+	"name": "data_ingestion_raw_output_file_parquet",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "data_lake_storage_account",
