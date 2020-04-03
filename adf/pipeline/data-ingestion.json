@@ -253,7 +253,22 @@
 							]
 						},
 						{
-							"value": "PARQUET"
+							"value": "PARQUET",
+							"activities": [
+								{
+									"name": "Execute Pipeline1",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-parquet",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true
+									}
+								}
+							]
 						}
 					]
 				}
