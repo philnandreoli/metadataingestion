@@ -14,6 +14,34 @@
 			},
 			"containerName": {
 				"type": "string"
+			},
+			"compressionType": {
+				"type": "string",
+				"defaultValue": "none"
+			},
+			"compressionLevel": {
+				"type": "string",
+				"defaultValue": "Optimal"
+			},
+			"columnDelimiter": {
+				"type": "string",
+				"defaultValue": ","
+			},
+			"encoding": {
+				"type": "string",
+				"defaultValue": "UTF-8"
+			},
+			"escapeCharacter": {
+				"type": "string",
+				"defaultValue": "\\"
+			},
+			"quoteCharacter": {
+				"type": "string",
+				"defaultValue": "\""
+			},
+			"firstRowAsHeader": {
+				"type": "bool",
+				"defaultValue": true
 			}
 		},
 		"folder": {
@@ -37,9 +65,34 @@
 					"type": "Expression"
 				}
 			},
-			"columnDelimiter": ",",
-			"escapeChar": "\\",
-			"quoteChar": "\""
+			"columnDelimiter": {
+				"value": "@dataset().columnDelimiter",
+				"type": "Expression"
+			},
+			"compressionCodec": {
+				"value": "@dataset().compressionType",
+				"type": "Expression"
+			},
+			"compressionLevel": {
+				"value": "@dataset().compressionLevel",
+				"type": "Expression"
+			},
+			"encodingName": {
+				"value": "@dataset().encoding",
+				"type": "Expression"
+			},
+			"escapeChar": {
+				"value": "@dataset().escapeCharacter",
+				"type": "Expression"
+			},
+			"firstRowAsHeader": {
+				"value": "@dataset().firstRowAsHeader",
+				"type": "Expression"
+			},
+			"quoteChar": {
+				"value": "@dataset().quoteCharacter",
+				"type": "Expression"
+			}
 		},
 		"schema": []
 	}
