@@ -77,7 +77,7 @@
 				}
 			},
 			{
-				"name": "If Condition1",
+				"name": "FileSize gt 0 and ColumnCount Expected",
 				"type": "IfCondition",
 				"dependsOn": [
 					{
