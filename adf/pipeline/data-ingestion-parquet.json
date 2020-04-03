@@ -1,6 +1,90 @@
 {
 	"name": "data-ingestion-parquet",
 	"properties": {
+		"activities": [
+			{
+				"name": "Get Parquet File MetaData",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
+			},
+			{
+				"name": "Set The Path Based on the LoadType",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Parquet File MetaData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": []
+			},
+			{
+				"name": "FileSize gt 0 and ColumnCount Expected",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Set The Path Based on the LoadType",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"ifTrueActivities": [
+						{
+							"name": "Copy Parquet File From Landing to Raw",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"enableStaging": false
+							}
+						},
+						{
+							"name": "Delete Landing File",
+							"type": "Delete",
+							"dependsOn": [
+								{
+									"activity": "Copy Parquet File From Landing to Raw",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"enableLogging": true
+							}
+						}
+					]
+				}
+			}
+		],
 		"folder": {
 			"name": "data-ingestion"
 		},
