@@ -110,6 +110,12 @@
 										"type": "DelimitedTextReadSettings"
 									}
 								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
 								"enableStaging": false
 							},
 							"inputs": [
@@ -127,6 +133,54 @@
 										},
 										"containerName": {
 											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										},
+										"compressionType": {
+											"value": "@pipeline().parameters.compressionType",
+											"type": "Expression"
+										},
+										"compressionLevel": {
+											"value": "@pipeline().parameters.compressionLevel",
+											"type": "Expression"
+										},
+										"columnDelimiter": {
+											"value": "@pipeline().parameters.columnDelimiter",
+											"type": "Expression"
+										},
+										"encoding": {
+											"value": "@pipeline().parameters.encoding",
+											"type": "Expression"
+										},
+										"escapeCharacter": {
+											"value": "@pipeline().parameters.escapeCharacter",
+											"type": "Expression"
+										},
+										"quoteCharacter": {
+											"value": "@pipeline().parameters.quoteCharacter",
+											"type": "Expression"
+										},
+										"firstRowAsHeader": {
+											"value": "@pipeline().parameters.firstRowAsHeader",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "data_ingestion_raw_output_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionOutputContainerName",
+											"type": "Expression"
+										},
+										"filePath": {
+											"value": "@variables('calculatedPath')",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
 											"type": "Expression"
 										}
 									}
