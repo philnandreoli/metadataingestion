@@ -256,7 +256,7 @@
 							"value": "PARQUET",
 							"activities": [
 								{
-									"name": "Execute Pipeline1",
+									"name": "execute data ingestion parquet",
 									"type": "ExecutePipeline",
 									"dependsOn": [],
 									"userProperties": [],
