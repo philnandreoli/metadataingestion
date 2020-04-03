@@ -134,7 +134,7 @@
 							]
 						},
 						{
-							"name": "Delete1",
+							"name": "Delete the Landed File",
 							"type": "Delete",
 							"dependsOn": [
 								{
@@ -153,7 +153,36 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"enableLogging": true
+								"dataset": {
+									"referenceName": "delmited_ingestion_input_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"filePath": {
+											"value": "@pipeline().parameters.filePath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										},
+										"compressionType": "none",
+										"compressionLevel": "Optimal",
+										"columnDelimiter": ",",
+										"encoding": "UTF-8",
+										"escapeCharacter": "\\",
+										"quoteCharacter": "\"",
+										"firstRowAsHeader": true
+									}
+								},
+								"enableLogging": true,
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true
+								}
 							}
 						}
 					]
