@@ -1,6 +1,241 @@
 {
 	"name": "data-ingestion-parquet",
 	"properties": {
+		"activities": [
+			{
+				"name": "Get Parquet File MetaData",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "parquet_ingestion_input_file",
+						"type": "DatasetReference",
+						"parameters": {
+							"filePath": {
+								"value": "@pipeline().parameters.filePath",
+								"type": "Expression"
+							},
+							"fileName": {
+								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							},
+							"containerName": {
+								"value": "@pipeline().parameters.ingestionContainerName",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"columnCount",
+						"size",
+						"structure",
+						"itemName"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true
+					}
+				}
+			},
+			{
+				"name": "Set The Path Based on the LoadType",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Parquet File MetaData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "calculatedPath",
+					"value": {
+						"value": "@if(equals(pipeline().parameters.loadType,'FULL'), pipeline().parameters.rawDestination, concat(pipeline().parameters.rawDestination, formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/'))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "FileSize gt 0 and ColumnCount Expected",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Set The Path Based on the LoadType",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"ifTrueActivities": [
+						{
+							"name": "Copy Parquet File From Landing to Raw",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "ParquetSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": false,
+										"enablePartitionDiscovery": false
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "parquet_ingestion_input_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"filePath": {
+											"value": "@pipeline().parameters.filePath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "data_ingestion_raw_output_file_parquet",
+									"type": "DatasetReference",
+									"parameters": {
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionOutputContainerName",
+											"type": "Expression"
+										},
+										"filePath": {
+											"value": "@pipeline().parameters.rawDestination",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.rawDestinationFileName",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete Landing File",
+							"type": "Delete",
+							"dependsOn": [
+								{
+									"activity": "Copy Parquet File From Landing to Raw",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "parquet_ingestion_input_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"filePath": {
+											"value": "@pipeline().parameters.filePath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										}
+									}
+								},
+								"enableLogging": true,
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": false
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"fileName": {
+				"type": "string",
+				"defaultValue": "buyinggroups.avro"
+			},
+			"filePath": {
+				"type": "string"
+			},
+			"rawDestination": {
+				"type": "string",
+				"defaultValue": "WorldWideImporters/buyinggroups/"
+			},
+			"rawDestinationFileName": {
+				"type": "string",
+				"defaultValue": "buyinggroups.parquet"
+			},
+			"columnCount": {
+				"type": "int",
+				"defaultValue": 5
+			},
+			"loadType": {
+				"type": "string",
+				"defaultValue": "FULL"
+			},
+			"ingestionContainerName": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"ingestionOutputContainerName": {
+				"type": "string",
+				"defaultValue": "raw"
+			}
+		},
+		"variables": {
+			"calculatedPath": {
+				"type": "String"
+			}
+		},
 		"folder": {
 			"name": "data-ingestion"
 		},
