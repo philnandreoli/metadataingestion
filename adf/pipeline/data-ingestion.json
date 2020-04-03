@@ -124,7 +124,7 @@
 							"value": "DELIMITED",
 							"activities": [
 								{
-									"name": "Execute Pipeline1",
+									"name": "Execute data-ingestion-delimited",
 									"type": "ExecutePipeline",
 									"dependsOn": [],
 									"userProperties": [],
