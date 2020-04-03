@@ -113,7 +113,21 @@
 							"inputs": [
 								{
 									"referenceName": "json_ingestion_input_file",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"filePath": {
+											"value": "@pipeline().parameters.filePath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
@@ -121,7 +135,18 @@
 									"referenceName": "data_ingestion_raw_output_file_parquet",
 									"type": "DatasetReference",
 									"parameters": {
-										"containerName": "raw"
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionOutputContainerName",
+											"type": "Expression"
+										},
+										"filePath": {
+											"value": "@pipeline().parameters.rawDestination",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.rawDestinationFileName",
+											"type": "Expression"
+										}
 									}
 								}
 							]
@@ -146,7 +171,29 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"enableLogging": true
+								"dataset": {
+									"referenceName": "json_ingestion_input_file",
+									"type": "DatasetReference",
+									"parameters": {
+										"filePath": {
+											"value": "@pipeline().parameters.filePath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionContainerName",
+											"type": "Expression"
+										}
+									}
+								},
+								"enableLogging": true,
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": false
+								}
 							}
 						}
 					]
