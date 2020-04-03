@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get Metadata1",
+				"name": "Get JSON File Metadata",
 				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
@@ -13,27 +13,33 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"fieldList": []
+				}
 			},
 			{
-				"name": "Set variable1",
+				"name": "Create The New Path Based On Load Type",
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "Get Metadata1",
+						"activity": "Get JSON File Metadata",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					}
 				],
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": ""
+				}
 			},
 			{
 				"name": "FileSize gt 0 and ColumnCount Expected",
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "Set variable1",
+						"activity": "Create The New Path Based On Load Type",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -117,6 +123,39 @@
 				}
 			}
 		],
+		"parameters": {
+			"fileName": {
+				"type": "string",
+				"defaultValue": "buyinggroups.avro"
+			},
+			"filePath": {
+				"type": "string"
+			},
+			"rawDestination": {
+				"type": "string",
+				"defaultValue": "WorldWideImporters/buyinggroups/"
+			},
+			"rawDestinationFileName": {
+				"type": "string",
+				"defaultValue": "buyinggroups.parquet"
+			},
+			"columnCount": {
+				"type": "int",
+				"defaultValue": 5
+			},
+			"loadType": {
+				"type": "string",
+				"defaultValue": "FULL"
+			},
+			"ingestionContainerName": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"ingestionOutputContainerName": {
+				"type": "string",
+				"defaultValue": "raw"
+			}
+		},
 		"folder": {
 			"name": "data-ingestion"
 		},
