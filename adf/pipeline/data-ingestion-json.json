@@ -15,7 +15,34 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"fieldList": []
+					"dataset": {
+						"referenceName": "json_ingestion_input_file",
+						"type": "DatasetReference",
+						"parameters": {
+							"filePath": {
+								"value": "@pipeline().parameters.filePath",
+								"type": "Expression"
+							},
+							"fileName": {
+								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							},
+							"containerName": {
+								"value": "@pipeline().parameters.ingestionContainerName",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"size",
+						"structure",
+						"itemName",
+						"columnCount"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true
+					}
 				}
 			},
 			{
