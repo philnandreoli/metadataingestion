@@ -145,7 +145,10 @@
 											},
 											"rawDestination": "WorldWideImporters/buyinggroups/",
 											"rawDestinationFileName": "buyinggroups.parquet",
-											"columnCount": "5",
+											"columnCount": {
+												"value": "@activity('File Lookup').output.value[0].ColumnCount",
+												"type": "Expression"
+											},
 											"loadType": "FULL",
 											"ingestionContainerName": {
 												"value": "@pipeline().parameters.ingestionContainerName",
