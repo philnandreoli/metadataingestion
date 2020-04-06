@@ -13,7 +13,7 @@
 					"sourceFolder": "@triggerBody().folderPath",
 					"sourceFile": "@triggerBody().fileName",
 					"ingestionContainerName": "landing",
-					"rawContainerName": "raw"
+					"errorContainerName": "error"
 				}
 			}
 		],
