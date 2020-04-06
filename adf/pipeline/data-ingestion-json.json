@@ -81,6 +81,39 @@
 						"value": "@greater(activity('Get JSON File MetaData').output.size, 0)",
 						"type": "Expression"
 					},
+					"ifFalseActivities": [
+						{
+							"name": "execute data ingestion error",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "data-ingestion-error",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"ingestionContainerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"filePath": {
+										"value": "@pipeline().parameters.filePath",
+										"type": "Expression"
+									},
+									"errorContainerName": {
+										"value": "@pipeline().parameters.errorContainerName",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					],
 					"ifTrueActivities": [
 						{
 							"name": "Copy JSON to Raw Zone",
@@ -189,7 +222,7 @@
 										}
 									}
 								},
-								"enableLogging": true,
+								"enableLogging": false,
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
 									"recursive": false
@@ -231,6 +264,10 @@
 			"ingestionOutputContainerName": {
 				"type": "string",
 				"defaultValue": "raw"
+			},
+			"errorContainerName": {
+				"type": "string",
+				"defaultValue": "error"
 			}
 		},
 		"variables": {

@@ -1,6 +1,166 @@
 {
 	"name": "data-ingestion-error",
 	"properties": {
+		"activities": [
+			{
+				"name": "Copy Data From Landing To Error",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set the Error Path",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "error_ingestion_input_file",
+						"type": "DatasetReference",
+						"parameters": {
+							"filePath": {
+								"value": "@pipeline().parameters.filePath",
+								"type": "Expression"
+							},
+							"fileName": {
+								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							},
+							"containerName": {
+								"value": "@pipeline().parameters.ingestionContainerName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "data_ingestion_error_output_file",
+						"type": "DatasetReference",
+						"parameters": {
+							"containerName": {
+								"value": "@pipeline().parameters.errorContainerName",
+								"type": "Expression"
+							},
+							"filePath": {
+								"value": "@variables('errorPathName')",
+								"type": "Expression"
+							},
+							"fileName": {
+								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Delete the landing file",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "Copy Data From Landing To Error",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "error_ingestion_input_file",
+						"type": "DatasetReference",
+						"parameters": {
+							"filePath": {
+								"value": "@pipeline().parameters.filePath",
+								"type": "Expression"
+							},
+							"fileName": {
+								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							},
+							"containerName": {
+								"value": "@pipeline().parameters.ingestionContainerName",
+								"type": "Expression"
+							}
+						}
+					},
+					"enableLogging": false,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true
+					}
+				}
+			},
+			{
+				"name": "Set the Error Path",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "errorPathName",
+					"value": {
+						"value": "@concat(pipeline().parameters.ingestionContainerName, '/', pipeline().RunId)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ingestionContainerName": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"fileName": {
+				"type": "string",
+				"defaultValue": "orders.avro"
+			},
+			"filePath": {
+				"type": "string",
+				"defaultValue": "/"
+			},
+			"errorContainerName": {
+				"type": "string",
+				"defaultValue": "error"
+			}
+		},
+		"variables": {
+			"errorPathName": {
+				"type": "String",
+				"defaultValue": "/"
+			}
+		},
 		"folder": {
 			"name": "data-ingestion"
 		},

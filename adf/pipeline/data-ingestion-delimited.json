@@ -93,6 +93,39 @@
 						"value": "@and(greater(activity('Get Delimited File MetaData').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Delimited File MetaData').output.columnCount))",
 						"type": "Expression"
 					},
+					"ifFalseActivities": [
+						{
+							"name": "execute data ingestion error",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "data-ingestion-error",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"ingestionContainerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"filePath": {
+										"value": "@pipeline().parameters.filePath",
+										"type": "Expression"
+									},
+									"errorContainerName": {
+										"value": "@pipeline().parameters.errorContainerName",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					],
 					"ifTrueActivities": [
 						{
 							"name": "Copy Delimited File From",
@@ -239,7 +272,7 @@
 										"firstRowAsHeader": true
 									}
 								},
-								"enableLogging": true,
+								"enableLogging": false,
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
 									"recursive": true
@@ -310,6 +343,10 @@
 			"firstRowAsHeader": {
 				"type": "bool",
 				"defaultValue": true
+			},
+			"errorContainerName": {
+				"type": "string",
+				"defaultValue": "error"
 			}
 		},
 		"variables": {
