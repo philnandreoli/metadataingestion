@@ -139,16 +139,20 @@
 		],
 		"parameters": {
 			"ingestionContainerName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "landing"
 			},
 			"fileName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "orders.avro"
 			},
 			"filePath": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "/"
 			},
 			"errorContainerName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "error"
 			}
 		},
 		"variables": {
