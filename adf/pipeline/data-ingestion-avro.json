@@ -87,7 +87,10 @@
 										"value": "@pipeline().parameters.filePath",
 										"type": "Expression"
 									},
-									"errorContainerName": "error"
+									"errorContainerName": {
+										"value": "@pipeline().parameters.errorContainerName",
+										"type": "Expression"
+									}
 								}
 							}
 						}
