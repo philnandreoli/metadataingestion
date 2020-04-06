@@ -51,322 +51,9 @@
 				}
 			},
 			{
-				"name": "Data-Ingestion-By-FileType",
-				"type": "Switch",
-				"dependsOn": [
-					{
-						"activity": "File Lookup",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"on": {
-						"value": "@toUpper(activity('File Lookup').output.value[0].FileType)",
-						"type": "Expression"
-					},
-					"cases": [
-						{
-							"value": "AVRO",
-							"activities": [
-								{
-									"name": "execute data ingestion avro",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "data-ingestion-avro",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"fileName": {
-												"value": "@pipeline().parameters.sourceFile",
-												"type": "Expression"
-											},
-											"filePath": {
-												"value": "@pipeline().parameters.sourceFolder",
-												"type": "Expression"
-											},
-											"rawDestination": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
-												"type": "Expression"
-											},
-											"rawDestinationFileName": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
-												"type": "Expression"
-											},
-											"columnCount": {
-												"value": "@activity('File Lookup').output.value[0].ColumnCount",
-												"type": "Expression"
-											},
-											"loadType": {
-												"value": "@activity('File Lookup').output.value[0].LoadType",
-												"type": "Expression"
-											},
-											"ingestionContainerName": {
-												"value": "@pipeline().parameters.ingestionContainerName",
-												"type": "Expression"
-											},
-											"ingestionOutputContainerName": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
-												"type": "Expression"
-											},
-											"errorContainerName": {
-												"value": "@pipeline().parameters.errorContainerName",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							]
-						},
-						{
-							"value": "DELIMITED",
-							"activities": [
-								{
-									"name": "execute data ingestion delimited",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "data-ingestion-delimited",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"fileName": {
-												"value": "@pipeline().parameters.sourceFile",
-												"type": "Expression"
-											},
-											"filePath": {
-												"value": "@pipeline().parameters.sourceFolder",
-												"type": "Expression"
-											},
-											"rawDestination": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
-												"type": "Expression"
-											},
-											"rawDestinationFileName": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
-												"type": "Expression"
-											},
-											"columnCount": {
-												"value": "@activity('File Lookup').output.value[0].ColumnCount",
-												"type": "Expression"
-											},
-											"loadType": {
-												"value": "@activity('File Lookup').output.value[0].LoadType",
-												"type": "Expression"
-											},
-											"ingestionContainerName": {
-												"value": "@pipeline().parameters.ingestionContainerName",
-												"type": "Expression"
-											},
-											"ingestionOutputContainerName": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
-												"type": "Expression"
-											},
-											"compressionType": {
-												"value": "@activity('File Lookup').output.value[0].CompressionType",
-												"type": "Expression"
-											},
-											"compressionLevel": {
-												"value": "@activity('File Lookup').output.value[0].CompressionLevel",
-												"type": "Expression"
-											},
-											"columnDelimiter": {
-												"value": "@activity('File Lookup').output.value[0].ColumnDelimiter",
-												"type": "Expression"
-											},
-											"encoding": {
-												"value": "@activity('File Lookup').output.value[0].Encoding",
-												"type": "Expression"
-											},
-											"escapeCharacter": {
-												"value": "@activity('File Lookup').output.value[0].EscapeCharacter",
-												"type": "Expression"
-											},
-											"quoteCharacter": {
-												"value": "@activity('File Lookup').output.value[0].QuoteCharacter",
-												"type": "Expression"
-											},
-											"firstRowAsHeader": {
-												"value": "@activity('File Lookup').output.value[0].FirstRowAsHeader",
-												"type": "Expression"
-											},
-											"errorContainerName": {
-												"value": "@pipeline().parameters.errorContainerName",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							]
-						},
-						{
-							"value": "JSON",
-							"activities": [
-								{
-									"name": "execute data ingestion json",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "data-ingestion-json",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"fileName": {
-												"value": "@pipeline().parameters.sourceFile",
-												"type": "Expression"
-											},
-											"filePath": {
-												"value": "@pipeline().parameters.sourceFolder",
-												"type": "Expression"
-											},
-											"rawDestination": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
-												"type": "Expression"
-											},
-											"rawDestinationFileName": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
-												"type": "Expression"
-											},
-											"columnCount": {
-												"value": "@activity('File Lookup').output.value[0].ColumnCount",
-												"type": "Expression"
-											},
-											"loadType": {
-												"value": "@activity('File Lookup').output.value[0].LoadType",
-												"type": "Expression"
-											},
-											"ingestionContainerName": {
-												"value": "@pipeline().parameters.ingestionContainerName",
-												"type": "Expression"
-											},
-											"ingestionOutputContainerName": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
-												"type": "Expression"
-											},
-											"errorContainerName": {
-												"value": "@pipeline().parameters.errorContainerName",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							]
-						},
-						{
-							"value": "PARQUET",
-							"activities": [
-								{
-									"name": "execute data ingestion parquet",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "data-ingestion-parquet",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"fileName": {
-												"value": "@pipeline().parameters.sourceFile",
-												"type": "Expression"
-											},
-											"filePath": {
-												"value": "@pipeline().parameters.sourceFolder",
-												"type": "Expression"
-											},
-											"rawDestination": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
-												"type": "Expression"
-											},
-											"rawDestinationFileName": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
-												"type": "Expression"
-											},
-											"columnCount": {
-												"value": "@activity('File Lookup').output.value[0].ColumnCount",
-												"type": "Expression"
-											},
-											"loadType": {
-												"value": "@activity('File Lookup').output.value[0].LoadType",
-												"type": "Expression"
-											},
-											"ingestionContainerName": {
-												"value": "@pipeline().parameters.ingestionContainerName",
-												"type": "Expression"
-											},
-											"ingestionOutputContainerName": {
-												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
-												"type": "Expression"
-											},
-											"errorContainerName": {
-												"value": "@pipeline().parameters.errorContainerName",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							]
-						}
-					],
-					"defaultActivities": [
-						{
-							"name": "execute data ingestion error",
-							"type": "ExecutePipeline",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"pipeline": {
-									"referenceName": "data-ingestion-error",
-									"type": "PipelineReference"
-								},
-								"waitOnCompletion": true,
-								"parameters": {
-									"ingestionContainerName": {
-										"value": "@pipeline().parameters.ingestionContainerName",
-										"type": "Expression"
-									},
-									"fileName": {
-										"value": "@pipeline().parameters.sourceFile",
-										"type": "Expression"
-									},
-									"filePath": {
-										"value": "@pipeline().parameters.sourceFolder",
-										"type": "Expression"
-									},
-									"errorContainerName": {
-										"value": "@pipeline().parameters.errorContainerName",
-										"type": "Expression"
-									}
-								}
-							}
-						}
-					]
-				}
-			},
-			{
 				"name": "End Execution Log",
 				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "Data-Ingestion-By-FileType",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -390,6 +77,386 @@
 				"linkedServiceName": {
 					"referenceName": "meta_data_configuration_db",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "execute data ingestion error for failure pipelines",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "data-ingestion-error",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ingestionContainerName": {
+							"value": "@pipeline().parameters.ingestionContainerName",
+							"type": "Expression"
+						},
+						"fileName": {
+							"value": "@pipeline().parameters.sourceFile",
+							"type": "Expression"
+						},
+						"filePath": {
+							"value": "@pipeline().parameters.sourceFile",
+							"type": "Expression"
+						},
+						"errorContainerName": {
+							"value": "@pipeline().parameters.errorContainerName",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "End Execution Log for Failures",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[EndExecutionLog]",
+					"storedProcedureParameters": {
+						"ExecutionLogId": {
+							"value": {
+								"value": "@activity('File Lookup').output.value[0].ExecutionLogId",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "meta_data_configuration_db",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "File Lookup",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(activity('File Lookup').output.value.length, 0)",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Data-Ingestion-By-FileType",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@toUpper(activity('File Lookup').output.value[0].FileType)",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "AVRO",
+										"activities": [
+											{
+												"name": "execute data ingestion avro",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "data-ingestion-avro",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"fileName": {
+															"value": "@pipeline().parameters.sourceFile",
+															"type": "Expression"
+														},
+														"filePath": {
+															"value": "@pipeline().parameters.sourceFolder",
+															"type": "Expression"
+														},
+														"rawDestination": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
+															"type": "Expression"
+														},
+														"rawDestinationFileName": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
+															"type": "Expression"
+														},
+														"columnCount": {
+															"value": "@activity('File Lookup').output.value[0].ColumnCount",
+															"type": "Expression"
+														},
+														"loadType": {
+															"value": "@activity('File Lookup').output.value[0].LoadType",
+															"type": "Expression"
+														},
+														"ingestionContainerName": {
+															"value": "@pipeline().parameters.ingestionContainerName",
+															"type": "Expression"
+														},
+														"ingestionOutputContainerName": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
+															"type": "Expression"
+														},
+														"errorContainerName": {
+															"value": "@pipeline().parameters.errorContainerName",
+															"type": "Expression"
+														}
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "DELIMITED",
+										"activities": [
+											{
+												"name": "execute data ingestion delimited",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "data-ingestion-delimited",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"fileName": {
+															"value": "@pipeline().parameters.sourceFile",
+															"type": "Expression"
+														},
+														"filePath": {
+															"value": "@pipeline().parameters.sourceFolder",
+															"type": "Expression"
+														},
+														"rawDestination": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
+															"type": "Expression"
+														},
+														"rawDestinationFileName": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
+															"type": "Expression"
+														},
+														"columnCount": {
+															"value": "@activity('File Lookup').output.value[0].ColumnCount",
+															"type": "Expression"
+														},
+														"loadType": {
+															"value": "@activity('File Lookup').output.value[0].LoadType",
+															"type": "Expression"
+														},
+														"ingestionContainerName": {
+															"value": "@pipeline().parameters.ingestionContainerName",
+															"type": "Expression"
+														},
+														"ingestionOutputContainerName": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
+															"type": "Expression"
+														},
+														"compressionType": {
+															"value": "@activity('File Lookup').output.value[0].CompressionType",
+															"type": "Expression"
+														},
+														"compressionLevel": {
+															"value": "@activity('File Lookup').output.value[0].CompressionLevel",
+															"type": "Expression"
+														},
+														"columnDelimiter": {
+															"value": "@activity('File Lookup').output.value[0].ColumnDelimiter",
+															"type": "Expression"
+														},
+														"encoding": {
+															"value": "@activity('File Lookup').output.value[0].Encoding",
+															"type": "Expression"
+														},
+														"escapeCharacter": {
+															"value": "@activity('File Lookup').output.value[0].EscapeCharacter",
+															"type": "Expression"
+														},
+														"quoteCharacter": {
+															"value": "@activity('File Lookup').output.value[0].QuoteCharacter",
+															"type": "Expression"
+														},
+														"firstRowAsHeader": {
+															"value": "@activity('File Lookup').output.value[0].FirstRowAsHeader",
+															"type": "Expression"
+														},
+														"errorContainerName": {
+															"value": "@pipeline().parameters.errorContainerName",
+															"type": "Expression"
+														}
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "JSON",
+										"activities": [
+											{
+												"name": "execute data ingestion json",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "data-ingestion-json",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"fileName": {
+															"value": "@pipeline().parameters.sourceFile",
+															"type": "Expression"
+														},
+														"filePath": {
+															"value": "@pipeline().parameters.sourceFolder",
+															"type": "Expression"
+														},
+														"rawDestination": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
+															"type": "Expression"
+														},
+														"rawDestinationFileName": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
+															"type": "Expression"
+														},
+														"columnCount": {
+															"value": "@activity('File Lookup').output.value[0].ColumnCount",
+															"type": "Expression"
+														},
+														"loadType": {
+															"value": "@activity('File Lookup').output.value[0].LoadType",
+															"type": "Expression"
+														},
+														"ingestionContainerName": {
+															"value": "@pipeline().parameters.ingestionContainerName",
+															"type": "Expression"
+														},
+														"ingestionOutputContainerName": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
+															"type": "Expression"
+														},
+														"errorContainerName": {
+															"value": "@pipeline().parameters.errorContainerName",
+															"type": "Expression"
+														}
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "PARQUET",
+										"activities": [
+											{
+												"name": "execute data ingestion parquet",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "data-ingestion-parquet",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"fileName": {
+															"value": "@pipeline().parameters.sourceFile",
+															"type": "Expression"
+														},
+														"filePath": {
+															"value": "@pipeline().parameters.sourceFolder",
+															"type": "Expression"
+														},
+														"rawDestination": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneDestination",
+															"type": "Expression"
+														},
+														"rawDestinationFileName": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneFileName",
+															"type": "Expression"
+														},
+														"columnCount": {
+															"value": "@activity('File Lookup').output.value[0].ColumnCount",
+															"type": "Expression"
+														},
+														"loadType": {
+															"value": "@activity('File Lookup').output.value[0].LoadType",
+															"type": "Expression"
+														},
+														"ingestionContainerName": {
+															"value": "@pipeline().parameters.ingestionContainerName",
+															"type": "Expression"
+														},
+														"ingestionOutputContainerName": {
+															"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
+															"type": "Expression"
+														},
+														"errorContainerName": {
+															"value": "@pipeline().parameters.errorContainerName",
+															"type": "Expression"
+														}
+													}
+												}
+											}
+										]
+									}
+								],
+								"defaultActivities": [
+									{
+										"name": "execute data ingestion error",
+										"type": "ExecutePipeline",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"pipeline": {
+												"referenceName": "data-ingestion-error",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": true,
+											"parameters": {
+												"ingestionContainerName": {
+													"value": "@pipeline().parameters.ingestionContainerName",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.sourceFile",
+													"type": "Expression"
+												},
+												"filePath": {
+													"value": "@pipeline().parameters.sourceFolder",
+													"type": "Expression"
+												},
+												"errorContainerName": {
+													"value": "@pipeline().parameters.errorContainerName",
+													"type": "Expression"
+												}
+											}
+										}
+									}
+								]
+							}
+						}
+					]
 				}
 			}
 		],
