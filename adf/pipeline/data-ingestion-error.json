@@ -79,7 +79,7 @@
 				]
 			},
 			{
-				"name": "Delete1",
+				"name": "Delete the landing file",
 				"type": "Delete",
 				"dependsOn": [
 					{
