@@ -198,6 +198,10 @@
 											"firstRowAsHeader": {
 												"value": "@activity('File Lookup').output.value[0].FirstRowAsHeader",
 												"type": "Expression"
+											},
+											"errorContainerName": {
+												"value": "@pipeline().parameters.errorContainerName",
+												"type": "Expression"
 											}
 										}
 									}
