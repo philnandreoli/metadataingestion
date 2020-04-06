@@ -1,6 +1,20 @@
 {
 	"name": "data-ingestion-error",
 	"properties": {
+		"parameters": {
+			"ingestionContainerName": {
+				"type": "string"
+			},
+			"fileName": {
+				"type": "string"
+			},
+			"filePath": {
+				"type": "string"
+			},
+			"errorContainerName": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "data-ingestion"
 		},
