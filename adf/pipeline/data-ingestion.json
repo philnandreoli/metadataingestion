@@ -80,37 +80,6 @@
 				}
 			},
 			{
-				"name": "execute data ingestion error for failure pipelines",
-				"type": "ExecutePipeline",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "data-ingestion-error",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"ingestionContainerName": {
-							"value": "@pipeline().parameters.ingestionContainerName",
-							"type": "Expression"
-						},
-						"fileName": {
-							"value": "@pipeline().parameters.sourceFile",
-							"type": "Expression"
-						},
-						"filePath": {
-							"value": "@pipeline().parameters.sourceFile",
-							"type": "Expression"
-						},
-						"errorContainerName": {
-							"value": "@pipeline().parameters.errorContainerName",
-							"type": "Expression"
-						}
-					}
-				}
-			},
-			{
 				"name": "If Condition1",
 				"type": "IfCondition",
 				"dependsOn": [
@@ -127,6 +96,39 @@
 						"value": "@greater(activity('File Lookup').output.value.length, 0)",
 						"type": "Expression"
 					},
+					"ifFalseActivities": [
+						{
+							"name": "execute data ingestion error for failure pipelines",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "data-ingestion-error",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"ingestionContainerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.sourceFile",
+										"type": "Expression"
+									},
+									"filePath": {
+										"value": "@pipeline().parameters.sourceFile",
+										"type": "Expression"
+									},
+									"errorContainerName": {
+										"value": "@pipeline().parameters.errorContainerName",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					],
 					"ifTrueActivities": [
 						{
 							"name": "Data-Ingestion-By-FileType",
