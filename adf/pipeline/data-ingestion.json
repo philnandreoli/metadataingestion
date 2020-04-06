@@ -357,6 +357,10 @@
 			"ingestionContainerName": {
 				"type": "string",
 				"defaultValue": "landing"
+			},
+			"errorContainerName": {
+				"type": "string",
+				"defaultValue": "error"
 			}
 		},
 		"folder": {
