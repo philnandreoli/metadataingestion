@@ -125,7 +125,7 @@
 										"type": "Expression"
 									},
 									"filePath": {
-										"value": "@pipeline().parameters.sourceFile",
+										"value": "@pipeline().parameters.sourceFolder",
 										"type": "Expression"
 									},
 									"errorContainerName": {
