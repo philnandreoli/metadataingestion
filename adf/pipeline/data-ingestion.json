@@ -316,7 +316,25 @@
 									"referenceName": "data-ingestion-error",
 									"type": "PipelineReference"
 								},
-								"waitOnCompletion": true
+								"waitOnCompletion": true,
+								"parameters": {
+									"ingestionContainerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.sourceFile",
+										"type": "Expression"
+									},
+									"filePath": {
+										"value": "@pipeline().parameters.sourceFolder",
+										"type": "Expression"
+									},
+									"errorContainerName": {
+										"value": "@pipeline().parameters.errorContainerName",
+										"type": "Expression"
+									}
+								}
 							}
 						}
 					]
