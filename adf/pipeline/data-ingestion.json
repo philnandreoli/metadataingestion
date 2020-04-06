@@ -401,7 +401,7 @@
 			},
 			"sourceFile": {
 				"type": "string",
-				"defaultValue": "orderss.avro"
+				"defaultValue": "orders.avro"
 			},
 			"ingestionContainerName": {
 				"type": "string",
