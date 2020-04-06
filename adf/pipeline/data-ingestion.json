@@ -310,6 +310,10 @@
 											"ingestionOutputContainerName": {
 												"value": "@activity('File Lookup').output.value[0].RawZoneContainerName",
 												"type": "Expression"
+											},
+											"errorContainerName": {
+												"value": "@pipeline().parameters.errorContainerName",
+												"type": "Expression"
 											}
 										}
 									}
