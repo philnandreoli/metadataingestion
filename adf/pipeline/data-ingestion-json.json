@@ -233,7 +233,8 @@
 				"defaultValue": "raw"
 			},
 			"errorContainerName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "error"
 			}
 		},
 		"variables": {
