@@ -100,7 +100,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@greater(activity('File Lookup').output.value.length, 0)",
+						"value": "@greater(length(activity('File Lookup').output.value), 0)",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
