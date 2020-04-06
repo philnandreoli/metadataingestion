@@ -229,6 +229,10 @@
 			"ingestionOutputContainerName": {
 				"type": "string",
 				"defaultValue": "raw"
+			},
+			"errorContainerName": {
+				"type": "string",
+				"defaultValue": "error"
 			}
 		},
 		"variables": {
