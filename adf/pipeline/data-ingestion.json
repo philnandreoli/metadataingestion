@@ -304,6 +304,21 @@
 								}
 							]
 						}
+					],
+					"defaultActivities": [
+						{
+							"name": "execute data ingestion error",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "data-ingestion-error",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true
+							}
+						}
 					]
 				}
 			},
