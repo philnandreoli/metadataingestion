@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "File Lookup",
+				"name": "File Lookup & Start Execution Log",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -91,7 +91,7 @@
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "File Lookup",
+						"activity": "File Lookup & Start Execution Log",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -100,7 +100,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@greater(length(activity('File Lookup').output.value), 0)",
+						"value": "@greater(length(activity('File Lookup & Start Execution Log').output.value), 0)",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
