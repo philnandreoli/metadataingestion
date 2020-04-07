@@ -111,7 +111,7 @@
 										"type": "Expression"
 									},
 									"parentDataFactoryRunId": {
-										"value": "@pipeline().RunId",
+										"value": "@pipeline().parameters.parentDataFactoryRunId",
 										"type": "Expression"
 									}
 								}
