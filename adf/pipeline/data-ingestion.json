@@ -19,6 +19,13 @@
 						"type": "AzureSqlSource",
 						"sqlReaderStoredProcedureName": "[dbo].[GetFileInformation]",
 						"storedProcedureParameters": {
+							"DataFactoryName": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().DataFactory",
+									"type": "Expression"
+								}
+							},
 							"DataFactoryRunId": {
 								"type": "String",
 								"value": {
@@ -37,6 +44,13 @@
 								"type": "String",
 								"value": {
 									"value": "@pipeline().parameters.sourceFile",
+									"type": "Expression"
+								}
+							},
+							"PipelineName": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().Pipeline",
 									"type": "Expression"
 								}
 							}
