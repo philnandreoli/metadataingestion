@@ -55,7 +55,7 @@
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "If Condition1",
+						"activity": "Did we find a record in the file lookup",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -87,7 +87,7 @@
 				}
 			},
 			{
-				"name": "If Condition1",
+				"name": "Did we find a record in the file lookup",
 				"type": "IfCondition",
 				"dependsOn": [
 					{
