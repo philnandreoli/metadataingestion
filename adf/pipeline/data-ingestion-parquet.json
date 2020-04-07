@@ -110,6 +110,10 @@
 									"errorContainerName": {
 										"value": "@pipeline().parameters.errorContainerName",
 										"type": "Expression"
+									},
+									"parentDataFactoryRunId": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
 									}
 								}
 							}
