@@ -305,7 +305,10 @@
 															"value": "@pipeline().parameters.errorContainerName",
 															"type": "Expression"
 														},
-														"parentDataFactoryRunId": "864d42c4-6177-417a-8bf2-36881ca5ba64"
+														"parentDataFactoryRunId": {
+															"value": "@pipeline().RunId",
+															"type": "Expression"
+														}
 													}
 												}
 											}
