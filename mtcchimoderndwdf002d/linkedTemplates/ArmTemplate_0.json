@@ -2681,7 +2681,7 @@
 						"type": "IfCondition",
 						"dependsOn": [
 							{
-								"activity": "File Lookup and Start Execution Log",
+								"activity": "Replace the Container in the Path with empty space",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -2715,7 +2715,7 @@
 												"type": "Expression"
 											},
 											"filePath": {
-												"value": "@pipeline().parameters.sourceFolder",
+												"value": "@variables('ingestionFolderPath')",
 												"type": "Expression"
 											},
 											"errorContainerName": {
@@ -2762,7 +2762,7 @@
 																	"type": "Expression"
 																},
 																"filePath": {
-																	"value": "@pipeline().parameters.sourceFolder",
+																	"value": "@variables('ingestionFolderPath')",
 																	"type": "Expression"
 																},
 																"rawDestination": {
@@ -2822,7 +2822,7 @@
 																	"type": "Expression"
 																},
 																"filePath": {
-																	"value": "@pipeline().parameters.sourceFolder",
+																	"value": "@variables('ingestionFolderPath')",
 																	"type": "Expression"
 																},
 																"rawDestination": {
@@ -2910,7 +2910,7 @@
 																	"type": "Expression"
 																},
 																"filePath": {
-																	"value": "@pipeline().parameters.sourceFolder",
+																	"value": "@variables('ingestionFolderPath')",
 																	"type": "Expression"
 																},
 																"rawDestination": {
@@ -2970,7 +2970,7 @@
 																	"type": "Expression"
 																},
 																"filePath": {
-																	"value": "@pipeline().parameters.sourceFolder",
+																	"value": "@variables('ingestionFolderPath')",
 																	"type": "Expression"
 																},
 																"rawDestination": {
@@ -3033,7 +3033,7 @@
 															"type": "Expression"
 														},
 														"filePath": {
-															"value": "@pipeline().parameters.sourceFolder",
+															"value": "@variables('ingestionFolderPath')",
 															"type": "Expression"
 														},
 														"errorContainerName": {
@@ -3051,6 +3051,26 @@
 									}
 								}
 							]
+						}
+					},
+					{
+						"name": "Replace the Container in the Path with empty space",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "File Lookup and Start Execution Log",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "ingestionFolderPath",
+							"value": {
+								"value": "@replace(pipeline().parameters.sourceFolder, pipeline().parameters.ingestionContainerName, '')",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -3071,6 +3091,12 @@
 					"errorContainerName": {
 						"type": "string",
 						"defaultValue": "error"
+					}
+				},
+				"variables": {
+					"ingestionFolderPath": {
+						"type": "String",
+						"defaultValue": "/"
 					}
 				},
 				"folder": {
