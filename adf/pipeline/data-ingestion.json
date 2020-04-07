@@ -162,7 +162,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"on": {
-									"value": "@toUpper(activity('File Lookup').output.value[0].FileType)",
+									"value": "@toUpper(activity('File Lookup and Start Execution Log').output.value[0].FileType)",
 									"type": "Expression"
 								},
 								"cases": [
