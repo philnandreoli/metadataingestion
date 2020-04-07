@@ -1,0 +1,98 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mtcchimoderndwdf002d"
+		},
+		"data_lake_storage_account_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://mtcchidatalake001d.dfs.core.windows.net"
+		},
+		"key_vault_secrets_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://mtcchimoderndwkv001d.vault.azure.net/"
+		},
+		"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "MetaDataConfigurationConnectionString"
+		},
+		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
+		"landing_file_pickup_properties_data-ingestion_parameters_sourceFile": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"landing_file_pickup_properties_data-ingestion_parameters_ingestionContainerName": {
+			"type": "string",
+			"defaultValue": "landing"
+		},
+		"landing_file_pickup_properties_data-ingestion_parameters_errorContainerName": {
+			"type": "string",
+			"defaultValue": "error"
+		},
+		"landing_file_pickup_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/3cc29ed6-3ddf-41ce-a514-677bc7ebaf77/resourceGroups/MTC-CHI-MODERN-DATA-WAREHOUSE-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"data_lake_storage_account_properties_typeProperties_url": {
+						"value": "[parameters('data_lake_storage_account_properties_typeProperties_url')]"
+					},
+					"key_vault_secrets_properties_typeProperties_baseUrl": {
+						"value": "[parameters('key_vault_secrets_properties_typeProperties_baseUrl')]"
+					},
+					"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('meta_data_configuration_db_properties_typeProperties_connectionString_secretName')]"
+					},
+					"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
+						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFolder')]"
+					},
+					"landing_file_pickup_properties_data-ingestion_parameters_sourceFile": {
+						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFile')]"
+					},
+					"landing_file_pickup_properties_data-ingestion_parameters_ingestionContainerName": {
+						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_ingestionContainerName')]"
+					},
+					"landing_file_pickup_properties_data-ingestion_parameters_errorContainerName": {
+						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_errorContainerName')]"
+					},
+					"landing_file_pickup_properties_typeProperties_scope": {
+						"value": "[parameters('landing_file_pickup_properties_typeProperties_scope')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
