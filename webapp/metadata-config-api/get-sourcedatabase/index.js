@@ -1,32 +1,8 @@
-var sql = require("mssql");
-var appInsights = require("applicationinsights");
+const sql = require("mssql");
+const appInsights = require("applicationinsights");
+const sqlConfig = require('../configs/sqlConfig')
 
 module.exports = async function (context, req) {
-  var config = {
-    user: process.env.DBUser,
-    password: process.env.Password,
-    server: process.env.MetaConfigDBServer,
-    database: process.env.MetaConfigDB,
-    connectionTimeout: 60000,
-    options: {
-      encrypt: true,
-    },
-  };
-
-  //configure application insights
-  appInsights
-    .setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
-    .setAutoDependencyCorrelation(true)
-    .setAutoCollectRequests(true)
-    .setAutoCollectPerformance(true)
-    .setAutoCollectExceptions(true)
-    .setAutoCollectDependencies(true)
-    .setAutoCollectConsole(true)
-    .setUseDiskRetryCaching(true)
-    .setSendLiveMetrics(false)
-    .setDistributedTracingMode(appInsights.DistributedTracingModes.AI)
-    .start();
-
   await sql.on("error", (err) => {
     context.log.error("ERROR: ", err);
     context.res = {
@@ -37,7 +13,7 @@ module.exports = async function (context, req) {
   });
 
   await sql
-    .connect(config)
+    .connect(sqlConfig)
     .then((pool) => {
       return pool.request().query(
         `SELECT  [SourceDatabaseId] AS [SourceDatabase.id]

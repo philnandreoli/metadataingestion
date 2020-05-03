@@ -1,17 +1,8 @@
 var sql = require("mssql");
+const sqlConfig = require('../configs/sqlConfig')
 
 module.exports = async function (context, req) {
-  var config = {
-    user: process.env.DBUser,
-    password: process.env.Password,
-    server: process.env.MetaConfigDBServer,
-    database: process.env.MetaConfigDB,
-    connectionTimeout: 60000,
-    options: {
-      encrypt: true,
-    },
-  };
-
+  
   //Check to make sure that the database is operational.
   await sql.on("error", (err) => {
     context.log.error("ERROR: ", err);
@@ -23,7 +14,7 @@ module.exports = async function (context, req) {
   });
 
   await sql
-    .connect(config)
+    .connect(sqlConfig)
     .then((pool) => {
       return pool
         .request()

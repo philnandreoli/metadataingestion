@@ -3,5 +3,24 @@
   "extensionBundle": {
     "id": "Microsoft.Azure.Functions.ExtensionBundle",
     "version": "[1.*, 2.0.0)"
+  },
+  "logging": {
+    "fileLoggingMode": "always",
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "maxTelemetryItemsPerSecond": 20
+      }
+    },
+    "logLevel": {
+      "default": "Information",
+      "Host.Reults": "Error",
+      "Function": "Warning",
+      "Host.Aggregator": "Trace"
+    }
+  },
+  "aggregator": {
+    "batchSize": 500,
+    "flushTimeout": "00:00:30"
   }
 }

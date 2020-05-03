@@ -1,32 +1,15 @@
 var sql = require("mssql");
-var appInsights = require("applicationinsights");
+const appInsights = require("applicationinsights");
+const sqlConfig = require('../configs/sqlConfig')
+
+
+appInsights.setup();
+const client = appInsights.defaultClient;
 
 module.exports = async function (context, req) {
-  var config = {
-    user: process.env.DBUser,
-    password: process.env.Password,
-    server: process.env.MetaConfigDBServer,
-    database: process.env.MetaConfigDB,
-    connectionTimeout: 60000,
-    options: {
-      encrypt: true,
-    },
-  };
 
-  //Configure Application Insights to capture the information needed
-  appInsights
-    .setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
-    .setAutoDependencyCorrelation(true)
-    .setAutoCollectRequests(true)
-    .setAutoCollectPerformance(true)
-    .setAutoCollectExceptions(true)
-    .setAutoCollectDependencies(true)
-    .setAutoCollectConsole(true)
-    .setUseDiskRetryCaching(true)
-    .setSendLiveMetrics(false)
-    .setDistributedTracingMode(appInsights.DistributedTracingModes.AI)
-    .start();
-
+  context.log.information(`DELETE /sourceobject/${context.bindingData.id} was requested`);
+  
   //Capture the errors on connection
   await sql.on("error", (err) => {
     context.log.error("ERROR: ", err);
@@ -38,7 +21,7 @@ module.exports = async function (context, req) {
   });
 
   await sql
-    .connect(config)
+    .connect(sqlConfig)
     .then((pool) => {
       return pool
         .request()
@@ -54,13 +37,19 @@ module.exports = async function (context, req) {
     .then((result) => {
       //if responseBoxy has a value in it, then a record was found, else it is empty and should return a 404 error
       if (result.rowsAffected[0] > 0) {
+        
+        context.log.information(`${context.bindingData.id} was marked inactive and HTTP Response with status 200 was sent back to the client`);
+        
         context.res = {
           status: 200,
           headers: {
             "Content-Type": "application/json",
           },
         };
+
       } else {
+        context.log.information(`${context.bindingData.id} was not found and HTTP Response with status 404 was sent back to the client`);
+        
         context.res = {
           status: 404,
           headers: {

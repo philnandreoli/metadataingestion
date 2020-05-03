@@ -1,20 +1,10 @@
 var sql = require("mssql");
+const sqlConfig = require('../configs/sqlConfig')
 
 module.exports = async function (context, req) {
-  //connection string configuration for the SQL Database
-  var config = {
-    user: process.env.DBUser,
-    password: process.env.Password,
-    server: process.env.MetaConfigDBServer,
-    database: process.env.MetaConfigDB,
-    connectionTimeout: 60000,
-    options: {
-      encrypt: true,
-    },
-  };
 
   await sql
-    .connect(config)
+    .connect(sqlConfig)
     .then((pool) => {
       return pool.request()
         .query(`SELECT  so.[SourceObjectId] as [SourceObject.id] 

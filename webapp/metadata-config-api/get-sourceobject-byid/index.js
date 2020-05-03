@@ -1,4 +1,5 @@
 var sql = require("mssql");
+const sqlConfig = require('../configs/sqlConfig')
 
 module.exports = async function (context, req) {
   //connection string configuration for the SQL Database
@@ -14,7 +15,7 @@ module.exports = async function (context, req) {
   };
 
   await sql
-    .connect(config)
+    .connect(sqlConfig)
     .then((pool) => {
       return pool
         .request()
