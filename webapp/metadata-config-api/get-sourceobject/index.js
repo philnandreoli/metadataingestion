@@ -1,8 +1,6 @@
 var sql = require("mssql");
-var environment = require("dotenv").config();
 
 module.exports = async function (context, req) {
-  
   //connection string configuration for the SQL Database
   var config = {
     user: process.env.DBUser,
@@ -19,8 +17,8 @@ module.exports = async function (context, req) {
     .connect(config)
     .then((pool) => {
       return pool.request()
-        .query(`SELECT  so.[SourceObjectId] as [SourceObject.Id] 
-    ,so.[SourceDatabaseId] as [SourceObject.SourceDatabase.Id] 
+        .query(`SELECT  so.[SourceObjectId] as [SourceObject.id] 
+    ,so.[SourceDatabaseId] as [SourceObject.SourceDatabase.id] 
     ,sd.[Name] as [SourceObject.SourceDatabase.Name] 
     ,sd.[Description] as [SourceObject.SourceDatabase.Description] 
     ,so.[Name] as [SourceObject.Name] 
