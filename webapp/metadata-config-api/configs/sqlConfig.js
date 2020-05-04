@@ -1,3 +1,6 @@
+// @ts-check
+const env = require('dotenv').config();
+
 const sqlConfig = {
   user: process.env.DBUser,
   password: process.env.Password,
@@ -5,8 +8,8 @@ const sqlConfig = {
   database: process.env.MetaConfigDB,
   connectionTimeout: 60000,
   options: {
-    encrypt: true,
-  },
+    encrypt: true
+  }
 };
 
 module.exports = sqlConfig;

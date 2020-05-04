@@ -1,66 +1,37 @@
-const sql = require("mssql");
+const CosmosClient = require("@azure/cosmos").CosmosClient;
+const config = require("../configs/cosmosConfig");
+const dbContext = require("../contexts/cosmosDatabaseContext");
+
+//Application Insights Setup
 const appInsights = require("applicationinsights");
-const sqlConfig = require('../configs/sqlConfig')
+appInsights.setup();
+const client = appInsights.defaultClient;
 
 module.exports = async function (context, req) {
-  await sql.on("error", (err) => {
-    context.log.error("ERROR: ", err);
+  const querySpec =
+    "SELECT c.id, c.sourceDatabaseName, c.description, c.sourceObjects, c.isActive FROM c";
+
+  try {
+    //create the connection to CosmosDB
+    const { endpoint, key, databaseId, containerId } = config;
+    const client = new CosmosClient({ endpoint, key });
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
+    await dbContext.create(client, databaseId, containerId);
+
+    const { resources: items } = await container.items
+      .query(querySpec)
+      .fetchAll();
+
+    context.res.status(200).json(items);
+  } catch (error) {
     context.res = {
       status: 500,
-      body:
-        "The Database Server is down, please try again in a few minutes!  Sorry for any inconvenience this may have caused.",
+      body: error,
+      headers: {
+        "Content-Type": "application/json",
+      },
     };
-  });
-
-  await sql
-    .connect(sqlConfig)
-    .then((pool) => {
-      return pool.request().query(
-        `SELECT  [SourceDatabaseId] AS [SourceDatabase.id]
-          , [Name] AS [SourceDatabase.Name]
-          , [Description] AS [SourceDatabase.Description]
-          , [IsActive] AS [SourceDatabase.IsActive]
-          , [CreatedDate] as [SourceDatabase.CreatedDate]
-          , [CreatedBy] as [SourceDatabase.CreatedBy]
-          , [LastUpdatedDate] AS [SourceDatabase.LastUpdatedDate]
-          , [LastUpdatedBy] AS [SourceDatabase.LastUpdatedBy]
-          FROM [dbo].[SourceDatabase]
-          WHERE [IsActive] = 1
-          FOR JSON PATH, ROOT('SourceDatabases')`
-      );
-    })
-    .then((result) => {
-      var responseBody =
-        result.recordset[0][Object.keys(result.recordset[0])[0]];
-
-      if (responseBody) {
-        context.res = {
-          status: 200,
-          body: JSON.parse(responseBody),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        };
-      } else {
-        context.res = {
-          status: 404,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        };
-      }
-
-      context.done();
-    })
-    .catch((err) => {
-      context.log.error("ERROR: ", err);
-
-      context.res = {
-        status: 400,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: err,
-      };
-    });
+    context.log.error("GET /sourcedatabase  ERROR: ", error);
+  }
 };
