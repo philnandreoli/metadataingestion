@@ -1,0 +1,29 @@
+{
+  "bindings": [
+    {
+      "route": "sourcedatabase/{sourceDatabaseName}/{id}",
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "cosmosDB",
+      "name": "config",
+      "databaseName": "MetaDataConfiguration",
+      "collectionName": "Config",
+      "connectionStringSetting": "COSMOS_DB_CONNECTION",
+      "direction": "in",
+      "Id": "{id}",
+      "PartitionKey": "{sourceDatabaseName}"
+    }
+  ]
+}

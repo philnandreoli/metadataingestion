@@ -1,0 +1,28 @@
+{
+  "bindings": [
+    {
+      "route": "sourcedatabase",
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "cosmosDB",
+      "name": "configs",
+      "databaseName": "MetaDataConfiguration",
+      "collectionName": "Config",
+      "sqlQuery": "SELECT c.id, c.sourceDatabaseName, c.description FROM c WHERE c.type = \"SourceDatabase\"",
+      "connectionStringSetting": "COSMOS_DB_CONNECTION",
+      "direction": "in"
+    }
+  ]
+}
