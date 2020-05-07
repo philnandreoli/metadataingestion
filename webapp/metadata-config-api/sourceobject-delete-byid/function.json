@@ -1,13 +1,13 @@
 {
   "bindings": [
     {
-      "route": "sourceobject",
+      "route": "sourceobject/{sourceDatabaseName}/{id}",
       "authLevel": "function",
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
       "methods": [
-        "get"
+        "delete"
       ]
     },
     {

@@ -1,0 +1,28 @@
+{
+  "bindings": [
+    {
+      "route": "sourceobject/{sourceDatabaseName}",
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "cosmosDB",
+      "name": "configs",
+      "databaseName": "MetaDataConfiguration",
+      "collectionName": "Config",
+      "sqlQuery": "SELECT c.id, c.sourceDatabaseName, c.sourceObjectName, c.description, c.loadType, c.fileType, c.columnCount, c.rawZone, c.delimiterConfiguration FROM c WHERE c.sourceDatabaseName = {sourceDatabaseName} and c.type = \"SourceObject\"",
+      "connectionStringSetting": "COSMOS_DB_CONNECTION",
+      "direction": "in"
+    }
+  ]
+}

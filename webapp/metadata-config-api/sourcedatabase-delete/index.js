@@ -7,31 +7,25 @@ const appInsights = require("applicationinsights");
 appInsights.setup();
 const client = appInsights.defaultClient;
 
+//this will delete not just the source database but also the source objects as well. 
 module.exports = async function (context, req) {
-  const querySpec =
-    "SELECT c.id, c.sourceDatabaseName, c.description, c.sourceObjects, c.isActive FROM c";
-
   try {
-    //create the connection to CosmosDB
+    const id = context.bindingData.id;
+    const sourceDatabaseName = context.bindingData.sourceDatabaseName;
+
     const { endpoint, key, databaseId, containerId } = config;
     const client = new CosmosClient({ endpoint, key });
     const database = client.database(databaseId);
     const container = database.container(containerId);
     await dbContext.create(client, databaseId, containerId);
 
-    const { resources: items } = await container.items
-      .query(querySpec)
-      .fetchAll();
+    const { resource: result } = await container
+      .item(id, sourceDatabaseName)
+      .delete();
 
-    context.res.status(200).json(items);
+    context.res.status(204);
   } catch (error) {
-    context.res = {
-      status: 500,
-      body: error,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
+    context.res.status(404);
     context.log.error("GET /sourcedatabase  ERROR: ", error);
   }
 };

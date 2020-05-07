@@ -1,0 +1,26 @@
+{
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["post"],
+      "route": "sourceobject/{sourceDatabaseName}"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "name": "sourceObjectDocument",
+      "type": "cosmosDB",
+      "databaseName": "MetaDataConfiguration",
+      "collectionName": "Config",
+      "createIfNotExists": true,
+      "connectionStringSetting": "COSMOS_DB_CONNECTION",
+      "direction": "out"
+    }
+  ]
+}
