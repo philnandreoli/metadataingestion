@@ -27,7 +27,7 @@
 			"value": "error"
 		},
 		"landing_file_pickup_properties_typeProperties_scope": {
-			"value": "/subscriptions/3cc29ed6-3ddf-41ce-a514-677bc7ebaf77/resourceGroups/MTC-CHI-MODERN-DATA-WAREHOUSE-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
+			"value": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
 		},
 		"containerUri": {
 			"value": ""
