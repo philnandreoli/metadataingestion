@@ -15,21 +15,13 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": {
-						"value": "@concat('https://data-engineering-dev.api.adventuresinazure.com/api/sourcedatabases?databaseType=SqlServer&sourceDatabaseName=WorldWideImporters')",
-						"type": "Expression"
-					},
 					"method": "GET",
 					"linkedServices": [
 						{
 							"referenceName": "meta_data_configuration_api",
 							"type": "LinkedServiceReference"
 						}
-					],
-					"authentication": {
-						"type": "MSI",
-						"resource": "ee2b0038-b224-481f-9dfb-af27ecda8123"
-					}
+					]
 				}
 			}
 		],
