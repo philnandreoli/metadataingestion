@@ -2,7 +2,7 @@
 	"name": "worldwide_importers_db",
 	"properties": {
 		"parameters": {
-			"databaseConnectionString": {
+			"databaseConnectionStringSecretName": {
 				"type": "string",
 				"defaultValue": "WorldWideImportersConnectionString"
 			}
@@ -17,7 +17,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"secretName": {
-					"value": "@linkedService().databaseConnectionString",
+					"value": "@linkedService().databaseConnectionStringSecretName",
 					"type": "Expression"
 				}
 			}
