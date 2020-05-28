@@ -3,11 +3,11 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy Data from SQL To Landing",
-				"type": "Copy",
+				"name": "Web1",
+				"type": "WebActivity",
 				"dependsOn": [],
 				"policy": {
-					"timeout": "0.06:00:00",
+					"timeout": "7.00:00:00",
 					"retry": 0,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
@@ -15,46 +15,27 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"queryTimeout": "02:00:00"
+					"url": {
+						"value": "@concat('https://data-engineering-dev.api.adventuresinazure.com/api/sourcedatabases?databaseType=SqlServer&sourceDatabaseName=WorldWideImporters')",
+						"type": "Expression"
 					},
-					"sink": {
-						"type": "AvroSink",
-						"storeSettings": {
-							"type": "AzureBlobFSWriteSettings"
-						},
-						"formatSettings": {
-							"type": "AvroWriteSettings",
-							"quoteAllText": true
+					"method": "GET",
+					"linkedServices": [
+						{
+							"referenceName": "meta_data_configuration_api",
+							"type": "LinkedServiceReference"
 						}
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "azure_sql_table",
-						"type": "DatasetReference",
-						"parameters": {
-							"schema": "etl",
-							"objectName": "customers",
-							"connectionString": "WorldWideImportersConnectionString"
-						}
+					],
+					"authentication": {
+						"type": "MSI",
+						"resource": "ee2b0038-b224-481f-9dfb-af27ecda8123"
 					}
-				],
-				"outputs": [
-					{
-						"referenceName": "avro_ingestion_input_file",
-						"type": "DatasetReference",
-						"parameters": {
-							"filePath": "/",
-							"fileName": "customers.avro",
-							"containerName": "landing"
-						}
-					}
-				]
+				}
 			}
 		],
+		"folder": {
+			"name": "data-extraction"
+		},
 		"annotations": []
 	}
 }
