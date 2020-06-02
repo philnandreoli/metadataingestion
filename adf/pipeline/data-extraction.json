@@ -31,7 +31,180 @@
 							"quoteAllText": true
 						}
 					},
-					"enableStaging": false
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['status']"
+								},
+								"sink": {
+									"path": "$['status']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['_id']"
+								},
+								"sink": {
+									"path": "$['data'][0]['_id']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceDatabaseName']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceDatabaseName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['sourcingInformation']['sourceSchemaName']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['sourcingInformation']['sourceSchemaName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['sourcingInformation']['sourceObject']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['sourcingInformation']['sourceObject']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['sourcingInformation']['loadType']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['sourcingInformation']['loadType']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['landingZone']['fileName']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['landingZone']['fileName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['landingZone']['destination']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['landingZone']['destination']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['landingZone']['fileType']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['landingZone']['fileType']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['landingZone']['containerName']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['landingZone']['containerName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['rawZone']['fileName']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['rawZone']['fileName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['rawZone']['destination']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['rawZone']['destination']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['rawZone']['fileType']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['rawZone']['fileType']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['rawZone']['containerName']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['rawZone']['containerName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['_id']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['_id']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['name']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['name']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['description']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['description']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['sourceObjects'][0]['columnCount']"
+								},
+								"sink": {
+									"path": "$['data'][0]['sourceObjects'][0]['columnCount']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['keyVaultSecretName']"
+								},
+								"sink": {
+									"path": "$['data'][0]['keyVaultSecretName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['serverName']"
+								},
+								"sink": {
+									"path": "$['data'][0]['serverName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['databaseType']"
+								},
+								"sink": {
+									"path": "$['data'][0]['databaseType']"
+								}
+							}
+						]
+					}
 				},
 				"inputs": [
 					{
@@ -71,8 +244,8 @@
 				]
 			},
 			{
-				"name": "Lookup1",
-				"type": "Lookup",
+				"name": "Switch1",
+				"type": "Switch",
 				"dependsOn": [
 					{
 						"activity": "store objects for processing",
@@ -81,37 +254,32 @@
 						]
 					}
 				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
 				"userProperties": [],
 				"typeProperties": {
-					"source": {
-						"type": "JsonSource",
-						"storeSettings": {
-							"type": "AzureBlobFSReadSettings",
-							"recursive": true
-						},
-						"formatSettings": {
-							"type": "JsonReadSettings"
-						}
+					"on": {
+						"value": "@pipeline().parameters.databaseType",
+						"type": "Expression"
 					},
-					"dataset": {
-						"referenceName": "configuration_source_object_archive",
-						"type": "DatasetReference",
-						"parameters": {
-							"containerName": {
-								"value": "@pipeline().parameters.metadataConfigurationsContainer",
-								"type": "Expression"
-							},
-							"folder": "worldwideimporters",
-							"filename": "WorldWideImporters.json"
+					"cases": [
+						{
+							"value": "SqlServer",
+							"activities": [
+								{
+									"name": "Execute SqlServer Extraction Pipeline",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-extraction-sql",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true
+									}
+								}
+							]
 						}
-					}
+					]
 				}
 			}
 		],
