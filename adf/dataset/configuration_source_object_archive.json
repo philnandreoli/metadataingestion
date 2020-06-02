@@ -1,0 +1,42 @@
+{
+	"name": "configuration_source_object_archive",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data_lake_storage_account",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"containerName": {
+				"type": "string",
+				"defaultValue": "metadata-configurations"
+			},
+			"folder": {
+				"type": "string",
+				"defaultValue": "worldwideimporters"
+			},
+			"filename": {
+				"type": "string",
+				"defaultValue": "WorldWideImporters.json"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@concat(dataset().folder)",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().containerName",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}
