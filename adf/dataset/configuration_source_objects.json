@@ -1,5 +1,5 @@
 {
-	"name": "RestResource1",
+	"name": "configuration_source_objects",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "meta_data_configuration_api",
@@ -15,8 +15,17 @@
 				"defaultValue": "SqlServer"
 			}
 		},
+		"folder": {
+			"name": "data-extraction"
+		},
 		"annotations": [],
 		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('api/sourcedatabases?sourceDatabaseName=', dataset().sourceDatabaseName, '&sourceDatabaseType=', dataset().databaseType)",
+				"type": "Expression"
+			}
+		},
 		"schema": []
 	}
 }
