@@ -69,6 +69,50 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "store objects for processing",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "configuration_source_object_archive",
+						"type": "DatasetReference",
+						"parameters": {
+							"containerName": {
+								"value": "@pipeline().parameters.metadataConfigurationsContainer",
+								"type": "Expression"
+							},
+							"folder": "worldwideimporters",
+							"filename": "WorldWideImporters.json"
+						}
+					}
+				}
 			}
 		],
 		"concurrency": 6,
