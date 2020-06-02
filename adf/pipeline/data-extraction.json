@@ -1,0 +1,91 @@
+{
+	"name": "data-extraction",
+	"properties": {
+		"activities": [
+			{
+				"name": "store objects for processing",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET"
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings",
+							"quoteAllText": true
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "configuration_source_objects",
+						"type": "DatasetReference",
+						"parameters": {
+							"sourceDatabaseName": {
+								"value": "@pipeline().parameters.databaseName",
+								"type": "Expression"
+							},
+							"databaseType": {
+								"value": "@pipeline().parameters.databaseType",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "configuration_source_object_archive",
+						"type": "DatasetReference",
+						"parameters": {
+							"containerName": {
+								"value": "@pipeline().parameters.metadataConfigurationsContainer",
+								"type": "Expression"
+							},
+							"folder": {
+								"value": "@concat(pipeline().parameters.databaseName, '/', pipeline().RunId)",
+								"type": "Expression"
+							},
+							"filename": {
+								"value": "@concat(pipeline().parameters.databaseName, '.json')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"concurrency": 6,
+		"parameters": {
+			"databaseName": {
+				"type": "string",
+				"defaultValue": "WorldWideImporters"
+			},
+			"databaseType": {
+				"type": "string",
+				"defaultValue": "SqlServer"
+			},
+			"metadataConfigurationsContainer": {
+				"type": "string",
+				"defaultValue": "metadata-configurations"
+			}
+		},
+		"annotations": []
+	}
+}
