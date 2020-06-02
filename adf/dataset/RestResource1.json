@@ -1,0 +1,22 @@
+{
+	"name": "RestResource1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "meta_data_configuration_api",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"sourceDatabaseName": {
+				"type": "string",
+				"defaultValue": "WorldWideImporters"
+			},
+			"databaseType": {
+				"type": "string",
+				"defaultValue": "SqlServer"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}
