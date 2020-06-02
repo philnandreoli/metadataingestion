@@ -13,12 +13,17 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
+				"userProperties": [],
 				"typeProperties": {
 					"url": {
 						"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/token')",
 						"type": "Expression"
 					},
-					"method": "POST"
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": "grant_type=client_credentials&client_id=d7384dff-2ec6-4d61-9fb2-ddd94364905a&resource=d7384dff-2ec6-4d61-9fb2-ddd94364905a&client_secret=q~4Mw1F~4Cl.I61L2pdDOR-A3~VtG7mIw2"
 				}
 			}
 		],
