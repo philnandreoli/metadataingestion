@@ -4,6 +4,7 @@
 		"activities": [
 			{
 				"name": "Retrieve Bearer Token",
+				"description": "The Web Activity does not support OAuth authentication therefore it is a two step process.   Retrieve the bearer token and then use it wherever it is needed.",
 				"type": "WebActivity",
 				"dependsOn": [],
 				"policy": {
@@ -51,6 +52,7 @@
 			},
 			{
 				"name": "Retrieve The Objects That Need to be Extracted",
+				"description": "The web activity does not support OAuth2 therefore we pass the Bearer Token in the Header to get the data we need for the databaseType and sourceDatabaseName",
 				"type": "WebActivity",
 				"dependsOn": [
 					{
