@@ -101,6 +101,30 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "Switch to the Correct DataSource Type Pipeline",
+				"type": "Switch",
+				"dependsOn": [
+					{
+						"activity": "Set objectsToExtract",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@pipeline().parameters.databaseType",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "Case1"
+						}
+					]
+				}
 			}
 		],
 		"concurrency": 6,
