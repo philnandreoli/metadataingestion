@@ -1,10 +1,6 @@
 {
 	"name": "configuration_source_objects",
 	"properties": {
-		"linkedServiceName": {
-			"referenceName": "meta_data_configuration_api",
-			"type": "LinkedServiceReference"
-		},
 		"parameters": {
 			"sourceDatabaseName": {
 				"type": "string",
