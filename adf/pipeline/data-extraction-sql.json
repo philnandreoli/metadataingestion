@@ -1,6 +1,14 @@
 {
 	"name": "data-extraction-sql",
 	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": []
+			}
+		],
 		"folder": {
 			"name": "data-extraction"
 		},
