@@ -138,7 +138,7 @@
 										"waitOnCompletion": true,
 										"parameters": {
 											"platformToExtract": {
-												"value": "@variables('objectsToExtract')",
+												"value": "@activity('Retrieve The Objects That Need to be Extracted').output.data",
 												"type": "Expression"
 											},
 											"sourceDatabaseName": {
