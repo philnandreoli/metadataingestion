@@ -99,7 +99,7 @@
 				"typeProperties": {
 					"variableName": "objectsToExtract",
 					"value": {
-						"value": "@activity('Retrieve The Objects That Need to be Extracted').output.data[0].sourceObjects",
+						"value": "@activity('Retrieve The Objects That Need to be Extracted').output.data",
 						"type": "Expression"
 					}
 				}

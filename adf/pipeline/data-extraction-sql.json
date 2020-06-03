@@ -3,12 +3,159 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
+				"name": "set objectToExtract",
+				"type": "SetVariable",
 				"dependsOn": [],
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "objectsToExtract",
+					"value": {
+						"value": "@pipeline().parameters.platformToExtract[0].sourceObjects",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "set keyVaultSecretName",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "keyVaultSecretName",
+					"value": {
+						"value": "@pipeline().parameters.platformToExtract[0].keyVaultSecretName",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"parameters": {
+			"platformToExtract": {
+				"type": "array",
+				"defaultValue": [
+					{
+						"_id": "5ecfcfa73e095f1d78ff3521",
+						"sourceDatabaseName": "WorldWideImporters",
+						"sourceObjects": [
+							{
+								"sourcingInformation": {
+									"sourceSchemaName": "etl",
+									"sourceObject": "customers",
+									"loadType": "full"
+								},
+								"landingZone": {
+									"fileName": "customers.avro",
+									"destination": "/",
+									"fileType": "avro",
+									"containerName": "landing"
+								},
+								"rawZone": {
+									"fileName": "customers.parquet",
+									"destination": "/WorldWideImporters/Customers",
+									"fileType": "parquet",
+									"containerName": "raw"
+								},
+								"_id": "5ecfea681e8b9a4cfcad5e86",
+								"name": "Customers",
+								"description": "Worldwide Importers Customer Information",
+								"columnCount": 29
+							},
+							{
+								"sourcingInformation": {
+									"sourceSchemaName": "etl",
+									"sourceObject": "invoices",
+									"loadType": "incremental"
+								},
+								"landingZone": {
+									"fileName": "invoices.avro",
+									"destination": "/",
+									"fileType": "avro",
+									"containerName": "landing"
+								},
+								"rawZone": {
+									"fileName": "invoices.parquet",
+									"destination": "/WorldWideImporters/Invoices",
+									"fileType": "parquet",
+									"containerName": "raw"
+								},
+								"_id": "5ecfed961e8b9a4cfcad5e87",
+								"name": "Invoices",
+								"description": "Worldwide Importers Invoices Information",
+								"columnCount": 29
+							}
+						],
+						"keyVaultSecretName": "WorldWideImportersConnectionString",
+						"serverName": "mtcchioltp001d.database.windows.net",
+						"databaseType": "SqlServer"
+					}
+				]
+			},
+			"sourceDatabaseName": {
+				"type": "string",
+				"defaultValue": "WorldWideImporters"
+			}
+		},
+		"variables": {
+			"objectsToExtract": {
+				"type": "Array",
+				"defaultValue": [
+					{
+						"sourcingInformation": {
+							"sourceSchemaName": "etl",
+							"sourceObject": "customers",
+							"loadType": "full"
+						},
+						"landingZone": {
+							"fileName": "customers.avro",
+							"destination": "/",
+							"fileType": "avro",
+							"containerName": "landing"
+						},
+						"rawZone": {
+							"fileName": "customers.parquet",
+							"destination": "/WorldWideImporters/Customers",
+							"fileType": "parquet",
+							"containerName": "raw"
+						},
+						"_id": "5ecfea681e8b9a4cfcad5e86",
+						"name": "Customers",
+						"description": "Worldwide Importers Customer Information",
+						"columnCount": 29
+					},
+					{
+						"sourcingInformation": {
+							"sourceSchemaName": "etl",
+							"sourceObject": "invoices",
+							"loadType": "incremental"
+						},
+						"landingZone": {
+							"fileName": "invoices.avro",
+							"destination": "/",
+							"fileType": "avro",
+							"containerName": "landing"
+						},
+						"rawZone": {
+							"fileName": "invoices.parquet",
+							"destination": "/WorldWideImporters/Invoices",
+							"fileType": "parquet",
+							"containerName": "raw"
+						},
+						"_id": "5ecfed961e8b9a4cfcad5e87",
+						"name": "Invoices",
+						"description": "Worldwide Importers Invoices Information",
+						"columnCount": 29
+					}
+				]
+			},
+			"keyVaultSecretName": {
+				"type": "String",
+				"defaultValue": "WorldWideImportersConnectionString"
+			},
+			"sourceDatabaseName": {
+				"type": "String",
+				"defaultValue": "WorldWideImporters"
+			}
+		},
 		"folder": {
 			"name": "data-extraction"
 		},
