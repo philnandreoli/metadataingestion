@@ -135,7 +135,17 @@
 											"referenceName": "data-extraction-sql",
 											"type": "PipelineReference"
 										},
-										"waitOnCompletion": true
+										"waitOnCompletion": true,
+										"parameters": {
+											"platformToExtract": {
+												"value": "@variables('objectsToExtract')",
+												"type": "Expression"
+											},
+											"sourceDatabaseName": {
+												"value": "@pipeline().parameters.databaseName",
+												"type": "Expression"
+											}
+										}
 									}
 								}
 							]
