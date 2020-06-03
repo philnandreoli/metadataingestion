@@ -108,7 +108,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"filePath": {
-											"value": "@item().landingZone.destination",
+											"value": "@concat(item().landingZone.destination, '/', pipeline().parameters.sourceDatabaseName)",
 											"type": "Expression"
 										},
 										"fileName": {
