@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Web1",
+				"name": "Retrieve Bearer Token",
 				"type": "WebActivity",
 				"dependsOn": [],
 				"policy": {
@@ -23,7 +23,83 @@
 					"headers": {
 						"Content-Type": "application/x-www-form-urlencoded"
 					},
-					"body": "grant_type=client_credentials&client_id=d7384dff-2ec6-4d61-9fb2-ddd94364905a&resource=d7384dff-2ec6-4d61-9fb2-ddd94364905a&client_secret=q~4Mw1F~4Cl.I61L2pdDOR-A3~VtG7mIw2"
+					"body": {
+						"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&resource=',pipeline().parameters.ClientId,'&client_secret=',pipeline().parameters.ClientSecret)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set bearerToken",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Retrieve Bearer Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "bearerToken",
+					"value": {
+						"value": "@activity('Retrieve Bearer Token').output.access_token",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Retrieve The Objects That Need to be Extracted",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set bearerToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://data-engineering-dev.api.adventuresinazure.com/api/sourcedatabases?sourceDatabaseName=', pipeline().parameters.databaseName, '&databaseType=', pipeline().parameters.databaseType)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Set objectsToExtract",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Retrieve The Objects That Need to be Extracted",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "objectsToExtract",
+					"value": {
+						"value": "@activity('Retrieve The Objects That Need to be Extracted').output.data[0].sourceObjects",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -52,6 +128,15 @@
 			"ClientSecret": {
 				"type": "string",
 				"defaultValue": "q~4Mw1F~4Cl.I61L2pdDOR-A3~VtG7mIw2"
+			}
+		},
+		"variables": {
+			"bearerToken": {
+				"type": "String",
+				"defaultValue": "1234532"
+			},
+			"objectsToExtract": {
+				"type": "Array"
 			}
 		},
 		"annotations": []
