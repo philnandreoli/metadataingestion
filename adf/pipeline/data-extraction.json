@@ -85,31 +85,11 @@
 				}
 			},
 			{
-				"name": "Set objectsToExtract",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Retrieve The Objects That Need to be Extracted",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "objectsToExtract",
-					"value": {
-						"value": "@activity('Retrieve The Objects That Need to be Extracted').output.data",
-						"type": "Expression"
-					}
-				}
-			},
-			{
 				"name": "Switch to the Correct DataSource Type Pipeline",
 				"type": "Switch",
 				"dependsOn": [
 					{
-						"activity": "Set objectsToExtract",
+						"activity": "Retrieve The Objects That Need to be Extracted",
 						"dependencyConditions": [
 							"Succeeded"
 						]
