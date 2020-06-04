@@ -169,6 +169,80 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "End Logging Activities with Success",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Switch to the Correct DataSource Type Pipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"executionStatus\": \"Success\", \"executionEndDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "End Logging Activities with Failure",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Switch to the Correct DataSource Type Pipeline",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"executionStatus\": \"Failure\", \"executionEndDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"concurrency": 6,
