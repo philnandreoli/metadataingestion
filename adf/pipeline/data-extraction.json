@@ -56,7 +56,7 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "Set bearerToken",
+						"activity": "Start Logging of Activities",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -131,6 +131,40 @@
 							]
 						}
 					]
+				}
+			},
+			{
+				"name": "Start Logging of Activities",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set bearerToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://data-engineering-dev.api.adventuresinazure.com/api/executionlogs",
+					"method": "POST",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"dataFactoryRunId\": \"', pipeline().RunId, '\", \"dataFactoryName\": \"', pipeline().DataFactory, '\", \"pipelineName\": \"', pipeline().Pipeline, '\", \"executionStatus\": \"In-Progress\", \"executionStartDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
+					}
 				}
 			}
 		],
