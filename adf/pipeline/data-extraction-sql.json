@@ -192,7 +192,7 @@
 									}
 								},
 								"body": {
-									"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}')",
+									"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
 									"type": "Expression"
 								}
 							}
@@ -229,7 +229,7 @@
 									}
 								},
 								"body": {
-									"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}')",
+									"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
 									"type": "Expression"
 								}
 							}
