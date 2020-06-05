@@ -141,11 +141,7 @@
 								"secureOutput": false,
 								"secureInput": false
 							},
-							"userProperties": [],
-							"typeProperties": {
-								"linkedServices": [],
-								"datasets": []
-							}
+							"userProperties": []
 						}
 					]
 				}
@@ -223,6 +219,9 @@
 			"BearerToken": {
 				"type": "string",
 				"defaultValue": "1234"
+			},
+			"loggingBaseURL": {
+				"type": "string"
 			}
 		},
 		"variables": {

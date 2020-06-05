@@ -132,6 +132,10 @@
 											"BearerToken": {
 												"value": "@variables('bearerToken')",
 												"type": "Expression"
+											},
+											"loggingBaseURL": {
+												"value": "@pipeline().parameters.loggingBaseURL",
+												"type": "Expression"
 											}
 										}
 									}
