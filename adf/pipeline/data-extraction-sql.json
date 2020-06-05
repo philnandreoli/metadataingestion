@@ -58,7 +58,7 @@
 							"type": "Copy",
 							"dependsOn": [
 								{
-									"activity": "Web1",
+									"activity": "Start Logging of Activities",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -131,7 +131,7 @@
 							]
 						},
 						{
-							"name": "Web1",
+							"name": "Start Logging of Activities",
 							"type": "WebActivity",
 							"dependsOn": [],
 							"policy": {
@@ -141,7 +141,24 @@
 								"secureOutput": false,
 								"secureInput": false
 							},
-							"userProperties": []
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+									"type": "Expression"
+								},
+								"method": "POST",
+								"headers": {
+									"Authorization": {
+										"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+										"type": "Expression"
+									}
+								},
+								"body": {
+									"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', item().sourcingInformation.sourceSchemaName, '.', item().sourcingInformation.sourceObject, '\", \"childDestinationObjectName\": \"/', item().landingZone.containerName, '/', item().landingZone.destination, '/', pipeline().parameters.sourceDatabaseName, '/', item().landingZone.fileName, '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+									"type": "Expression"
+								}
+							}
 						}
 					]
 				}
