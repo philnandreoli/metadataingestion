@@ -56,7 +56,14 @@
 						{
 							"name": "extract sql tables",
 							"type": "Copy",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Web1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "7.00:00:00",
 								"retry": 0,
@@ -122,6 +129,23 @@
 									}
 								}
 							]
+						},
+						{
+							"name": "Web1",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"linkedServices": [],
+								"datasets": []
+							}
 						}
 					]
 				}
@@ -195,6 +219,10 @@
 			"LogId": {
 				"type": "string",
 				"defaultValue": "5ecfed961e8b9a4cfcad5e87"
+			},
+			"BearerToken": {
+				"type": "string",
+				"defaultValue": "1234"
 			}
 		},
 		"variables": {
