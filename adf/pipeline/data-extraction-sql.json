@@ -191,6 +191,10 @@
 			"sourceDatabaseName": {
 				"type": "string",
 				"defaultValue": "WorldWideImporters"
+			},
+			"LogId": {
+				"type": "string",
+				"defaultValue": "5ecfed961e8b9a4cfcad5e87"
 			}
 		},
 		"variables": {
