@@ -1,0 +1,45 @@
+{
+	"name": "azure_sql_table",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "worldwide_importers_db",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"databaseConnectionStringSecretName": {
+					"value": "@dataset().connectionString",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"schema": {
+				"type": "string",
+				"defaultValue": "etl"
+			},
+			"objectName": {
+				"type": "string",
+				"defaultValue": "customers"
+			},
+			"connectionString": {
+				"type": "string",
+				"defaultValue": "WorldWideImportersConnectionString"
+			}
+		},
+		"folder": {
+			"name": "data-extraction"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().schema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().objectName",
+				"type": "Expression"
+			}
+		}
+	}
+}

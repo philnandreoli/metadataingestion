@@ -1,0 +1,26 @@
+{
+	"name": "worldwide_importers_db",
+	"properties": {
+		"parameters": {
+			"databaseConnectionStringSecretName": {
+				"type": "string",
+				"defaultValue": "WorldWideImportersConnectionString"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "key_vault_secrets",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().databaseConnectionStringSecretName",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}
