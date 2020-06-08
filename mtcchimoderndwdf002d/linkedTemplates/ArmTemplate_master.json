@@ -7,17 +7,29 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf002d"
 		},
-		"data_lake_storage_account_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://mtcchidatalake001d.dfs.core.windows.net"
+		"meta_data_configuration_api_servicePrincipalKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'servicePrincipalKey' of 'meta_data_configuration_api'"
 		},
-		"key_vault_secrets_properties_typeProperties_baseUrl": {
+		"meta_data_configuration_api_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://mtcchimoderndwkv001d.vault.azure.net/"
+			"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api"
 		},
-		"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
+		"meta_data_configuration_api_properties_typeProperties_servicePrincipalId": {
 			"type": "string",
-			"defaultValue": "MetaDataConfigurationConnectionString"
+			"defaultValue": "ee2b0038-b224-481f-9dfb-af27ecda8123"
+		},
+		"meta_data_configuration_api_properties_typeProperties_tenant": {
+			"type": "string",
+			"defaultValue": "9367acf5-9e6b-4e3f-a344-94da27f8a0eb"
+		},
+		"meta_data_configuration_api_properties_typeProperties_aadResourceId": {
+			"type": "string",
+			"defaultValue": "ee2b0038-b224-481f-9dfb-af27ecda8123"
+		},
+		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "@linkedService().databaseConnectionStringSecretName"
 		},
 		"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
@@ -27,9 +39,17 @@
 			"type": "string",
 			"defaultValue": "MetaDataConfiguration"
 		},
-		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
+		"key_vault_secrets_properties_typeProperties_baseUrl": {
 			"type": "string",
-			"defaultValue": "@linkedService().databaseConnectionStringSecretName"
+			"defaultValue": "https://mtcchimoderndwkv001d.vault.azure.net/"
+		},
+		"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "MetaDataConfigurationConnectionString"
+		},
+		"data_lake_storage_account_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://mtcchidatalake001d.dfs.core.windows.net"
 		},
 		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 			"type": "string",
@@ -78,14 +98,29 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"data_lake_storage_account_properties_typeProperties_url": {
-						"value": "[parameters('data_lake_storage_account_properties_typeProperties_url')]"
+					"meta_data_configuration_api_servicePrincipalKey": {
+						"value": "[parameters('meta_data_configuration_api_servicePrincipalKey')]"
+					},
+					"meta_data_configuration_api_properties_typeProperties_url": {
+						"value": "[parameters('meta_data_configuration_api_properties_typeProperties_url')]"
+					},
+					"meta_data_configuration_api_properties_typeProperties_servicePrincipalId": {
+						"value": "[parameters('meta_data_configuration_api_properties_typeProperties_servicePrincipalId')]"
+					},
+					"meta_data_configuration_api_properties_typeProperties_tenant": {
+						"value": "[parameters('meta_data_configuration_api_properties_typeProperties_tenant')]"
+					},
+					"meta_data_configuration_api_properties_typeProperties_aadResourceId": {
+						"value": "[parameters('meta_data_configuration_api_properties_typeProperties_aadResourceId')]"
 					},
 					"key_vault_secrets_properties_typeProperties_baseUrl": {
 						"value": "[parameters('key_vault_secrets_properties_typeProperties_baseUrl')]"
 					},
-					"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
-						"value": "[parameters('meta_data_configuration_db_properties_typeProperties_connectionString_secretName')]"
+					"data_lake_storage_account_properties_typeProperties_url": {
+						"value": "[parameters('data_lake_storage_account_properties_typeProperties_url')]"
+					},
+					"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('worldwide_importers_db_properties_typeProperties_connectionString_secretName')]"
 					},
 					"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
 						"value": "[parameters('meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName')]"
@@ -93,8 +128,8 @@
 					"meta_data_configuration_db_v2_properties_typeProperties_database": {
 						"value": "[parameters('meta_data_configuration_db_v2_properties_typeProperties_database')]"
 					},
-					"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
-						"value": "[parameters('worldwide_importers_db_properties_typeProperties_connectionString_secretName')]"
+					"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('meta_data_configuration_db_properties_typeProperties_connectionString_secretName')]"
 					}
 				}
 			},
