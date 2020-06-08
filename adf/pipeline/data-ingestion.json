@@ -123,16 +123,12 @@
 															"value": "@pipeline().RunId",
 															"type": "Expression"
 														},
-														"loggingBaseURL": {
-															"value": "@pipeline().parameters.loggingBaseURL",
-															"type": "Expression"
-														},
-														"bearerToken": {
-															"value": "@variables('bearerToken')",
-															"type": "Expression"
-														},
 														"LogId": {
 															"value": "@activity('Start Logging of Activities').output.data._id",
+															"type": "Expression"
+														},
+														"loggingBaseURL": {
+															"value": "@pipeline().parameters.loggingBaseURL",
 															"type": "Expression"
 														}
 													}
