@@ -92,19 +92,19 @@
 															"type": "Expression"
 														},
 														"rawDestination": {
-															"value": "@activity('File Lookup and Start Execution Log').output.value[0].RawZoneDestination",
+															"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.destination",
 															"type": "Expression"
 														},
 														"rawDestinationFileName": {
-															"value": "@activity('File Lookup and Start Execution Log').output.value[0].RawZoneFileName",
+															"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.fileName",
 															"type": "Expression"
 														},
 														"columnCount": {
-															"value": "@activity('File Lookup and Start Execution Log').output.value[0].ColumnCount",
+															"value": "@activity('Retrieve the Meta Data About the File').output.data[0].columnCount",
 															"type": "Expression"
 														},
 														"loadType": {
-															"value": "@activity('File Lookup and Start Execution Log').output.value[0].LoadType",
+															"value": "@activity('Retrieve the Meta Data About the File').output.data[0].sourcingInformation.loadType",
 															"type": "Expression"
 														},
 														"ingestionContainerName": {
@@ -112,7 +112,7 @@
 															"type": "Expression"
 														},
 														"ingestionOutputContainerName": {
-															"value": "@activity('File Lookup and Start Execution Log').output.value[0].RawZoneContainerName",
+															"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.containerName",
 															"type": "Expression"
 														},
 														"errorContainerName": {
@@ -121,6 +121,14 @@
 														},
 														"parentDataFactoryRunId": {
 															"value": "@pipeline().RunId",
+															"type": "Expression"
+														},
+														"loggingBaseURL": {
+															"value": "@pipeline().parameters.loggingBaseURL",
+															"type": "Expression"
+														},
+														"bearerToken": {
+															"value": "@variables('bearerToken')",
 															"type": "Expression"
 														}
 													}
