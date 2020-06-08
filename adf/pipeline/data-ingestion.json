@@ -5,7 +5,14 @@
 			{
 				"name": "File Lookup and Start Execution Log",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Retrieve The Objects That Need to be Extracted",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.06:00:00",
 					"retry": 0,
@@ -544,6 +551,77 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "Start Logging of Activities",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set bearerToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs')",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"dataFactoryRunId\": \"', pipeline().RunId, '\", \"dataFactoryName\": \"', pipeline().DataFactory, '\", \"pipelineName\": \"', pipeline().Pipeline, '\", \"executionStatus\": \"In-Progress\", \"executionStartDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Retrieve The Objects That Need to be Extracted",
+				"description": "The web activity does not support OAuth2 therefore we pass the Bearer Token in the Header to get the data we need for the databaseType and sourceDatabaseName",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Start Logging of Activities",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL, 'sourcedatabases?sourceDatabaseName=', pipeline().parameters.databaseName, '&databaseType=', pipeline().parameters.databaseType)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"concurrency": 10,
@@ -575,6 +653,10 @@
 			"ClientSecret": {
 				"type": "string",
 				"defaultValue": "q~4Mw1F~4Cl.I61L2pdDOR-A3~VtG7mIw2"
+			},
+			"loggingBaseURL": {
+				"type": "string",
+				"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api/"
 			}
 		},
 		"variables": {
