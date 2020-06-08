@@ -1,0 +1,815 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mtcchimoderndwdf002d"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/data-extraction-sql')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "set objectToExtract",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "objectsToExtract",
+							"value": {
+								"value": "@pipeline().parameters.platformToExtract[0].sourceObjects",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "set keyVaultSecretName",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "keyVaultSecretName",
+							"value": {
+								"value": "@pipeline().parameters.platformToExtract[0].keyVaultSecretName",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "set objectToExtract",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "set keyVaultSecretName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@variables('objectsToExtract')",
+								"type": "Expression"
+							},
+							"batchCount": 5,
+							"activities": [
+								{
+									"name": "extract sql tables",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Start Logging of Activities",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"queryTimeout": "06:00:00"
+										},
+										"sink": {
+											"type": "AvroSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "AvroWriteSettings",
+												"quoteAllText": true
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "azure_sql_table",
+											"type": "DatasetReference",
+											"parameters": {
+												"schema": {
+													"value": "@item().sourcingInformation.sourceSchemaName",
+													"type": "Expression"
+												},
+												"objectName": {
+													"value": "@item().sourcingInformation.sourceObject",
+													"type": "Expression"
+												},
+												"connectionString": {
+													"value": "@variables('keyVaultSecretName')",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "avro_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@concat(item().landingZone.destination, '/', pipeline().parameters.sourceDatabaseName)",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@item().landingZone.fileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@item().landingZone.containerName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "Start Logging of Activities",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+											"type": "Expression"
+										},
+										"method": "POST",
+										"headers": {
+											"Authorization": {
+												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+												"type": "Expression"
+											}
+										},
+										"body": {
+											"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', item().sourcingInformation.sourceSchemaName, '.', item().sourcingInformation.sourceObject, '\", \"childDestinationObjectName\": \"/', item().landingZone.containerName, item().landingZone.destination, pipeline().parameters.sourceDatabaseName, '/', item().landingZone.fileName, '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Success Logging Activity",
+									"type": "WebActivity",
+									"dependsOn": [
+										{
+											"activity": "extract sql tables",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+											"type": "Expression"
+										},
+										"method": "PATCH",
+										"headers": {
+											"Authorization": {
+												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+												"type": "Expression"
+											}
+										},
+										"body": {
+											"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Success Logging Activity_copy1",
+									"type": "WebActivity",
+									"dependsOn": [
+										{
+											"activity": "extract sql tables",
+											"dependencyConditions": [
+												"Failed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+											"type": "Expression"
+										},
+										"method": "PATCH",
+										"headers": {
+											"Authorization": {
+												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+												"type": "Expression"
+											}
+										},
+										"body": {
+											"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"platformToExtract": {
+						"type": "array",
+						"defaultValue": [
+							{
+								"_id": "5ecfcfa73e095f1d78ff3521",
+								"sourceDatabaseName": "WorldWideImporters",
+								"sourceObjects": [
+									{
+										"sourcingInformation": {
+											"sourceSchemaName": "etl",
+											"sourceObject": "customers",
+											"loadType": "full"
+										},
+										"landingZone": {
+											"fileName": "customers.avro",
+											"destination": "/",
+											"fileType": "avro",
+											"containerName": "landing"
+										},
+										"rawZone": {
+											"fileName": "customers.parquet",
+											"destination": "/WorldWideImporters/Customers",
+											"fileType": "parquet",
+											"containerName": "raw"
+										},
+										"_id": "5ecfea681e8b9a4cfcad5e86",
+										"name": "Customers",
+										"description": "Worldwide Importers Customer Information",
+										"columnCount": 29
+									},
+									{
+										"sourcingInformation": {
+											"sourceSchemaName": "etl",
+											"sourceObject": "invoices",
+											"loadType": "incremental"
+										},
+										"landingZone": {
+											"fileName": "invoices.avro",
+											"destination": "/",
+											"fileType": "avro",
+											"containerName": "landing"
+										},
+										"rawZone": {
+											"fileName": "invoices.parquet",
+											"destination": "/WorldWideImporters/Invoices",
+											"fileType": "parquet",
+											"containerName": "raw"
+										},
+										"_id": "5ecfed961e8b9a4cfcad5e87",
+										"name": "Invoices",
+										"description": "Worldwide Importers Invoices Information",
+										"columnCount": 29
+									}
+								],
+								"keyVaultSecretName": "WorldWideImportersConnectionString",
+								"serverName": "mtcchioltp001d.database.windows.net",
+								"databaseType": "SqlServer"
+							}
+						]
+					},
+					"sourceDatabaseName": {
+						"type": "string",
+						"defaultValue": "WorldWideImporters"
+					},
+					"LogId": {
+						"type": "string",
+						"defaultValue": "5ecfed961e8b9a4cfcad5e87"
+					},
+					"BearerToken": {
+						"type": "string",
+						"defaultValue": "1234"
+					},
+					"loggingBaseURL": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"objectsToExtract": {
+						"type": "Array",
+						"defaultValue": [
+							{
+								"sourcingInformation": {
+									"sourceSchemaName": "etl",
+									"sourceObject": "customers",
+									"loadType": "full"
+								},
+								"landingZone": {
+									"fileName": "customers.avro",
+									"destination": "/",
+									"fileType": "avro",
+									"containerName": "landing"
+								},
+								"rawZone": {
+									"fileName": "customers.parquet",
+									"destination": "/WorldWideImporters/Customers",
+									"fileType": "parquet",
+									"containerName": "raw"
+								},
+								"_id": "5ecfea681e8b9a4cfcad5e86",
+								"name": "Customers",
+								"description": "Worldwide Importers Customer Information",
+								"columnCount": 29
+							},
+							{
+								"sourcingInformation": {
+									"sourceSchemaName": "etl",
+									"sourceObject": "invoices",
+									"loadType": "incremental"
+								},
+								"landingZone": {
+									"fileName": "invoices.avro",
+									"destination": "/",
+									"fileType": "avro",
+									"containerName": "landing"
+								},
+								"rawZone": {
+									"fileName": "invoices.parquet",
+									"destination": "/WorldWideImporters/Invoices",
+									"fileType": "parquet",
+									"containerName": "raw"
+								},
+								"_id": "5ecfed961e8b9a4cfcad5e87",
+								"name": "Invoices",
+								"description": "Worldwide Importers Invoices Information",
+								"columnCount": 29
+							}
+						]
+					},
+					"keyVaultSecretName": {
+						"type": "String",
+						"defaultValue": "WorldWideImportersConnectionString"
+					},
+					"sourceDatabaseName": {
+						"type": "String",
+						"defaultValue": "WorldWideImporters"
+					}
+				},
+				"folder": {
+					"name": "data-extraction"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/azure_sql_table')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data-extraction')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Retrieve Bearer Token",
+						"description": "The Web Activity does not support OAuth authentication therefore it is a two step process.   Retrieve the bearer token and then use it wherever it is needed.",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/token')",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/x-www-form-urlencoded"
+							},
+							"body": {
+								"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&resource=',pipeline().parameters.ClientId,'&client_secret=',pipeline().parameters.ClientSecret)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set bearerToken",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Retrieve Bearer Token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "bearerToken",
+							"value": {
+								"value": "@activity('Retrieve Bearer Token').output.access_token",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Retrieve The Objects That Need to be Extracted",
+						"description": "The web activity does not support OAuth2 therefore we pass the Bearer Token in the Header to get the data we need for the databaseType and sourceDatabaseName",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Start Logging of Activities",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'sourcedatabases?sourceDatabaseName=', pipeline().parameters.databaseName, '&databaseType=', pipeline().parameters.databaseType)",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Switch to the Correct DataSource Type Pipeline",
+						"type": "Switch",
+						"dependsOn": [
+							{
+								"activity": "Retrieve The Objects That Need to be Extracted",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"on": {
+								"value": "@pipeline().parameters.databaseType",
+								"type": "Expression"
+							},
+							"cases": [
+								{
+									"value": "SqlServer",
+									"activities": [
+										{
+											"name": "data-extraction-sql",
+											"type": "ExecutePipeline",
+											"dependsOn": [],
+											"userProperties": [],
+											"typeProperties": {
+												"pipeline": {
+													"referenceName": "data-extraction-sql",
+													"type": "PipelineReference"
+												},
+												"waitOnCompletion": true,
+												"parameters": {
+													"platformToExtract": {
+														"value": "@activity('Retrieve The Objects That Need to be Extracted').output.data",
+														"type": "Expression"
+													},
+													"sourceDatabaseName": {
+														"value": "@pipeline().parameters.databaseName",
+														"type": "Expression"
+													},
+													"LogId": {
+														"value": "@activity('Start Logging of Activities').output.data._id",
+														"type": "Expression"
+													},
+													"BearerToken": {
+														"value": "@variables('bearerToken')",
+														"type": "Expression"
+													},
+													"loggingBaseURL": {
+														"value": "@pipeline().parameters.loggingBaseURL",
+														"type": "Expression"
+													}
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Start Logging of Activities",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Set bearerToken",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs')",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"dataFactoryRunId\": \"', pipeline().RunId, '\", \"dataFactoryName\": \"', pipeline().DataFactory, '\", \"pipelineName\": \"', pipeline().Pipeline, '\", \"executionStatus\": \"In-Progress\", \"executionStartDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "End Logging Activities with Success",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Switch to the Correct DataSource Type Pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"executionStatus\": \"Success\", \"executionEndDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "End Logging Activities with Failure",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Switch to the Correct DataSource Type Pipeline",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"executionStatus\": \"Failure\", \"executionEndDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"concurrency": 6,
+				"parameters": {
+					"databaseName": {
+						"type": "string",
+						"defaultValue": "WorldWideImporters"
+					},
+					"databaseType": {
+						"type": "string",
+						"defaultValue": "SqlServer"
+					},
+					"metadataConfigurationsContainer": {
+						"type": "string",
+						"defaultValue": "metadata-configurations"
+					},
+					"TenantId": {
+						"type": "string",
+						"defaultValue": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+					},
+					"ClientId": {
+						"type": "string",
+						"defaultValue": "d7384dff-2ec6-4d61-9fb2-ddd94364905a"
+					},
+					"ClientSecret": {
+						"type": "string",
+						"defaultValue": "q~4Mw1F~4Cl.I61L2pdDOR-A3~VtG7mIw2"
+					},
+					"loggingBaseURL": {
+						"type": "string",
+						"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api/"
+					}
+				},
+				"variables": {
+					"bearerToken": {
+						"type": "String",
+						"defaultValue": "1234532"
+					},
+					"objectsToExtract": {
+						"type": "Array"
+					}
+				},
+				"folder": {
+					"name": "data-extraction"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/data-extraction-sql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/azure_sql_table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "worldwide_importers_db",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"databaseConnectionStringSecretName": {
+							"value": "@dataset().connectionString",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"schema": {
+						"type": "string",
+						"defaultValue": "etl"
+					},
+					"objectName": {
+						"type": "string",
+						"defaultValue": "customers"
+					},
+					"connectionString": {
+						"type": "string",
+						"defaultValue": "WorldWideImportersConnectionString"
+					}
+				},
+				"folder": {
+					"name": "data-extraction"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().schema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().objectName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/worldwide_importers_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/meta_data_configuration_db_v2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "CosmosDbMongoDbApi",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "MetaDataConfigurationMongoDB"
+					},
+					"database": "MetaDataConfiguration"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/worldwide_importers_db')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"databaseConnectionStringSecretName": {
+						"type": "string",
+						"defaultValue": "WorldWideImportersConnectionString"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().databaseConnectionStringSecretName",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

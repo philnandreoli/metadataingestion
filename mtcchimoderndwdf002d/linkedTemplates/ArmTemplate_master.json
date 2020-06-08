@@ -19,6 +19,18 @@
 			"type": "string",
 			"defaultValue": "MetaDataConfigurationConnectionString"
 		},
+		"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "MetaDataConfigurationMongoDB"
+		},
+		"meta_data_configuration_db_v2_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "MetaDataConfiguration"
+		},
+		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "@linkedService().databaseConnectionStringSecretName"
+		},
 		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 			"type": "string",
 			"defaultValue": "@triggerBody().folderPath"
@@ -75,6 +87,33 @@
 					"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
 						"value": "[parameters('meta_data_configuration_db_properties_typeProperties_connectionString_secretName')]"
 					},
+					"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName')]"
+					},
+					"meta_data_configuration_db_v2_properties_typeProperties_database": {
+						"value": "[parameters('meta_data_configuration_db_v2_properties_typeProperties_database')]"
+					},
+					"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('worldwide_importers_db_properties_typeProperties_connectionString_secretName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
 					"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFolder')]"
 					},
@@ -92,7 +131,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_0')]"
+			]
 		}
 	]
 }
