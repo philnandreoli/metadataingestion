@@ -271,7 +271,7 @@
 						}
 					},
 					"body": {
-						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, pipeline().parameters.fileName, ',\"childDestinationObjectName\": ', pipeline().parameters.ingestionOutputContainerName,variables('calculatedPath'),pipeline().parameters.rawDestinationFileName,'\",\"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')\n\n\n",
+						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, pipeline().parameters.fileName, '\",\"childDestinationObjectName\": \"', pipeline().parameters.ingestionOutputContainerName,variables('calculatedPath'),pipeline().parameters.rawDestinationFileName,'\",\"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')\n\n\n",
 						"type": "Expression"
 					}
 				}
