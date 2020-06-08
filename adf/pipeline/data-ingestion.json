@@ -496,6 +496,54 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "Retrieve Bearer Token",
+				"description": "The Web Activity does not support OAuth authentication therefore it is a two step process.   Retrieve the bearer token and then use it wherever it is needed.",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/token')",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&resource=',pipeline().parameters.ClientId,'&client_secret=',pipeline().parameters.ClientSecret)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set bearerToken",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Retrieve Bearer Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "bearerToken",
+					"value": {
+						"value": "@activity('Retrieve Bearer Token').output.access_token",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"concurrency": 10,
@@ -515,12 +563,27 @@
 			"errorContainerName": {
 				"type": "string",
 				"defaultValue": "error"
+			},
+			"TenantId": {
+				"type": "string",
+				"defaultValue": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+			},
+			"ClientId": {
+				"type": "string",
+				"defaultValue": "d7384dff-2ec6-4d61-9fb2-ddd94364905a"
+			},
+			"ClientSecret": {
+				"type": "string",
+				"defaultValue": "q~4Mw1F~4Cl.I61L2pdDOR-A3~VtG7mIw2"
 			}
 		},
 		"variables": {
 			"ingestionFolderPath": {
 				"type": "String",
 				"defaultValue": "/"
+			},
+			"bearerToken": {
+				"type": "String"
 			}
 		},
 		"folder": {
