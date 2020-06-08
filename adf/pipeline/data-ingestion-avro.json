@@ -365,6 +365,9 @@
 			},
 			"loggingBaseURL": {
 				"type": "string"
+			},
+			"BearerToken": {
+				"type": "string"
 			}
 		},
 		"variables": {
