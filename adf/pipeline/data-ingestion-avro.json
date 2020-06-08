@@ -57,7 +57,7 @@
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "Create The New Path Based On Load Type",
+						"activity": "Get Avro File Metadata",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -229,14 +229,7 @@
 			{
 				"name": "Create The New Path Based On Load Type",
 				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Get Avro File Metadata",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "calculatedPath",
@@ -249,7 +242,14 @@
 			{
 				"name": "Start Logging of Activities",
 				"type": "WebActivity",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Create The New Path Based On Load Type",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -271,7 +271,7 @@
 						}
 					},
 					"body": {
-						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', item().sourcingInformation.sourceSchemaName, '.', item().sourcingInformation.sourceObject, '\", \"childDestinationObjectName\": \"/', item().landingZone.containerName, item().landingZone.destination, pipeline().parameters.sourceDatabaseName, '/', item().landingZone.fileName, '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, pipeline().parameters.fileName, ',\"childDestinationObjectName\": ', pipeline().parameters.ingestionOutputContainerName,variables('calculatedPath'),pipeline().parameters.rawDestinationFileName,'\",\"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')\n\n\n",
 						"type": "Expression"
 					}
 				}
