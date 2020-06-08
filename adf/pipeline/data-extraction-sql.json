@@ -198,7 +198,7 @@
 							}
 						},
 						{
-							"name": "Success Logging Activity_copy1",
+							"name": "Failure Logging Activity",
 							"type": "WebActivity",
 							"dependsOn": [
 								{
