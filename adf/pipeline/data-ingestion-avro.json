@@ -247,49 +247,6 @@
 				}
 			},
 			{
-				"name": "End the Child Execution Log",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "FileSize gt 0 and ColumnCount Expected",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dbo].[EndChildExecutionLog]",
-					"storedProcedureParameters": {
-						"DataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().RunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"ParentDataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().parameters.parentDataFactoryRunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "meta_data_configuration_db",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
 				"name": "Start Logging of Activities",
 				"type": "WebActivity",
 				"dependsOn": [],
@@ -315,6 +272,80 @@
 					},
 					"body": {
 						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', item().sourcingInformation.sourceSchemaName, '.', item().sourcingInformation.sourceObject, '\", \"childDestinationObjectName\": \"/', item().landingZone.containerName, item().landingZone.destination, pipeline().parameters.sourceDatabaseName, '/', item().landingZone.fileName, '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Success Logging Activity",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "FileSize gt 0 and ColumnCount Expected",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Failure Logging Activity",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "FileSize gt 0 and ColumnCount Expected",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
 						"type": "Expression"
 					}
 				}
@@ -365,6 +396,9 @@
 				"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api/"
 			},
 			"bearerToken": {
+				"type": "string"
+			},
+			"LogId": {
 				"type": "string"
 			}
 		},
