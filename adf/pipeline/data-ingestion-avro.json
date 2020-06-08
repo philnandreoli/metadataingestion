@@ -363,6 +363,9 @@
 			"loggingBaseURL": {
 				"type": "string",
 				"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api/"
+			},
+			"bearerToken": {
+				"type": "string"
 			}
 		},
 		"variables": {
