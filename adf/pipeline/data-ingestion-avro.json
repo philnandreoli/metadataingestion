@@ -316,7 +316,14 @@
 			{
 				"name": "Failure Logging Activity",
 				"type": "WebActivity",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "FileSize gt 0 and ColumnCount Expected",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
