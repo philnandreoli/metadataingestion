@@ -400,7 +400,7 @@
 					{
 						"activity": "Did we find a record in the file lookup",
 						"dependencyConditions": [
-							"Succeeded"
+							"Failed"
 						]
 					}
 				],
