@@ -7,7 +7,7 @@
 				"type": "GetMetadata",
 				"dependsOn": [
 					{
-						"activity": "Create The Child Execution Log",
+						"activity": "Start Logging of Activities",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -247,70 +247,6 @@
 				}
 			},
 			{
-				"name": "Create The Child Execution Log",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dbo].[CreateChildExecutionLog]",
-					"storedProcedureParameters": {
-						"DataFactoryName": {
-							"value": {
-								"value": "@pipeline().DataFactory",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"DataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().RunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"ExecutionStartDateTime": {
-							"value": {
-								"value": "@utcnow()",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"FileName": {
-							"value": {
-								"value": "@pipeline().parameters.fileName",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"ParentDataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().parameters.parentDataFactoryRunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"PipelineName": {
-							"value": {
-								"value": "@pipeline().Pipeline",
-								"type": "Expression"
-							},
-							"type": "String"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "meta_data_configuration_db",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
 				"name": "End the Child Execution Log",
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
@@ -351,6 +287,36 @@
 				"linkedServiceName": {
 					"referenceName": "meta_data_configuration_db",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Start Logging of Activities",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', item().sourcingInformation.sourceSchemaName, '.', item().sourcingInformation.sourceObject, '\", \"childDestinationObjectName\": \"/', item().landingZone.containerName, item().landingZone.destination, pipeline().parameters.sourceDatabaseName, '/', item().landingZone.fileName, '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -393,6 +359,10 @@
 			"parentDataFactoryRunId": {
 				"type": "string",
 				"defaultValue": "864d42c4-6177-417a-8bf2-36881ca5ba64"
+			},
+			"loggingBaseURL": {
+				"type": "string",
+				"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api/"
 			}
 		},
 		"variables": {
