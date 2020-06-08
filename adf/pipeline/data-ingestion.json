@@ -3,111 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "File Lookup and Start Execution Log",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "Retrieve The Objects That Need to be Extracted",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.06:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderStoredProcedureName": "[dbo].[GetFileInformation]",
-						"storedProcedureParameters": {
-							"DataFactoryName": {
-								"type": "String",
-								"value": {
-									"value": "@pipeline().DataFactory",
-									"type": "Expression"
-								}
-							},
-							"DataFactoryRunId": {
-								"type": "String",
-								"value": {
-									"value": "@pipeline().RunId",
-									"type": "Expression"
-								}
-							},
-							"ExecutionStartDateTime": {
-								"type": "String",
-								"value": {
-									"value": "@pipeline().TriggerTime",
-									"type": "Expression"
-								}
-							},
-							"FileName": {
-								"type": "String",
-								"value": {
-									"value": "@pipeline().parameters.sourceFile",
-									"type": "Expression"
-								}
-							},
-							"PipelineName": {
-								"type": "String",
-								"value": {
-									"value": "@pipeline().Pipeline",
-									"type": "Expression"
-								}
-							}
-						},
-						"queryTimeout": "02:00:00"
-					},
-					"dataset": {
-						"referenceName": "configuration_lookup",
-						"type": "DatasetReference"
-					},
-					"firstRowOnly": false
-				}
-			},
-			{
-				"name": "End Execution Log",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "Did we find a record in the file lookup",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dbo].[EndExecutionLog]",
-					"storedProcedureParameters": {
-						"DataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().RunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "meta_data_configuration_db",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
 				"name": "Did we find a record in the file lookup",
 				"type": "IfCondition",
 				"dependsOn": [
@@ -121,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@greater(length(activity('File Lookup and Start Execution Log').output.value), 0)",
+						"value": "@greater(length(activity('Retrieve the Meta Data About the File').output.data[0].name), 0)",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
@@ -169,7 +64,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"on": {
-									"value": "@toUpper(activity('File Lookup and Start Execution Log').output.value[0].FileType)",
+									"value": "@toUpper(activity('Retrieve the Meta Data About the File').output.data[0].landingZone.fileType)",
 									"type": "Expression"
 								},
 								"cases": [
@@ -489,7 +384,7 @@
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "File Lookup and Start Execution Log",
+						"activity": "Retrieve the Meta Data About the File",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -611,7 +506,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"url": {
-						"value": "@concat(pipeline().parameters.loggingBaseURL, 'sourcedatabases?sourceDatabaseName=', pipeline().parameters.databaseName, '&databaseType=', pipeline().parameters.databaseType)",
+						"value": "@concat(pipeline().parameters.loggingBaseURL, 'sourcedatabases?sourceDatabaseName=', replace(pipeline().parameters.sourceFolder, '/', ''))",
 						"type": "Expression"
 					},
 					"method": "GET",
@@ -620,6 +515,114 @@
 							"value": "@concat('Bearer ', variables('bearerToken'))",
 							"type": "Expression"
 						}
+					}
+				}
+			},
+			{
+				"name": "Retrieve the Meta Data About the File",
+				"description": "The web activity does not support OAuth2 therefore we pass the Bearer Token in the Header to get the data we need for the databaseType and sourceDatabaseName",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Retrieve The Objects That Need to be Extracted",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL, 'sourcedatabases/', activity('Retrieve The Objects That Need to be Extracted').output.data[0]._id, '/sourceobjects?landingZoneFileName=', pipeline().parameters.sourceFile)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "End Logging Activities with Success",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Did we find a record in the file lookup",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"executionStatus\": \"Success\", \"executionEndDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "End Logging Activities with Failure",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Did we find a record in the file lookup",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', variables('bearerToken'))",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"executionStatus\": \"Failure\", \"executionEndDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
 					}
 				}
 			}
