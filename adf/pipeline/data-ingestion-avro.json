@@ -7,7 +7,7 @@
 				"type": "GetMetadata",
 				"dependsOn": [
 					{
-						"activity": "Start Logging of Activities",
+						"activity": "Create The Child Execution Log",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -57,7 +57,7 @@
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "Get Avro File Metadata",
+						"activity": "Create The New Path Based On Load Type",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -229,22 +229,93 @@
 			{
 				"name": "Create The New Path Based On Load Type",
 				"type": "SetVariable",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Get Avro File Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "calculatedPath",
 					"value": {
-						"value": "@if(equals(pipeline().parameters.loadType,'FULL'), pipeline().parameters.rawDestination, concat(pipeline().parameters.rawDestination, formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/'))",
+						"value": "@if(equals(toUpper(pipeline().parameters.loadType),'FULL'), pipeline().parameters.rawDestination, concat(pipeline().parameters.rawDestination, formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/'))",
 						"type": "Expression"
 					}
 				}
 			},
 			{
-				"name": "Start Logging of Activities",
-				"type": "WebActivity",
+				"name": "Create The Child Execution Log",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[CreateChildExecutionLog]",
+					"storedProcedureParameters": {
+						"DataFactoryName": {
+							"value": {
+								"value": "@pipeline().DataFactory",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"DataFactoryRunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ExecutionStartDateTime": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"FileName": {
+							"value": {
+								"value": "@pipeline().parameters.fileName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ParentDataFactoryRunId": {
+							"value": {
+								"value": "@pipeline().parameters.parentDataFactoryRunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "meta_data_configuration_db",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "End the Child Execution Log",
+				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "Create The New Path Based On Load Type",
+						"activity": "FileSize gt 0 and ColumnCount Expected",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -259,95 +330,27 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": {
-						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
-						"type": "Expression"
-					},
-					"method": "POST",
-					"headers": {
-						"Authorization": {
-							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
-							"type": "Expression"
+					"storedProcedureName": "[dbo].[EndChildExecutionLog]",
+					"storedProcedureParameters": {
+						"DataFactoryRunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ParentDataFactoryRunId": {
+							"value": {
+								"value": "@pipeline().parameters.parentDataFactoryRunId",
+								"type": "Expression"
+							},
+							"type": "String"
 						}
-					},
-					"body": {
-						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, pipeline().parameters.fileName, '\",\"childDestinationObjectName\": \"', pipeline().parameters.ingestionOutputContainerName,variables('calculatedPath'),pipeline().parameters.rawDestinationFileName,'\",\"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')\n\n\n",
-						"type": "Expression"
 					}
-				}
-			},
-			{
-				"name": "Success Logging Activity",
-				"type": "WebActivity",
-				"dependsOn": [
-					{
-						"activity": "FileSize gt 0 and ColumnCount Expected",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
 				},
-				"userProperties": [],
-				"typeProperties": {
-					"url": {
-						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
-						"type": "Expression"
-					},
-					"method": "PATCH",
-					"headers": {
-						"Authorization": {
-							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
-							"type": "Expression"
-						}
-					},
-					"body": {
-						"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
-						"type": "Expression"
-					}
-				}
-			},
-			{
-				"name": "Failure Logging Activity",
-				"type": "WebActivity",
-				"dependsOn": [
-					{
-						"activity": "FileSize gt 0 and ColumnCount Expected",
-						"dependencyConditions": [
-							"Failed"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"url": {
-						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
-						"type": "Expression"
-					},
-					"method": "PATCH",
-					"headers": {
-						"Authorization": {
-							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
-							"type": "Expression"
-						}
-					},
-					"body": {
-						"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
-						"type": "Expression"
-					}
+				"linkedServiceName": {
+					"referenceName": "meta_data_configuration_db",
+					"type": "LinkedServiceReference"
 				}
 			}
 		],
@@ -390,16 +393,6 @@
 			"parentDataFactoryRunId": {
 				"type": "string",
 				"defaultValue": "864d42c4-6177-417a-8bf2-36881ca5ba64"
-			},
-			"loggingBaseURL": {
-				"type": "string",
-				"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api/"
-			},
-			"bearerToken": {
-				"type": "string"
-			},
-			"LogId": {
-				"type": "string"
 			}
 		},
 		"variables": {
