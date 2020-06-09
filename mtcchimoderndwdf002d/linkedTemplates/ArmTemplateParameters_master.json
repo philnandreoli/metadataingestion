@@ -5,29 +5,8 @@
 		"factoryName": {
 			"value": "mtcchimoderndwdf002d"
 		},
-		"meta_data_configuration_api_servicePrincipalKey": {
-			"value": ""
-		},
-		"meta_data_configuration_api_properties_typeProperties_url": {
-			"value": "https://data-engineering-dev.api.adventuresinazure.com/api"
-		},
-		"meta_data_configuration_api_properties_typeProperties_servicePrincipalId": {
-			"value": "ee2b0038-b224-481f-9dfb-af27ecda8123"
-		},
-		"meta_data_configuration_api_properties_typeProperties_tenant": {
-			"value": "9367acf5-9e6b-4e3f-a344-94da27f8a0eb"
-		},
-		"meta_data_configuration_api_properties_typeProperties_aadResourceId": {
-			"value": "ee2b0038-b224-481f-9dfb-af27ecda8123"
-		},
-		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
-			"value": "@linkedService().databaseConnectionStringSecretName"
-		},
-		"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
-			"value": "MetaDataConfigurationMongoDB"
-		},
-		"meta_data_configuration_db_v2_properties_typeProperties_database": {
-			"value": "MetaDataConfiguration"
+		"data_lake_storage_account_properties_typeProperties_url": {
+			"value": "https://mtcchidatalake001d.dfs.core.windows.net"
 		},
 		"key_vault_secrets_properties_typeProperties_baseUrl": {
 			"value": "https://mtcchimoderndwkv001d.vault.azure.net/"
@@ -35,8 +14,14 @@
 		"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
 			"value": "MetaDataConfigurationConnectionString"
 		},
-		"data_lake_storage_account_properties_typeProperties_url": {
-			"value": "https://mtcchidatalake001d.dfs.core.windows.net"
+		"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
+			"value": "MetaDataConfigurationMongoDB"
+		},
+		"meta_data_configuration_db_v2_properties_typeProperties_database": {
+			"value": "MetaDataConfiguration"
+		},
+		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
+			"value": "@linkedService().databaseConnectionStringSecretName"
 		},
 		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 			"value": "@triggerBody().folderPath"
