@@ -175,6 +175,45 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "Success Logging Activity",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Delete the landing file",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Ungoverned\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+						"type": "Expression"
+					},
+					"linkedServices": [],
+					"datasets": []
+				}
 			}
 		],
 		"parameters": {
