@@ -139,6 +139,9 @@
 												}
 											}
 										]
+									},
+									{
+										"value": "PARQUET"
 									}
 								],
 								"defaultActivities": [
