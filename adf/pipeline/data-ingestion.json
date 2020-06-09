@@ -51,6 +51,18 @@
 									"parentDataFactoryRunId": {
 										"value": "@pipeline().RunId",
 										"type": "Expression"
+									},
+									"LogId": {
+										"value": "@activity('Start Logging of Activities').output.data._id",
+										"type": "Expression"
+									},
+									"LoggingBaseURL": {
+										"value": "@pipeline().parameters.loggingBaseURL",
+										"type": "Expression"
+									},
+									"BearerToken": {
+										"value": "@variables('bearerToken')",
+										"type": "Expression"
 									}
 								}
 							}
@@ -244,6 +256,18 @@
 												},
 												"parentDataFactoryRunId": {
 													"value": "@pipeline().RunId",
+													"type": "Expression"
+												},
+												"LogId": {
+													"value": "@activity('Start Logging of Activities').output.data._id",
+													"type": "Expression"
+												},
+												"LoggingBaseURL": {
+													"value": "@pipeline().parameters.loggingBaseURL",
+													"type": "Expression"
+												},
+												"BearerToken": {
+													"value": "@variables('bearerToken')",
 													"type": "Expression"
 												}
 											}
