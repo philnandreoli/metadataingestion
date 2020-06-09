@@ -3,11 +3,11 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get Parquet File MetaData",
+				"name": "Get Avro File Metadata",
 				"type": "GetMetadata",
 				"dependsOn": [
 					{
-						"activity": "Create Child Execution Log",
+						"activity": "Start Logging of Activities",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -23,7 +23,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "parquet_ingestion_input_file",
+						"referenceName": "avro_ingestion_input_file",
 						"type": "DatasetReference",
 						"parameters": {
 							"filePath": {
@@ -41,10 +41,10 @@
 						}
 					},
 					"fieldList": [
-						"columnCount",
 						"size",
-						"structure",
-						"itemName"
+						"columnCount",
+						"itemName",
+						"structure"
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
@@ -53,31 +53,11 @@
 				}
 			},
 			{
-				"name": "Set The Path Based on the LoadType",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Get Parquet File MetaData",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "calculatedPath",
-					"value": {
-						"value": "@if(equals(pipeline().parameters.loadType,'FULL'), pipeline().parameters.rawDestination, concat(pipeline().parameters.rawDestination, formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/'))",
-						"type": "Expression"
-					}
-				}
-			},
-			{
 				"name": "FileSize gt 0 and ColumnCount Expected",
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "Set The Path Based on the LoadType",
+						"activity": "Get Avro File Metadata",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -86,7 +66,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@and(greater(activity('Get Parquet File MetaData').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Parquet File MetaData').output.columnCount))",
+						"value": "@and(greater(activity('Get Avro File Metadata').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.columnCount))",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
@@ -128,7 +108,7 @@
 					],
 					"ifTrueActivities": [
 						{
-							"name": "Copy Parquet File From Landing to Raw",
+							"name": "Copy Avro to Raw Zone",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -141,7 +121,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"source": {
-									"type": "ParquetSource",
+									"type": "AvroSource",
 									"storeSettings": {
 										"type": "AzureBlobFSReadSettings",
 										"recursive": false,
@@ -151,14 +131,15 @@
 								"sink": {
 									"type": "ParquetSink",
 									"storeSettings": {
-										"type": "AzureBlobFSWriteSettings"
+										"type": "AzureBlobFSWriteSettings",
+										"blockSizeInMB": 75
 									}
 								},
 								"enableStaging": false
 							},
 							"inputs": [
 								{
-									"referenceName": "parquet_ingestion_input_file",
+									"referenceName": "avro_ingestion_input_file",
 									"type": "DatasetReference",
 									"parameters": {
 										"filePath": {
@@ -178,13 +159,9 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "data_ingestion_raw_output_file_parquet",
+									"referenceName": "parquet_ingestion_input_file",
 									"type": "DatasetReference",
 									"parameters": {
-										"containerName": {
-											"value": "@pipeline().parameters.ingestionOutputContainerName",
-											"type": "Expression"
-										},
 										"filePath": {
 											"value": "@pipeline().parameters.rawDestination",
 											"type": "Expression"
@@ -192,17 +169,21 @@
 										"fileName": {
 											"value": "@pipeline().parameters.rawDestinationFileName",
 											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@pipeline().parameters.ingestionOutputContainerName",
+											"type": "Expression"
 										}
 									}
 								}
 							]
 						},
 						{
-							"name": "Delete Landing File",
+							"name": "Delete Ingestion FIle",
 							"type": "Delete",
 							"dependsOn": [
 								{
-									"activity": "Copy Parquet File From Landing to Raw",
+									"activity": "Copy Avro to Raw Zone",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -218,7 +199,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"dataset": {
-									"referenceName": "parquet_ingestion_input_file",
+									"referenceName": "avro_ingestion_input_file",
 									"type": "DatasetReference",
 									"parameters": {
 										"filePath": {
@@ -238,7 +219,7 @@
 								"enableLogging": false,
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
-									"recursive": false
+									"recursive": true
 								}
 							}
 						}
@@ -246,9 +227,29 @@
 				}
 			},
 			{
-				"name": "Create Child Execution Log",
-				"type": "SqlServerStoredProcedure",
+				"name": "Create The New Path Based On Load Type",
+				"type": "SetVariable",
 				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "calculatedPath",
+					"value": {
+						"value": "@concat(pipeline().parameters.rawDestination, '/', formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Start Logging of Activities",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Create The New Path Based On Load Type",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -258,60 +259,26 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[dbo].[CreateChildExecutionLog]",
-					"storedProcedureParameters": {
-						"DataFactoryName": {
-							"value": {
-								"value": "@pipeline().DataFactory",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"DataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().RunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"ExecutionStartDateTime": {
-							"value": {
-								"value": "@utcnow()",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"FileName": {
-							"value": {
-								"value": "@pipeline().parameters.fileName",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"ParentDataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().parameters.parentDataFactoryRunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"PipelineName": {
-							"value": {
-								"value": "@pipeline().Pipeline",
-								"type": "Expression"
-							},
-							"type": "String"
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+							"type": "Expression"
 						}
+					},
+					"body": {
+						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"/', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, '/', pipeline().parameters.fileName, '\", \"childDestinationObjectName\": \"/', pipeline().parameters.ingestionOutputContainerName, variables('calculatedPath'), pipeline().parameters.rawDestinationFileName,  '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+						"type": "Expression"
 					}
-				},
-				"linkedServiceName": {
-					"referenceName": "meta_data_configuration_db",
-					"type": "LinkedServiceReference"
 				}
 			},
 			{
-				"name": "End Child Execution Log",
-				"type": "SqlServerStoredProcedure",
+				"name": "Success Logging Activity",
+				"type": "WebActivity",
 				"dependsOn": [
 					{
 						"activity": "FileSize gt 0 and ColumnCount Expected",
@@ -329,27 +296,58 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[dbo].[EndChildExecutionLog]",
-					"storedProcedureParameters": {
-						"DataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().RunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
-						"ParentDataFactoryRunId": {
-							"value": {
-								"value": "@pipeline().parameters.parentDataFactoryRunId",
-								"type": "Expression"
-							},
-							"type": "String"
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+							"type": "Expression"
 						}
+					},
+					"body": {
+						"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "Failure Logging Activity",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "FileSize gt 0 and ColumnCount Expected",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
 				},
-				"linkedServiceName": {
-					"referenceName": "meta_data_configuration_db",
-					"type": "LinkedServiceReference"
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+						"type": "Expression"
+					},
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -392,6 +390,15 @@
 			"parentDataFactoryRunId": {
 				"type": "string",
 				"defaultValue": "864d42c4-6177-417a-8bf2-36881ca5ba64"
+			},
+			"LogId": {
+				"type": "string"
+			},
+			"loggingBaseURL": {
+				"type": "string"
+			},
+			"BearerToken": {
+				"type": "string"
 			}
 		},
 		"variables": {
