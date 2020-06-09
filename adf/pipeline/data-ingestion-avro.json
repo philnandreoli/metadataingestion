@@ -234,7 +234,7 @@
 				"typeProperties": {
 					"variableName": "calculatedPath",
 					"value": {
-						"value": "@if(equals(pipeline().parameters.loadType,'full'), pipeline().parameters.rawDestination, concat(pipeline().parameters.rawDestination, formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/'))",
+						"value": "@concat(pipeline().parameters.rawDestination, formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/')",
 						"type": "Expression"
 					}
 				}
