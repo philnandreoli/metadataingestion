@@ -234,7 +234,7 @@
 				"typeProperties": {
 					"variableName": "calculatedPath",
 					"value": {
-						"value": "@concat(pipeline().parameters.rawDestination, formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/')",
+						"value": "@concat(pipeline().parameters.rawDestination, '/', formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/')",
 						"type": "Expression"
 					}
 				}
@@ -271,7 +271,7 @@
 						}
 					},
 					"body": {
-						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, pipeline().parameters.fileName, '\", \"childDestinationObjectName\": \"/', pipeline().parameters.ingestionOutputContainerName, variables('calculatedPath'), '/', pipeline().parameters.rawDestinationFileName,  '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+						"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, '/', pipeline().parameters.fileName, '\", \"childDestinationObjectName\": \"/', pipeline().parameters.ingestionOutputContainerName, variables('calculatedPath'), pipeline().parameters.rawDestinationFileName,  '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
 						"type": "Expression"
 					}
 				}
