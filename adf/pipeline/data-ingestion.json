@@ -314,7 +314,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"url": {
-						"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/token')",
+						"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/v2.0/token')",
 						"type": "Expression"
 					},
 					"method": "POST",
@@ -322,7 +322,7 @@
 						"Content-Type": "application/x-www-form-urlencoded"
 					},
 					"body": {
-						"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&resource=',pipeline().parameters.ClientId,'&client_secret=',pipeline().parameters.ClientSecret)",
+						"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&scope=api://',pipeline().parameters.ClientId,'/.default&client_secret=',pipeline().parameters.ClientSecret)",
 						"type": "Expression"
 					}
 				}
