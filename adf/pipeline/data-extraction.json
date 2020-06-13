@@ -17,7 +17,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"url": {
-						"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/token')",
+						"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/v2.0/token')",
 						"type": "Expression"
 					},
 					"method": "POST",
@@ -25,7 +25,7 @@
 						"Content-Type": "application/x-www-form-urlencoded"
 					},
 					"body": {
-						"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&resource=',pipeline().parameters.ClientId,'&client_secret=',pipeline().parameters.ClientSecret)",
+						"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&scope=api://',pipeline().parameters.ClientId,'/.default&client_secret=',pipeline().parameters.ClientSecret)",
 						"type": "Expression"
 					}
 				}
@@ -273,15 +273,15 @@
 			},
 			"TenantId": {
 				"type": "string",
-				"defaultValue": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+				"defaultValue": "9367acf5-9e6b-4e3f-a344-94da27f8a0eb"
 			},
 			"ClientId": {
 				"type": "string",
-				"defaultValue": "d7384dff-2ec6-4d61-9fb2-ddd94364905a"
+				"defaultValue": "15814337-9995-4df6-bf82-a08f33f9b2d1"
 			},
 			"ClientSecret": {
 				"type": "string",
-				"defaultValue": "q~4Mw1F~4Cl.I61L2pdDOR-A3~VtG7mIw2"
+				"defaultValue": "6N_4~dXVT5n-Fd4It~T76.5E_iKmF9_yGf"
 			},
 			"loggingBaseURL": {
 				"type": "string",
