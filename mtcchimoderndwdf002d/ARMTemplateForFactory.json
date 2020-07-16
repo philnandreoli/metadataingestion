@@ -477,9 +477,7 @@
 							"body": {
 								"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&scope=api://',pipeline().parameters.ClientId,'/.default&client_secret=',pipeline().parameters.ClientSecret)",
 								"type": "Expression"
-							},
-							"linkedServices": [],
-							"datasets": []
+							}
 						}
 					},
 					{
@@ -2571,24 +2569,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/worldwide_importers_db')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/configuration_lookup')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "meta_data_configuration_db",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/meta_data_configuration_db')]"
 			]
 		},
 		{
