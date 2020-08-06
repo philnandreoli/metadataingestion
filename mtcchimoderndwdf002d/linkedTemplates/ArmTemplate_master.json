@@ -53,7 +53,7 @@
 		},
 		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
 			"type": "string",
-			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss')"
+			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
 		},
 		"containerUri": {
 			"type": "string",

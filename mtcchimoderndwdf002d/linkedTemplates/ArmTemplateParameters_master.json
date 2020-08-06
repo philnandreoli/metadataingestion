@@ -39,7 +39,7 @@
 			"value": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
 		},
 		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
-			"value": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss')"
+			"value": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
 		},
 		"containerUri": {
 			"value": ""
