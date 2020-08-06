@@ -9,7 +9,7 @@
 				"type": "PipelineReference"
 			},
 			"parameters": {
-				"startDateTime": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss')"
+				"startDateTime": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
 			}
 		},
 		"type": "TumblingWindowTrigger",
