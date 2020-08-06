@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Notebook1",
+				"name": "process-iot-events",
 				"type": "DatabricksNotebook",
 				"dependsOn": [],
 				"policy": {
@@ -28,6 +28,12 @@
 				}
 			}
 		],
+		"parameters": {
+			"startDateTime": {
+				"type": "string",
+				"defaultValue": "2020-08-05 03:00:00"
+			}
+		},
 		"annotations": []
 	}
 }
