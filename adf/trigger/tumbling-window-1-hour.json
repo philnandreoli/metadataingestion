@@ -18,7 +18,7 @@
 			"interval": 1,
 			"startTime": "2020-08-05T03:00:00.000Z",
 			"delay": "00:00:00",
-			"maxConcurrency": 50,
+			"maxConcurrency": 1,
 			"retryPolicy": {
 				"intervalInSeconds": 30
 			},
