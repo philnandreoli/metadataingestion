@@ -5,7 +5,7 @@
 		"runtimeState": "Started",
 		"pipeline": {
 			"pipelineReference": {
-				"referenceName": "pipeline2",
+				"referenceName": "process-iot-events",
 				"type": "PipelineReference"
 			},
 			"parameters": {
