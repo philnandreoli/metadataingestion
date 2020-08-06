@@ -28,7 +28,7 @@
 				}
 			}
 		],
-		"concurrency": 5,
+		"concurrency": 1,
 		"parameters": {
 			"startDateTime": {
 				"type": "string",
