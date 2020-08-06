@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf002d"
 		},
+		"databricks_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'databricks'"
+		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://mtcchidatalake001d.dfs.core.windows.net"
@@ -51,6 +55,10 @@
 			"type": "string",
 			"defaultValue": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
 		},
+		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
+			"type": "string",
+			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss')"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -78,6 +86,9 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"databricks_accessToken": {
+						"value": "[parameters('databricks_accessToken')]"
+					},
 					"data_lake_storage_account_properties_typeProperties_url": {
 						"value": "[parameters('data_lake_storage_account_properties_typeProperties_url')]"
 					},
@@ -95,6 +106,9 @@
 					},
 					"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
 						"value": "[parameters('worldwide_importers_db_properties_typeProperties_connectionString_secretName')]"
+					},
+					"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
+						"value": "[parameters('tumbling-window-1-hour_properties_pipeline_parameters_startDateTime')]"
 					}
 				}
 			},

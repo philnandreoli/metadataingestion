@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "mtcchimoderndwdf002d"
 		},
+		"databricks_accessToken": {
+			"value": ""
+		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"value": "https://mtcchidatalake001d.dfs.core.windows.net"
 		},
@@ -37,6 +40,9 @@
 		},
 		"landing_file_pickup_properties_typeProperties_scope": {
 			"value": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
+		},
+		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
+			"value": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss')"
 		}
 	}
 }
