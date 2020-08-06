@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"notebookPath": "/Users/phandreo@microsoft.com/batchprocessing",
 					"baseParameters": {
-						"executionDateTime": "2020-08-05 03:00",
+						"executionDateTime": "2020-08-06 03:00",
 						"iotraweventlocations": "/mnt/raw-zone/iotevents/",
 						"iotporcessedlocations": "/mnt/exploration-zone/delta-lake/environment-sensor/"
 					}
