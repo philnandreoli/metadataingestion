@@ -1,0 +1,130 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mtcchimoderndwdf002d"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/process-iot-events')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "process-iot-events",
+						"type": "DatabricksNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/phandreo@microsoft.com/batchprocessing",
+							"baseParameters": {
+								"executionDateTime": {
+									"value": "@pipeline().parameters.startDateTime",
+									"type": "Expression"
+								},
+								"iotraweventlocations": "abfss://raw@andrdatalake001d.dfs.core.windows.net/iotevents/",
+								"iotporcessedlocations": "abfss://exploration@andrdatalake001d.dfs.core.windows.net/delta-lake/environment-sensor/"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "databricks",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"concurrency": 1,
+				"parameters": {
+					"startDateTime": {
+						"type": "string",
+						"defaultValue": "2020-08-05 03:00:00"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/databricks')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/databricks')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-6393053478803514.14.azuredatabricks.net",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "databricks",
+						"secretVersion": "a311dd203b1c4d6abf113e7873711425"
+					},
+					"instancePoolId": "0806-153306-geode373-pool-KRKLmD5e",
+					"newClusterNumOfWorker": "2",
+					"newClusterSparkConf": {
+						"fs.azure.account.key.andrdatalake001d.dfs.core.windows.net": "askZROyq8oZ+mOuAjLDjUZbmPSGeLnZ5UGUXMTWcQSDV4hYhVFzYSzfXKJqgkdFxrDZhiIB9B3c2qCKtXAhi8g==",
+						"fs.azure.createRemoteFileSystemDuringInitialization": "true",
+						"spark.databricks.delta.preview.enabled": "true"
+					},
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
+					"newClusterVersion": "7.1.x-scala2.12"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling-window-1-hour')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "process-iot-events",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"startDateTime": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss')"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 1,
+					"startTime": "2020-08-05T03:00:00.000Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 1,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/process-iot-events')]"
+			]
+		}
+	]
+}

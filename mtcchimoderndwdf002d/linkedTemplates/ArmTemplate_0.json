@@ -7,10 +7,6 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf002d"
 		},
-		"databricks_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'databricks'"
-		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://mtcchidatalake001d.dfs.core.windows.net"
@@ -34,10 +30,6 @@
 		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "@linkedService().databaseConnectionStringSecretName"
-		},
-		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
-			"type": "string",
-			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss')"
 		}
 	},
 	"variables": {
@@ -58,35 +50,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/databricks')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureDatabricks",
-				"typeProperties": {
-					"domain": "https://adb-6393053478803514.14.azuredatabricks.net",
-					"accessToken": {
-						"type": "SecureString",
-						"value": "[parameters('databricks_accessToken')]"
-					},
-					"newClusterNodeType": "Standard_DS3_v2",
-					"newClusterNumOfWorker": "2:3",
-					"newClusterSparkConf": {
-						"fs.azure.account.key.andrdatalake001d.dfs.core.windows.net": "askZROyq8oZ+mOuAjLDjUZbmPSGeLnZ5UGUXMTWcQSDV4hYhVFzYSzfXKJqgkdFxrDZhiIB9B3c2qCKtXAhi8g==",
-						"fs.azure.createRemoteFileSystemDuringInitialization": "true",
-						"spark.databricks.delta.preview.enabled": "true"
-					},
-					"newClusterSparkEnvVars": {
-						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
-					},
-					"newClusterVersion": "7.1.x-scala2.12",
-					"newClusterDriverNodeType": "Standard_DS3_v2"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/key_vault_secrets')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -98,51 +61,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/process-iot-events')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "process-iot-events",
-						"type": "DatabricksNotebook",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Users/phandreo@microsoft.com/batchprocessing",
-							"baseParameters": {
-								"executionDateTime": "2020-08-05 03:00",
-								"iotraweventlocations": "abfss://raw@andrdatalake001d.dfs.core.windows.net/iotevents/",
-								"iotporcessedlocations": "abfss://exploration@andrdatalake001d.dfs.core.windows.net/delta-lake/environment-sensor/"
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "databricks",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"concurrency": 5,
-				"parameters": {
-					"startDateTime": {
-						"type": "string",
-						"defaultValue": "2020-08-05 03:00:00"
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/databricks')]"
-			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/avro_ingestion_input_file')]",
@@ -576,6 +494,41 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/databricks')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-6393053478803514.14.azuredatabricks.net",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "databricks",
+						"secretVersion": "a311dd203b1c4d6abf113e7873711425"
+					},
+					"instancePoolId": "0806-153306-geode373-pool-KRKLmD5e",
+					"newClusterNumOfWorker": "2",
+					"newClusterSparkConf": {
+						"fs.azure.account.key.andrdatalake001d.dfs.core.windows.net": "askZROyq8oZ+mOuAjLDjUZbmPSGeLnZ5UGUXMTWcQSDV4hYhVFzYSzfXKJqgkdFxrDZhiIB9B3c2qCKtXAhi8g==",
+						"fs.azure.createRemoteFileSystemDuringInitialization": "true",
+						"spark.databricks.delta.preview.enabled": "true"
+					},
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
+					"newClusterVersion": "7.1.x-scala2.12"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/meta_data_configuration_db')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -917,6 +870,54 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/process-iot-events')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "process-iot-events",
+						"type": "DatabricksNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/phandreo@microsoft.com/batchprocessing",
+							"baseParameters": {
+								"executionDateTime": {
+									"value": "@pipeline().parameters.startDateTime",
+									"type": "Expression"
+								},
+								"iotraweventlocations": "abfss://raw@andrdatalake001d.dfs.core.windows.net/iotevents/",
+								"iotporcessedlocations": "abfss://exploration@andrdatalake001d.dfs.core.windows.net/delta-lake/environment-sensor/"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "databricks",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"concurrency": 1,
+				"parameters": {
+					"startDateTime": {
+						"type": "string",
+						"defaultValue": "2020-08-05 03:00:00"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/databricks')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/azure_sql_table')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -964,39 +965,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/worldwide_importers_db')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/tumbling-window-1-hour')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipeline": {
-					"pipelineReference": {
-						"referenceName": "process-iot-events",
-						"type": "PipelineReference"
-					},
-					"parameters": {
-						"startDateTime": "[parameters('tumbling-window-1-hour_properties_pipeline_parameters_startDateTime')]"
-					}
-				},
-				"type": "TumblingWindowTrigger",
-				"typeProperties": {
-					"frequency": "Hour",
-					"interval": 1,
-					"startTime": "2020-08-05T03:00:00.000Z",
-					"delay": "00:00:00",
-					"maxConcurrency": 50,
-					"retryPolicy": {
-						"intervalInSeconds": 30
-					},
-					"dependsOn": []
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/process-iot-events')]"
 			]
 		},
 		{
@@ -1821,6 +1789,439 @@
 				"[concat(variables('factoryId'), '/datasets/avro_ingestion_input_file')]",
 				"[concat(variables('factoryId'), '/pipelines/data-ingestion-error')]",
 				"[concat(variables('factoryId'), '/datasets/data_ingestion_raw_output_file_parquet')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data-ingestion-parquet')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Avro File Metadata",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "Start Logging of Activities",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "avro_ingestion_input_file",
+								"type": "DatasetReference",
+								"parameters": {
+									"filePath": {
+										"value": "@pipeline().parameters.filePath",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"containerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"size",
+								"columnCount",
+								"itemName",
+								"structure"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true
+							}
+						}
+					},
+					{
+						"name": "FileSize gt 0 and ColumnCount Expected",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Get Avro File Metadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@and(greater(activity('Get Avro File Metadata').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.columnCount))",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "execute data ingestion error",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-error",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.ingestionContainerName",
+												"type": "Expression"
+											},
+											"fileName": {
+												"value": "@pipeline().parameters.fileName",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.filePath",
+												"type": "Expression"
+											},
+											"errorContainerName": {
+												"value": "@pipeline().parameters.errorContainerName",
+												"type": "Expression"
+											},
+											"parentDataFactoryRunId": {
+												"value": "@pipeline().parameters.parentDataFactoryRunId",
+												"type": "Expression"
+											},
+											"LogId": {
+												"value": "@activity('Start Logging of Activities').output.data._id",
+												"type": "Expression"
+											},
+											"LoggingBaseURL": {
+												"value": "@pipeline().parameters.loggingBaseURL",
+												"type": "Expression"
+											},
+											"BearerToken": {
+												"value": "@pipeline().parameters.BearerToken",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Copy Avro to Raw Zone",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AvroSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": false,
+												"enablePartitionDiscovery": false
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings",
+												"blockSizeInMB": 75
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "avro_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.filePath",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.fileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionContainerName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "parquet_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.rawDestination",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.rawDestinationFileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionOutputContainerName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "Delete Ingestion FIle",
+									"type": "Delete",
+									"dependsOn": [
+										{
+											"activity": "Copy Avro to Raw Zone",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "avro_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.filePath",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.fileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionContainerName",
+													"type": "Expression"
+												}
+											}
+										},
+										"enableLogging": false,
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Create The New Path Based On Load Type",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "calculatedPath",
+							"value": {
+								"value": "@concat(pipeline().parameters.rawDestination, '/', formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Start Logging of Activities",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Create The New Path Based On Load Type",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"/', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, '/', pipeline().parameters.fileName, '\", \"childDestinationObjectName\": \"/', pipeline().parameters.ingestionOutputContainerName, variables('calculatedPath'), pipeline().parameters.rawDestinationFileName,  '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Success Logging Activity",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "FileSize gt 0 and ColumnCount Expected",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Failure Logging Activity",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "FileSize gt 0 and ColumnCount Expected",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"fileName": {
+						"type": "string",
+						"defaultValue": "buyinggroups.avro"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"rawDestination": {
+						"type": "string",
+						"defaultValue": "WorldWideImporters/buyinggroups/"
+					},
+					"rawDestinationFileName": {
+						"type": "string",
+						"defaultValue": "buyinggroups.parquet"
+					},
+					"columnCount": {
+						"type": "int",
+						"defaultValue": 5
+					},
+					"loadType": {
+						"type": "string",
+						"defaultValue": "FULL"
+					},
+					"ingestionContainerName": {
+						"type": "string",
+						"defaultValue": "landing"
+					},
+					"ingestionOutputContainerName": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"errorContainerName": {
+						"type": "string",
+						"defaultValue": "error"
+					},
+					"parentDataFactoryRunId": {
+						"type": "string",
+						"defaultValue": "864d42c4-6177-417a-8bf2-36881ca5ba64"
+					},
+					"LogId": {
+						"type": "string"
+					},
+					"loggingBaseURL": {
+						"type": "string"
+					},
+					"BearerToken": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"calculatedPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/avro_ingestion_input_file')]",
+				"[concat(variables('factoryId'), '/pipelines/data-ingestion-error')]",
+				"[concat(variables('factoryId'), '/datasets/parquet_ingestion_input_file')]"
 			]
 		}
 	]

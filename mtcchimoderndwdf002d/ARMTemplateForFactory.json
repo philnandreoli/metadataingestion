@@ -7,10 +7,6 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf002d"
 		},
-		"databricks_accessToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accessToken' of 'databricks'"
-		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://mtcchidatalake001d.dfs.core.windows.net"
@@ -2503,7 +2499,10 @@
 						"typeProperties": {
 							"notebookPath": "/Users/phandreo@microsoft.com/batchprocessing",
 							"baseParameters": {
-								"executionDateTime": "2020-08-05 03:00",
+								"executionDateTime": {
+									"value": "@pipeline().parameters.startDateTime",
+									"type": "Expression"
+								},
 								"iotraweventlocations": "abfss://raw@andrdatalake001d.dfs.core.windows.net/iotevents/",
 								"iotporcessedlocations": "abfss://exploration@andrdatalake001d.dfs.core.windows.net/delta-lake/environment-sensor/"
 							}
@@ -2514,7 +2513,7 @@
 						}
 					}
 				],
-				"concurrency": 5,
+				"concurrency": 1,
 				"parameters": {
 					"startDateTime": {
 						"type": "string",
@@ -3031,11 +3030,16 @@
 				"typeProperties": {
 					"domain": "https://adb-6393053478803514.14.azuredatabricks.net",
 					"accessToken": {
-						"type": "SecureString",
-						"value": "[parameters('databricks_accessToken')]"
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "databricks",
+						"secretVersion": "a311dd203b1c4d6abf113e7873711425"
 					},
-					"newClusterNodeType": "Standard_DS3_v2",
-					"newClusterNumOfWorker": "2:3",
+					"instancePoolId": "0806-153306-geode373-pool-KRKLmD5e",
+					"newClusterNumOfWorker": "2",
 					"newClusterSparkConf": {
 						"fs.azure.account.key.andrdatalake001d.dfs.core.windows.net": "askZROyq8oZ+mOuAjLDjUZbmPSGeLnZ5UGUXMTWcQSDV4hYhVFzYSzfXKJqgkdFxrDZhiIB9B3c2qCKtXAhi8g==",
 						"fs.azure.createRemoteFileSystemDuringInitialization": "true",
@@ -3044,11 +3048,12 @@
 					"newClusterSparkEnvVars": {
 						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
 					},
-					"newClusterVersion": "7.1.x-scala2.12",
-					"newClusterDriverNodeType": "Standard_DS3_v2"
+					"newClusterVersion": "7.1.x-scala2.12"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/key_vault_secrets')]",
@@ -3196,7 +3201,7 @@
 					"interval": 1,
 					"startTime": "2020-08-05T03:00:00.000Z",
 					"delay": "00:00:00",
-					"maxConcurrency": 50,
+					"maxConcurrency": 1,
 					"retryPolicy": {
 						"intervalInSeconds": 30
 					},

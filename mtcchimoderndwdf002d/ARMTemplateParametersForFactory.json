@@ -5,9 +5,6 @@
 		"factoryName": {
 			"value": "mtcchimoderndwdf002d"
 		},
-		"databricks_accessToken": {
-			"value": ""
-		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"value": "https://mtcchidatalake001d.dfs.core.windows.net"
 		},
