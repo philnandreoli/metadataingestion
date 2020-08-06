@@ -1,5 +1,5 @@
 {
-	"name": "pipeline2",
+	"name": "process-iot-events",
 	"properties": {
 		"activities": [
 			{
@@ -28,6 +28,7 @@
 				}
 			}
 		],
+		"concurrency": 5,
 		"parameters": {
 			"startDateTime": {
 				"type": "string",
