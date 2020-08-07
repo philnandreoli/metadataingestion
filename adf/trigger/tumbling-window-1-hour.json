@@ -1,6 +1,7 @@
 {
 	"name": "tumbling-window-1-hour",
 	"properties": {
+		"description": "updated",
 		"annotations": [],
 		"runtimeState": "Started",
 		"pipeline": {
