@@ -521,7 +521,10 @@
 					"newClusterSparkEnvVars": {
 						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
 					},
-					"newClusterVersion": "7.1.x-scala2.12"
+					"newClusterVersion": "7.1.x-scala2.12",
+					"newClusterInitScripts": [
+						"dbfs:/databricks/spark-monitoring/spark-monitoring.sh"
+					]
 				}
 			},
 			"dependsOn": [
