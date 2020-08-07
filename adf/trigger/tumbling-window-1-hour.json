@@ -2,7 +2,7 @@
 	"name": "tumbling-window-1-hour",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipeline": {
 			"pipelineReference": {
 				"referenceName": "process-iot-events",
