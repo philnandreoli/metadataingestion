@@ -1,0 +1,3166 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mtcchimoderndwdf001d"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/data-extraction-sql')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "set objectToExtract",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "objectsToExtract",
+							"value": {
+								"value": "@pipeline().parameters.platformToExtract[0].sourceObjects",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "set keyVaultSecretName",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "keyVaultSecretName",
+							"value": {
+								"value": "@pipeline().parameters.platformToExtract[0].keyVaultSecretName",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "set objectToExtract",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "set keyVaultSecretName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@variables('objectsToExtract')",
+								"type": "Expression"
+							},
+							"batchCount": 5,
+							"activities": [
+								{
+									"name": "extract sql tables",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Start Logging of Activities",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"queryTimeout": "06:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "AvroSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "AvroWriteSettings",
+												"quoteAllText": true
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "azure_sql_table",
+											"type": "DatasetReference",
+											"parameters": {
+												"schema": {
+													"value": "@item().sourcingInformation.sourceSchemaName",
+													"type": "Expression"
+												},
+												"objectName": {
+													"value": "@item().sourcingInformation.sourceObject",
+													"type": "Expression"
+												},
+												"connectionString": {
+													"value": "@variables('keyVaultSecretName')",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "avro_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@concat(item().landingZone.destination, '/', pipeline().parameters.sourceDatabaseName)",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@item().landingZone.fileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@item().landingZone.containerName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "Start Logging of Activities",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+											"type": "Expression"
+										},
+										"method": "POST",
+										"headers": {
+											"Authorization": {
+												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+												"type": "Expression"
+											}
+										},
+										"body": {
+											"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', item().sourcingInformation.sourceSchemaName, '.', item().sourcingInformation.sourceObject, '\", \"childDestinationObjectName\": \"/', item().landingZone.containerName, item().landingZone.destination, pipeline().parameters.sourceDatabaseName, '/', item().landingZone.fileName, '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Success Logging Activity",
+									"type": "WebActivity",
+									"dependsOn": [
+										{
+											"activity": "extract sql tables",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+											"type": "Expression"
+										},
+										"method": "PATCH",
+										"headers": {
+											"Authorization": {
+												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+												"type": "Expression"
+											}
+										},
+										"body": {
+											"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Failure Logging Activity",
+									"type": "WebActivity",
+									"dependsOn": [
+										{
+											"activity": "extract sql tables",
+											"dependencyConditions": [
+												"Failed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+											"type": "Expression"
+										},
+										"method": "PATCH",
+										"headers": {
+											"Authorization": {
+												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+												"type": "Expression"
+											}
+										},
+										"body": {
+											"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"platformToExtract": {
+						"type": "array",
+						"defaultValue": [
+							{
+								"_id": "5ecfcfa73e095f1d78ff3521",
+								"sourceDatabaseName": "WorldWideImporters",
+								"sourceObjects": [
+									{
+										"sourcingInformation": {
+											"sourceSchemaName": "etl",
+											"sourceObject": "customers",
+											"loadType": "full"
+										},
+										"landingZone": {
+											"fileName": "customers.avro",
+											"destination": "/",
+											"fileType": "avro",
+											"containerName": "landing"
+										},
+										"rawZone": {
+											"fileName": "customers.parquet",
+											"destination": "/WorldWideImporters/Customers",
+											"fileType": "parquet",
+											"containerName": "raw"
+										},
+										"_id": "5ecfea681e8b9a4cfcad5e86",
+										"name": "Customers",
+										"description": "Worldwide Importers Customer Information",
+										"columnCount": 29
+									},
+									{
+										"sourcingInformation": {
+											"sourceSchemaName": "etl",
+											"sourceObject": "invoices",
+											"loadType": "incremental"
+										},
+										"landingZone": {
+											"fileName": "invoices.avro",
+											"destination": "/",
+											"fileType": "avro",
+											"containerName": "landing"
+										},
+										"rawZone": {
+											"fileName": "invoices.parquet",
+											"destination": "/WorldWideImporters/Invoices",
+											"fileType": "parquet",
+											"containerName": "raw"
+										},
+										"_id": "5ecfed961e8b9a4cfcad5e87",
+										"name": "Invoices",
+										"description": "Worldwide Importers Invoices Information",
+										"columnCount": 29
+									}
+								],
+								"keyVaultSecretName": "WorldWideImportersConnectionString",
+								"serverName": "mtcchioltp001d.database.windows.net",
+								"databaseType": "SqlServer"
+							}
+						]
+					},
+					"sourceDatabaseName": {
+						"type": "string",
+						"defaultValue": "WorldWideImporters"
+					},
+					"LogId": {
+						"type": "string",
+						"defaultValue": "5ecfed961e8b9a4cfcad5e87"
+					},
+					"BearerToken": {
+						"type": "string",
+						"defaultValue": "1234"
+					},
+					"loggingBaseURL": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"objectsToExtract": {
+						"type": "Array",
+						"defaultValue": [
+							{
+								"sourcingInformation": {
+									"sourceSchemaName": "etl",
+									"sourceObject": "customers",
+									"loadType": "full"
+								},
+								"landingZone": {
+									"fileName": "customers.avro",
+									"destination": "/",
+									"fileType": "avro",
+									"containerName": "landing"
+								},
+								"rawZone": {
+									"fileName": "customers.parquet",
+									"destination": "/WorldWideImporters/Customers",
+									"fileType": "parquet",
+									"containerName": "raw"
+								},
+								"_id": "5ecfea681e8b9a4cfcad5e86",
+								"name": "Customers",
+								"description": "Worldwide Importers Customer Information",
+								"columnCount": 29
+							},
+							{
+								"sourcingInformation": {
+									"sourceSchemaName": "etl",
+									"sourceObject": "invoices",
+									"loadType": "incremental"
+								},
+								"landingZone": {
+									"fileName": "invoices.avro",
+									"destination": "/",
+									"fileType": "avro",
+									"containerName": "landing"
+								},
+								"rawZone": {
+									"fileName": "invoices.parquet",
+									"destination": "/WorldWideImporters/Invoices",
+									"fileType": "parquet",
+									"containerName": "raw"
+								},
+								"_id": "5ecfed961e8b9a4cfcad5e87",
+								"name": "Invoices",
+								"description": "Worldwide Importers Invoices Information",
+								"columnCount": 29
+							}
+						]
+					},
+					"keyVaultSecretName": {
+						"type": "String",
+						"defaultValue": "WorldWideImportersConnectionString"
+					},
+					"sourceDatabaseName": {
+						"type": "String",
+						"defaultValue": "WorldWideImporters"
+					}
+				},
+				"folder": {
+					"name": "data-extraction"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/azure_sql_table')]",
+				"[concat(variables('factoryId'), '/datasets/avro_ingestion_input_file')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data-extraction')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Retrieve Bearer Token",
+						"description": "The Web Activity does not support OAuth authentication therefore it is a two step process.   Retrieve the bearer token and then use it wherever it is needed.",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/v2.0/token')",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/x-www-form-urlencoded"
+							},
+							"body": {
+								"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&scope=api://',pipeline().parameters.ClientId,'/.default&client_secret=',pipeline().parameters.ClientSecret)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set bearerToken",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Retrieve Bearer Token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "bearerToken",
+							"value": {
+								"value": "@activity('Retrieve Bearer Token').output.access_token",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Retrieve The Objects That Need to be Extracted",
+						"description": "The web activity does not support OAuth2 therefore we pass the Bearer Token in the Header to get the data we need for the databaseType and sourceDatabaseName",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Start Logging of Activities",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'sourcedatabases?sourceDatabaseName=', pipeline().parameters.databaseName, '&databaseType=', pipeline().parameters.databaseType)",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Switch to the Correct DataSource Type Pipeline",
+						"type": "Switch",
+						"dependsOn": [
+							{
+								"activity": "Retrieve The Objects That Need to be Extracted",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"on": {
+								"value": "@pipeline().parameters.databaseType",
+								"type": "Expression"
+							},
+							"cases": [
+								{
+									"value": "SqlServer",
+									"activities": [
+										{
+											"name": "data-extraction-sql",
+											"type": "ExecutePipeline",
+											"dependsOn": [],
+											"userProperties": [],
+											"typeProperties": {
+												"pipeline": {
+													"referenceName": "data-extraction-sql",
+													"type": "PipelineReference"
+												},
+												"waitOnCompletion": true,
+												"parameters": {
+													"platformToExtract": {
+														"value": "@activity('Retrieve The Objects That Need to be Extracted').output.data",
+														"type": "Expression"
+													},
+													"sourceDatabaseName": {
+														"value": "@pipeline().parameters.databaseName",
+														"type": "Expression"
+													},
+													"LogId": {
+														"value": "@activity('Start Logging of Activities').output.data._id",
+														"type": "Expression"
+													},
+													"BearerToken": {
+														"value": "@variables('bearerToken')",
+														"type": "Expression"
+													},
+													"loggingBaseURL": {
+														"value": "@pipeline().parameters.loggingBaseURL",
+														"type": "Expression"
+													}
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Start Logging of Activities",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Set bearerToken",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs')",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"dataFactoryRunId\": \"', pipeline().RunId, '\", \"dataFactoryName\": \"', pipeline().DataFactory, '\", \"pipelineName\": \"', pipeline().Pipeline, '\", \"executionStatus\": \"In-Progress\", \"executionStartDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "End Logging Activities with Success",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Switch to the Correct DataSource Type Pipeline",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"executionStatus\": \"Success\", \"executionEndDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "End Logging Activities with Failure",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Switch to the Correct DataSource Type Pipeline",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"executionStatus\": \"Failure\", \"executionEndDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"concurrency": 6,
+				"parameters": {
+					"databaseName": {
+						"type": "string",
+						"defaultValue": "WorldWideImporters"
+					},
+					"databaseType": {
+						"type": "string",
+						"defaultValue": "SqlServer"
+					},
+					"metadataConfigurationsContainer": {
+						"type": "string",
+						"defaultValue": "metadata-configurations"
+					},
+					"TenantId": {
+						"type": "string",
+						"defaultValue": "9367acf5-9e6b-4e3f-a344-94da27f8a0eb"
+					},
+					"ClientId": {
+						"type": "string",
+						"defaultValue": "15814337-9995-4df6-bf82-a08f33f9b2d1"
+					},
+					"ClientSecret": {
+						"type": "string",
+						"defaultValue": "6N_4~dXVT5n-Fd4It~T76.5E_iKmF9_yGf"
+					},
+					"loggingBaseURL": {
+						"type": "string",
+						"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api/"
+					}
+				},
+				"variables": {
+					"bearerToken": {
+						"type": "String",
+						"defaultValue": "1234532"
+					},
+					"objectsToExtract": {
+						"type": "Array"
+					}
+				},
+				"folder": {
+					"name": "data-extraction"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/data-extraction-sql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data-ingestion-avro')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Avro File Metadata",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "Start Logging of Activities",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "avro_ingestion_input_file",
+								"type": "DatasetReference",
+								"parameters": {
+									"filePath": {
+										"value": "@pipeline().parameters.filePath",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"containerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"size",
+								"columnCount",
+								"itemName",
+								"structure"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true
+							}
+						}
+					},
+					{
+						"name": "FileSize gt 0 and ColumnCount Expected",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Get Avro File Metadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@and(greater(activity('Get Avro File Metadata').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.columnCount))",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "execute data ingestion error",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-error",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.ingestionContainerName",
+												"type": "Expression"
+											},
+											"fileName": {
+												"value": "@pipeline().parameters.fileName",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.filePath",
+												"type": "Expression"
+											},
+											"errorContainerName": {
+												"value": "@pipeline().parameters.errorContainerName",
+												"type": "Expression"
+											},
+											"parentDataFactoryRunId": {
+												"value": "@pipeline().parameters.parentDataFactoryRunId",
+												"type": "Expression"
+											},
+											"LogId": {
+												"value": "@activity('Start Logging of Activities').output.data._id",
+												"type": "Expression"
+											},
+											"LoggingBaseURL": {
+												"value": "@pipeline().parameters.loggingBaseURL",
+												"type": "Expression"
+											},
+											"BearerToken": {
+												"value": "@pipeline().parameters.BearerToken",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Copy Avro to Raw Zone",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AvroSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": false,
+												"enablePartitionDiscovery": false
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings",
+												"blockSizeInMB": 75
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "avro_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.filePath",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.fileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionContainerName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "data_ingestion_raw_output_file_parquet",
+											"type": "DatasetReference",
+											"parameters": {
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionOutputContainerName",
+													"type": "Expression"
+												},
+												"filePath": {
+													"value": "@variables('calculatedPath')",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.rawDestinationFileName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "Delete Ingestion FIle",
+									"type": "Delete",
+									"dependsOn": [
+										{
+											"activity": "Copy Avro to Raw Zone",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "avro_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.filePath",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.fileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionContainerName",
+													"type": "Expression"
+												}
+											}
+										},
+										"enableLogging": false,
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Create The New Path Based On Load Type",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "calculatedPath",
+							"value": {
+								"value": "@concat(pipeline().parameters.rawDestination, '/', formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Start Logging of Activities",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Create The New Path Based On Load Type",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"/', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, '/', pipeline().parameters.fileName, '\", \"childDestinationObjectName\": \"/', pipeline().parameters.ingestionOutputContainerName, variables('calculatedPath'), pipeline().parameters.rawDestinationFileName,  '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Success Logging Activity",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "FileSize gt 0 and ColumnCount Expected",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Failure Logging Activity",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "FileSize gt 0 and ColumnCount Expected",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"fileName": {
+						"type": "string",
+						"defaultValue": "buyinggroups.avro"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"rawDestination": {
+						"type": "string",
+						"defaultValue": "WorldWideImporters/buyinggroups/"
+					},
+					"rawDestinationFileName": {
+						"type": "string",
+						"defaultValue": "buyinggroups.parquet"
+					},
+					"columnCount": {
+						"type": "int",
+						"defaultValue": 5
+					},
+					"loadType": {
+						"type": "string",
+						"defaultValue": "FULL"
+					},
+					"ingestionContainerName": {
+						"type": "string",
+						"defaultValue": "landing"
+					},
+					"ingestionOutputContainerName": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"errorContainerName": {
+						"type": "string",
+						"defaultValue": "error"
+					},
+					"parentDataFactoryRunId": {
+						"type": "string",
+						"defaultValue": "864d42c4-6177-417a-8bf2-36881ca5ba64"
+					},
+					"LogId": {
+						"type": "string"
+					},
+					"loggingBaseURL": {
+						"type": "string"
+					},
+					"BearerToken": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"calculatedPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/avro_ingestion_input_file')]",
+				"[concat(variables('factoryId'), '/pipelines/data-ingestion-error')]",
+				"[concat(variables('factoryId'), '/datasets/data_ingestion_raw_output_file_parquet')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data-ingestion-error')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy Data From Landing To Error",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Start Logging of Activities",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "BinarySource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true
+								},
+								"formatSettings": {
+									"type": "BinaryReadSettings"
+								}
+							},
+							"sink": {
+								"type": "BinarySink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "error_ingestion_input_file",
+								"type": "DatasetReference",
+								"parameters": {
+									"filePath": {
+										"value": "@pipeline().parameters.filePath",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"containerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "data_ingestion_error_output_file",
+								"type": "DatasetReference",
+								"parameters": {
+									"containerName": {
+										"value": "@pipeline().parameters.errorContainerName",
+										"type": "Expression"
+									},
+									"filePath": {
+										"value": "@variables('errorPathName')",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "Delete the landing file",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Copy Data From Landing To Error",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "error_ingestion_input_file",
+								"type": "DatasetReference",
+								"parameters": {
+									"filePath": {
+										"value": "@pipeline().parameters.filePath",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"containerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									}
+								}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true
+							}
+						}
+					},
+					{
+						"name": "Set the Error Path",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "errorPathName",
+							"value": {
+								"value": "@concat(pipeline().parameters.ingestionContainerName, '/', pipeline().RunId)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Start Logging of Activities",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Set the Error Path",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"/', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, '/', pipeline().parameters.fileName, '\", \"childDestinationObjectName\": \"/', pipeline().parameters.errorContainerName, variables('errorPathName'), pipeline().parameters.fileName,  '\", \"childExecutionStatus\": \"Ungoverned\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Success Logging Activity",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Delete the landing file",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Ungoverned\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"ingestionContainerName": {
+						"type": "string",
+						"defaultValue": "landing"
+					},
+					"fileName": {
+						"type": "string",
+						"defaultValue": "orders.avro"
+					},
+					"filePath": {
+						"type": "string",
+						"defaultValue": "/"
+					},
+					"errorContainerName": {
+						"type": "string",
+						"defaultValue": "error"
+					},
+					"parentDataFactoryRunId": {
+						"type": "string",
+						"defaultValue": "b303e2d1-b459-4f33-b6d3-d870ddfee214"
+					},
+					"LogId": {
+						"type": "string"
+					},
+					"LoggingBaseURL": {
+						"type": "string"
+					},
+					"BearerToken": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"errorPathName": {
+						"type": "String",
+						"defaultValue": "/"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/error_ingestion_input_file')]",
+				"[concat(variables('factoryId'), '/datasets/data_ingestion_error_output_file')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data-ingestion-parquet')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Avro File Metadata",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "Start Logging of Activities",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "avro_ingestion_input_file",
+								"type": "DatasetReference",
+								"parameters": {
+									"filePath": {
+										"value": "@pipeline().parameters.filePath",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"containerName": {
+										"value": "@pipeline().parameters.ingestionContainerName",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"size",
+								"columnCount",
+								"itemName",
+								"structure"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true
+							}
+						}
+					},
+					{
+						"name": "FileSize gt 0 and ColumnCount Expected",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Get Avro File Metadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@and(greater(activity('Get Avro File Metadata').output.size, 0),equals(pipeline().parameters.columnCount, activity('Get Avro File Metadata').output.columnCount))",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "execute data ingestion error",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-error",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.ingestionContainerName",
+												"type": "Expression"
+											},
+											"fileName": {
+												"value": "@pipeline().parameters.fileName",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@pipeline().parameters.filePath",
+												"type": "Expression"
+											},
+											"errorContainerName": {
+												"value": "@pipeline().parameters.errorContainerName",
+												"type": "Expression"
+											},
+											"parentDataFactoryRunId": {
+												"value": "@pipeline().parameters.parentDataFactoryRunId",
+												"type": "Expression"
+											},
+											"LogId": {
+												"value": "@activity('Start Logging of Activities').output.data._id",
+												"type": "Expression"
+											},
+											"LoggingBaseURL": {
+												"value": "@pipeline().parameters.loggingBaseURL",
+												"type": "Expression"
+											},
+											"BearerToken": {
+												"value": "@pipeline().parameters.BearerToken",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Copy Avro to Raw Zone",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AvroSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": false,
+												"enablePartitionDiscovery": false
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings",
+												"blockSizeInMB": 75
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "avro_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.filePath",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.fileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionContainerName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "parquet_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.rawDestination",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.rawDestinationFileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionOutputContainerName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "Delete Ingestion FIle",
+									"type": "Delete",
+									"dependsOn": [
+										{
+											"activity": "Copy Avro to Raw Zone",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "avro_ingestion_input_file",
+											"type": "DatasetReference",
+											"parameters": {
+												"filePath": {
+													"value": "@pipeline().parameters.filePath",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@pipeline().parameters.fileName",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@pipeline().parameters.ingestionContainerName",
+													"type": "Expression"
+												}
+											}
+										},
+										"enableLogging": false,
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Create The New Path Based On Load Type",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "calculatedPath",
+							"value": {
+								"value": "@concat(pipeline().parameters.rawDestination, '/', formatDateTime(pipeline().TriggerTime, 'yyyy'), '/', formatDateTime(pipeline().TriggerTime, 'MM'), '/', formatDateTime(pipeline().TriggerTime, 'dd'), '/')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Start Logging of Activities",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Create The New Path Based On Load Type",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"/', pipeline().parameters.ingestionContainerName, pipeline().parameters.filePath, '/', pipeline().parameters.fileName, '\", \"childDestinationObjectName\": \"/', pipeline().parameters.ingestionOutputContainerName, variables('calculatedPath'), pipeline().parameters.rawDestinationFileName,  '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Success Logging Activity",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "FileSize gt 0 and ColumnCount Expected",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Failure Logging Activity",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "FileSize gt 0 and ColumnCount Expected",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"fileName": {
+						"type": "string",
+						"defaultValue": "buyinggroups.avro"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"rawDestination": {
+						"type": "string",
+						"defaultValue": "WorldWideImporters/buyinggroups/"
+					},
+					"rawDestinationFileName": {
+						"type": "string",
+						"defaultValue": "buyinggroups.parquet"
+					},
+					"columnCount": {
+						"type": "int",
+						"defaultValue": 5
+					},
+					"loadType": {
+						"type": "string",
+						"defaultValue": "FULL"
+					},
+					"ingestionContainerName": {
+						"type": "string",
+						"defaultValue": "landing"
+					},
+					"ingestionOutputContainerName": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"errorContainerName": {
+						"type": "string",
+						"defaultValue": "error"
+					},
+					"parentDataFactoryRunId": {
+						"type": "string",
+						"defaultValue": "864d42c4-6177-417a-8bf2-36881ca5ba64"
+					},
+					"LogId": {
+						"type": "string"
+					},
+					"loggingBaseURL": {
+						"type": "string"
+					},
+					"BearerToken": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"calculatedPath": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/avro_ingestion_input_file')]",
+				"[concat(variables('factoryId'), '/pipelines/data-ingestion-error')]",
+				"[concat(variables('factoryId'), '/datasets/parquet_ingestion_input_file')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data-ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Did we find a record in the file lookup",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Replace the Container in the Path with empty space",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@greater(length(activity('Retrieve the Meta Data About the File').output.data[0].name), 0)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "execute data ingestion error for failure pipelines",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "data-ingestion-error",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"ingestionContainerName": {
+												"value": "@pipeline().parameters.ingestionContainerName",
+												"type": "Expression"
+											},
+											"fileName": {
+												"value": "@pipeline().parameters.sourceFile",
+												"type": "Expression"
+											},
+											"filePath": {
+												"value": "@variables('ingestionFolderPath')",
+												"type": "Expression"
+											},
+											"errorContainerName": {
+												"value": "@pipeline().parameters.errorContainerName",
+												"type": "Expression"
+											},
+											"parentDataFactoryRunId": {
+												"value": "@pipeline().RunId",
+												"type": "Expression"
+											},
+											"LogId": {
+												"value": "@activity('Start Logging of Activities').output.data._id",
+												"type": "Expression"
+											},
+											"LoggingBaseURL": {
+												"value": "@pipeline().parameters.loggingBaseURL",
+												"type": "Expression"
+											},
+											"BearerToken": {
+												"value": "@variables('bearerToken')",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Data-Ingestion-By-FileType",
+									"type": "Switch",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"on": {
+											"value": "@toUpper(activity('Retrieve the Meta Data About the File').output.data[0].landingZone.fileType)",
+											"type": "Expression"
+										},
+										"cases": [
+											{
+												"value": "AVRO",
+												"activities": [
+													{
+														"name": "execute data ingestion avro",
+														"type": "ExecutePipeline",
+														"dependsOn": [],
+														"userProperties": [],
+														"typeProperties": {
+															"pipeline": {
+																"referenceName": "data-ingestion-avro",
+																"type": "PipelineReference"
+															},
+															"waitOnCompletion": true,
+															"parameters": {
+																"fileName": {
+																	"value": "@pipeline().parameters.sourceFile",
+																	"type": "Expression"
+																},
+																"filePath": {
+																	"value": "@variables('ingestionFolderPath')",
+																	"type": "Expression"
+																},
+																"rawDestination": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.destination",
+																	"type": "Expression"
+																},
+																"rawDestinationFileName": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.fileName",
+																	"type": "Expression"
+																},
+																"columnCount": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].columnCount",
+																	"type": "Expression"
+																},
+																"loadType": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].sourcingInformation.loadType",
+																	"type": "Expression"
+																},
+																"ingestionContainerName": {
+																	"value": "@pipeline().parameters.ingestionContainerName",
+																	"type": "Expression"
+																},
+																"ingestionOutputContainerName": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.containerName",
+																	"type": "Expression"
+																},
+																"errorContainerName": {
+																	"value": "@pipeline().parameters.errorContainerName",
+																	"type": "Expression"
+																},
+																"parentDataFactoryRunId": {
+																	"value": "@pipeline().RunId",
+																	"type": "Expression"
+																},
+																"LogId": {
+																	"value": "@activity('Start Logging of Activities').output.data._id",
+																	"type": "Expression"
+																},
+																"loggingBaseURL": {
+																	"value": "@pipeline().parameters.loggingBaseURL",
+																	"type": "Expression"
+																},
+																"BearerToken": {
+																	"value": "@variables('bearerToken')",
+																	"type": "Expression"
+																}
+															}
+														}
+													}
+												]
+											},
+											{
+												"value": "PARQUET",
+												"activities": [
+													{
+														"name": "data-ingestion-parquet",
+														"type": "ExecutePipeline",
+														"dependsOn": [],
+														"userProperties": [],
+														"typeProperties": {
+															"pipeline": {
+																"referenceName": "data-ingestion-parquet",
+																"type": "PipelineReference"
+															},
+															"waitOnCompletion": true,
+															"parameters": {
+																"fileName": {
+																	"value": "@pipeline().parameters.sourceFile",
+																	"type": "Expression"
+																},
+																"filePath": {
+																	"value": "@variables('ingestionFolderPath')",
+																	"type": "Expression"
+																},
+																"rawDestination": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.destination",
+																	"type": "Expression"
+																},
+																"rawDestinationFileName": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.fileName",
+																	"type": "Expression"
+																},
+																"columnCount": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].columnCount",
+																	"type": "Expression"
+																},
+																"loadType": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].sourcingInformation.loadType",
+																	"type": "Expression"
+																},
+																"ingestionContainerName": {
+																	"value": "@pipeline().parameters.ingestionContainerName",
+																	"type": "Expression"
+																},
+																"ingestionOutputContainerName": {
+																	"value": "@activity('Retrieve the Meta Data About the File').output.data[0].rawZone.containerName",
+																	"type": "Expression"
+																},
+																"errorContainerName": {
+																	"value": "@pipeline().parameters.errorContainerName",
+																	"type": "Expression"
+																},
+																"parentDataFactoryRunId": {
+																	"value": "@pipeline().RunId",
+																	"type": "Expression"
+																},
+																"LogId": {
+																	"value": "@activity('Start Logging of Activities').output.data._id",
+																	"type": "Expression"
+																},
+																"loggingBaseURL": {
+																	"value": "@pipeline().parameters.loggingBaseURL",
+																	"type": "Expression"
+																},
+																"BearerToken": {
+																	"value": "@variables('bearerToken')",
+																	"type": "Expression"
+																}
+															}
+														}
+													}
+												]
+											}
+										],
+										"defaultActivities": [
+											{
+												"name": "execute data ingestion error",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "data-ingestion-error",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"ingestionContainerName": {
+															"value": "@pipeline().parameters.ingestionContainerName",
+															"type": "Expression"
+														},
+														"fileName": {
+															"value": "@pipeline().parameters.sourceFile",
+															"type": "Expression"
+														},
+														"filePath": {
+															"value": "@variables('ingestionFolderPath')",
+															"type": "Expression"
+														},
+														"errorContainerName": {
+															"value": "@pipeline().parameters.errorContainerName",
+															"type": "Expression"
+														},
+														"parentDataFactoryRunId": {
+															"value": "@pipeline().RunId",
+															"type": "Expression"
+														},
+														"LogId": {
+															"value": "@activity('Start Logging of Activities').output.data._id",
+															"type": "Expression"
+														},
+														"LoggingBaseURL": {
+															"value": "@pipeline().parameters.loggingBaseURL",
+															"type": "Expression"
+														},
+														"BearerToken": {
+															"value": "@variables('bearerToken')",
+															"type": "Expression"
+														}
+													}
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Replace the Container in the Path with empty space",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Retrieve the Meta Data About the File",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "ingestionFolderPath",
+							"value": {
+								"value": "@replace(pipeline().parameters.sourceFolder, pipeline().parameters.ingestionContainerName, '')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Retrieve Bearer Token",
+						"description": "The Web Activity does not support OAuth authentication therefore it is a two step process.   Retrieve the bearer token and then use it wherever it is needed.",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('https://login.microsoftonline.com/',pipeline().parameters.TenantId, '/oauth2/v2.0/token')",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/x-www-form-urlencoded"
+							},
+							"body": {
+								"value": "@concat('grant_type=client_credentials&client_id=',pipeline().parameters.ClientId,'&scope=api://',pipeline().parameters.ClientId,'/.default&client_secret=',pipeline().parameters.ClientSecret)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set bearerToken",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Retrieve Bearer Token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "bearerToken",
+							"value": {
+								"value": "@activity('Retrieve Bearer Token').output.access_token",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Start Logging of Activities",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Set bearerToken",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs')",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"dataFactoryRunId\": \"', pipeline().RunId, '\", \"dataFactoryName\": \"', pipeline().DataFactory, '\", \"pipelineName\": \"', pipeline().Pipeline, '\", \"executionStatus\": \"In-Progress\", \"executionStartDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Retrieve The Objects That Need to be Extracted",
+						"description": "The web activity does not support OAuth2 therefore we pass the Bearer Token in the Header to get the data we need for the databaseType and sourceDatabaseName",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Start Logging of Activities",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'sourcedatabases?sourceDatabaseName=', replace(pipeline().parameters.sourceFolder, '/', ''))",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Retrieve the Meta Data About the File",
+						"description": "The web activity does not support OAuth2 therefore we pass the Bearer Token in the Header to get the data we need for the databaseType and sourceDatabaseName",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Retrieve The Objects That Need to be Extracted",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'sourcedatabases/', activity('Retrieve The Objects That Need to be Extracted').output.data[0]._id, '/sourceobjects?landingZoneFileName=', pipeline().parameters.sourceFile)",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "End Logging Activities with Success",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Did we find a record in the file lookup",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"executionStatus\": \"Success\", \"executionEndDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "End Logging Activities with Failure",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Did we find a record in the file lookup",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(pipeline().parameters.loggingBaseURL, 'executionlogs/', activity('Start Logging of Activities').output.data._id)",
+								"type": "Expression"
+							},
+							"method": "PATCH",
+							"headers": {
+								"Authorization": {
+									"value": "@concat('Bearer ', variables('bearerToken'))",
+									"type": "Expression"
+								}
+							},
+							"body": {
+								"value": "@concat('{\"executionStatus\": \"Failure\", \"executionEndDate\": \"', utcnow(), '\"}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"concurrency": 10,
+				"parameters": {
+					"sourceFolder": {
+						"type": "string",
+						"defaultValue": "/"
+					},
+					"sourceFile": {
+						"type": "string",
+						"defaultValue": "orders.avro"
+					},
+					"ingestionContainerName": {
+						"type": "string",
+						"defaultValue": "landing"
+					},
+					"errorContainerName": {
+						"type": "string",
+						"defaultValue": "error"
+					},
+					"TenantId": {
+						"type": "string",
+						"defaultValue": "9367acf5-9e6b-4e3f-a344-94da27f8a0eb"
+					},
+					"ClientId": {
+						"type": "string",
+						"defaultValue": "15814337-9995-4df6-bf82-a08f33f9b2d1"
+					},
+					"ClientSecret": {
+						"type": "string",
+						"defaultValue": "6N_4~dXVT5n-Fd4It~T76.5E_iKmF9_yGf"
+					},
+					"loggingBaseURL": {
+						"type": "string",
+						"defaultValue": "https://data-engineering-dev.api.adventuresinazure.com/api/"
+					}
+				},
+				"variables": {
+					"ingestionFolderPath": {
+						"type": "String",
+						"defaultValue": "/"
+					},
+					"bearerToken": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/data-ingestion-error')]",
+				"[concat(variables('factoryId'), '/pipelines/data-ingestion-avro')]",
+				"[concat(variables('factoryId'), '/pipelines/data-ingestion-parquet')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/process-iot-events')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "process-iot-events",
+						"type": "DatabricksNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/phandreo@microsoft.com/batchprocessing",
+							"baseParameters": {
+								"executionDateTime": {
+									"value": "@pipeline().parameters.startDateTime",
+									"type": "Expression"
+								},
+								"iotraweventlocations": "abfss://raw@andrdatalake001d.dfs.core.windows.net/iotevents/",
+								"iotporcessedlocations": "abfss://exploration@andrdatalake001d.dfs.core.windows.net/delta-lake/environment-sensor/"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "databricks",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"concurrency": 1,
+				"parameters": {
+					"startDateTime": {
+						"type": "string",
+						"defaultValue": "2020-08-05 03:00:00"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/databricks')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/avro_ingestion_input_file')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filePath": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					},
+					"containerName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion-input"
+				},
+				"annotations": [],
+				"type": "Avro",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().filePath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/azure_sql_table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "worldwide_importers_db",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"databaseConnectionStringSecretName": {
+							"value": "@dataset().connectionString",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"schema": {
+						"type": "string",
+						"defaultValue": "etl"
+					},
+					"objectName": {
+						"type": "string",
+						"defaultValue": "customers"
+					},
+					"connectionString": {
+						"type": "string",
+						"defaultValue": "WorldWideImportersConnectionString"
+					}
+				},
+				"folder": {
+					"name": "data-extraction"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().schema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().objectName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/worldwide_importers_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data_ingestion_error_output_file')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"containerName": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion-output"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().filePath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data_ingestion_raw_output_file_avro')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"containerName": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string",
+						"defaultValue": "invoices.avro"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion-output"
+				},
+				"annotations": [],
+				"type": "Avro",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data_ingestion_raw_output_file_parquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"containerName": {
+						"type": "string",
+						"defaultValue": "raw"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion-output"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().filePath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/delmited_ingestion_input_file')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filePath": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					},
+					"containerName": {
+						"type": "string"
+					},
+					"compressionType": {
+						"type": "string",
+						"defaultValue": "none"
+					},
+					"compressionLevel": {
+						"type": "string",
+						"defaultValue": "Optimal"
+					},
+					"columnDelimiter": {
+						"type": "string",
+						"defaultValue": ","
+					},
+					"encoding": {
+						"type": "string",
+						"defaultValue": "UTF-8"
+					},
+					"escapeCharacter": {
+						"type": "string",
+						"defaultValue": "\\"
+					},
+					"quoteCharacter": {
+						"type": "string",
+						"defaultValue": "\""
+					},
+					"firstRowAsHeader": {
+						"type": "bool",
+						"defaultValue": true
+					}
+				},
+				"folder": {
+					"name": "data-ingestion-input"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().filePath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": {
+						"value": "@dataset().columnDelimiter",
+						"type": "Expression"
+					},
+					"compressionCodec": {
+						"value": "@dataset().compressionType",
+						"type": "Expression"
+					},
+					"compressionLevel": {
+						"value": "@dataset().compressionLevel",
+						"type": "Expression"
+					},
+					"encodingName": {
+						"value": "@dataset().encoding",
+						"type": "Expression"
+					},
+					"escapeChar": {
+						"value": "@dataset().escapeCharacter",
+						"type": "Expression"
+					},
+					"firstRowAsHeader": {
+						"value": "@dataset().firstRowAsHeader",
+						"type": "Expression"
+					},
+					"quoteChar": {
+						"value": "@dataset().quoteCharacter",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/error_ingestion_input_file')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filePath": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					},
+					"containerName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion-input"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().filePath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/json_ingestion_input_file')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filePath": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					},
+					"containerName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion-input"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().filePath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/parquet_ingestion_input_file')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filePath": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					},
+					"containerName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion-input"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().filePath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data_lake_storage_account')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "https://mtcchidatalake001d.dfs.core.windows.net"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/databricks')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-6393053478803514.14.azuredatabricks.net",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "databricks",
+						"secretVersion": "a311dd203b1c4d6abf113e7873711425"
+					},
+					"instancePoolId": "0806-153306-geode373-pool-KRKLmD5e",
+					"newClusterNumOfWorker": "2",
+					"newClusterSparkConf": {
+						"fs.azure.account.key.andrdatalake001d.dfs.core.windows.net": "askZROyq8oZ+mOuAjLDjUZbmPSGeLnZ5UGUXMTWcQSDV4hYhVFzYSzfXKJqgkdFxrDZhiIB9B3c2qCKtXAhi8g==",
+						"fs.azure.createRemoteFileSystemDuringInitialization": "true",
+						"spark.databricks.delta.preview.enabled": "true"
+					},
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
+					"newClusterVersion": "7.1.x-scala2.12",
+					"newClusterInitScripts": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/key_vault_secrets')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "https://mtcchimoderndwkv001d.vault.azure.net/"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/meta_data_configuration_db')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "MetaDataConfigurationConnectionString"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/meta_data_configuration_db_v2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "CosmosDbMongoDbApi",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "MetaDataConfigurationMongoDB"
+					},
+					"database": "MetaDataConfiguration"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/worldwide_importers_db')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"databaseConnectionStringSecretName": {
+						"type": "string",
+						"defaultValue": "WorldWideImportersConnectionString"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "key_vault_secrets",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().databaseConnectionStringSecretName",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/landing_file_pickup')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "data-ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"sourceFolder": "@triggerBody().folderPath",
+							"sourceFile": "@triggerBody().fileName",
+							"ingestionContainerName": "landing",
+							"errorContainerName": "error"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/landing/blobs/",
+					"ignoreEmptyBlobs": true,
+					"scope": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/data-ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling-window-1-hour')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "process-iot-events",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"startDateTime": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 1,
+					"startTime": "2020-08-07T12:00:00.000Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/process-iot-events')]"
+			]
+		}
+	]
+}
