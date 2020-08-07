@@ -3,17 +3,7 @@
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Stopped",
-		"pipelines": [
-			{
-				"pipelineReference": {
-					"referenceName": "process-iot-events",
-					"type": "PipelineReference"
-				},
-				"parameters": {
-					"startDateTime": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
-				}
-			}
-		],
+		"pipelines": [],
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {
