@@ -44,10 +44,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "bearerToken",
-					"value": {
-						"value": "@activity('Retrieve Bearer Token').output.access_token",
-						"type": "Expression"
-					}
+					"value": "[object Object]"
 				}
 			},
 			{
