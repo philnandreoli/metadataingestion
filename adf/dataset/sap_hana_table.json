@@ -1,0 +1,16 @@
+{
+	"name": "sap_hana_table",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sap_hana_ecc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SapHanaTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "_SYS_BIC",
+			"table": "Models/CUSTOMER"
+		}
+	}
+}
