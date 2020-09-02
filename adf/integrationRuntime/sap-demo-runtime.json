@@ -1,0 +1,6 @@
+{
+	"name": "sap-demo-runtime",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
