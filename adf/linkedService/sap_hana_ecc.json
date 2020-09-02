@@ -1,0 +1,16 @@
+{
+	"name": "sap_hana_ecc",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SapHana",
+		"typeProperties": {
+			"connectionString": "servernode=vhcals4hcs.dummy.nodomain:30215;uid=BPINST",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI3MjhhZmJjMC03OWEyLTRmMzQtOWUxYy01NTE4YTZmNzI2MjMiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "sap-demo-runtime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
