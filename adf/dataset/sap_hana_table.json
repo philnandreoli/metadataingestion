@@ -15,6 +15,9 @@
 				"defaultValue": "MSFT_ISDSALESDOC"
 			}
 		},
+		"folder": {
+			"name": "data-extraction"
+		},
 		"annotations": [],
 		"type": "SapHanaTable",
 		"schema": [],
