@@ -4,7 +4,7 @@
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://mtcchidatalake001d.dfs.core.windows.net"
+			"url": "https://andrdatalake001d.dfs.core.windows.net"
 		}
 	}
 }
