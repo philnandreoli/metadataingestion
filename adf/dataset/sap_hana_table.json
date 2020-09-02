@@ -5,12 +5,28 @@
 			"referenceName": "sap_hana_ecc",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"databaseName": {
+				"type": "string",
+				"defaultValue": "SAPHANADB"
+			},
+			"tableName": {
+				"type": "string",
+				"defaultValue": "MSFT_ISDSALESDOC"
+			}
+		},
 		"annotations": [],
 		"type": "SapHanaTable",
 		"schema": [],
 		"typeProperties": {
-			"schema": "_SYS_BIC",
-			"table": "Models/CUSTOMER"
+			"schema": {
+				"value": "@dataset().databaseName",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().tableName",
+				"type": "Expression"
+			}
 		}
 	}
 }
