@@ -1,5 +1,5 @@
 {
-	"name": "az_sql-data-ingestion-delta",
+	"name": "azsqldataingestiondelta",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
