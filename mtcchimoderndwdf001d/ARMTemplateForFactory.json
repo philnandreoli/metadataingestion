@@ -9,7 +9,7 @@
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://mtcchidatalake001d.dfs.core.windows.net"
+			"defaultValue": "https://andrdatalake001d.dfs.core.windows.net"
 		},
 		"key_vault_secrets_properties_typeProperties_baseUrl": {
 			"type": "string",
@@ -54,6 +54,17 @@
 		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
 			"type": "string",
 			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"type": "string",
+			"defaultValue": "mtcchioltp001d.database.windows.net"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"type": "string",
+			"defaultValue": "phandreo"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+			"type": "secureString"
 		}
 	},
 	"variables": {
@@ -148,8 +159,7 @@
 												"type": "AzureBlobFSWriteSettings"
 											},
 											"formatSettings": {
-												"type": "AvroWriteSettings",
-												"quoteAllText": true
+												"type": "AvroWriteSettings"
 											}
 										},
 										"enableStaging": false
@@ -499,10 +509,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"variableName": "bearerToken",
-							"value": {
-								"value": "@activity('Retrieve Bearer Token').output.access_token",
-								"type": "Expression"
-							}
+							"value": "[[object Object]"
 						}
 					},
 					{
@@ -2527,6 +2534,80 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/purview-test')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "azure_sql_table",
+								"type": "DatasetReference",
+								"parameters": {
+									"schema": "etl",
+									"objectName": "customers",
+									"connectionString": "WorldWideImportersConnectionString"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "data_ingestion_raw_output_file_parquet",
+								"type": "DatasetReference",
+								"parameters": {
+									"containerName": "landing",
+									"filePath": "worldwideimporters/customers/",
+									"fileName": "customers.snappy.parquet"
+								}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/azure_sql_table')]",
+				"[concat(variables('factoryId'), '/datasets/data_ingestion_raw_output_file_parquet')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/avro_ingestion_input_file')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3211,6 +3292,76 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/process-iot-events')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ssisIntegrationRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "East US",
+						"nodeSize": "Standard_D2_v3",
+						"numberOfNodes": 1,
+						"maxParallelExecutionsPerNode": 2
+					},
+					"ssisProperties": {
+						"catalogInfo": {
+							"catalogServerEndpoint": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]",
+							"catalogAdminUserName": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]",
+							"catalogAdminPassword": {
+								"type": "SecureString",
+								"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
+							},
+							"catalogPricingTier": "S1"
+						},
+						"edition": "Enterprise",
+						"licenseType": "BasePrice"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ssis-purview-demo')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Execute SSIS package1",
+						"type": "ExecuteSSISPackage",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"packageLocation": {
+								"packagePath": "PurviewDemo/SSIS-With-Purview/Master_Package.dtsx",
+								"type": "SSISDB"
+							},
+							"environmentPath": null,
+							"connectVia": {
+								"referenceName": "ssisIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"loggingLevel": "Basic",
+							"projectConnectionManagers": {},
+							"packageConnectionManagers": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/ssisIntegrationRuntime')]"
 			]
 		}
 	]

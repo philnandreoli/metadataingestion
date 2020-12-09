@@ -9,7 +9,7 @@
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://mtcchidatalake001d.dfs.core.windows.net"
+			"defaultValue": "https://andrdatalake001d.dfs.core.windows.net"
 		},
 		"key_vault_secrets_properties_typeProperties_baseUrl": {
 			"type": "string",
@@ -55,6 +55,17 @@
 			"type": "string",
 			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
 		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"type": "string",
+			"defaultValue": "mtcchioltp001d.database.windows.net"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"type": "string",
+			"defaultValue": "phandreo"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+			"type": "secureString"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -69,7 +80,7 @@
 	},
 	"resources": [
 		{
-			"name": "ArmTemplate_0",
+			"name": "mtcchimoderndwdf001d_ArmTemplate_0",
 			"type": "Microsoft.Resources/deployments",
 			"apiVersion": "2018-02-01",
 			"properties": {
@@ -88,6 +99,15 @@
 					"key_vault_secrets_properties_typeProperties_baseUrl": {
 						"value": "[parameters('key_vault_secrets_properties_typeProperties_baseUrl')]"
 					},
+					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]"
+					},
+					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]"
+					},
+					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
+					},
 					"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
 						"value": "[parameters('meta_data_configuration_db_properties_typeProperties_connectionString_secretName')]"
 					},
@@ -105,7 +125,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "ArmTemplate_1",
+			"name": "mtcchimoderndwdf001d_ArmTemplate_1",
 			"type": "Microsoft.Resources/deployments",
 			"apiVersion": "2018-02-01",
 			"properties": {
@@ -139,7 +159,7 @@
 				}
 			},
 			"dependsOn": [
-				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_0')]"
+				"[resourceId('Microsoft.Resources/deployments', 'mtcchimoderndwdf001d_ArmTemplate_0')]"
 			]
 		}
 	]

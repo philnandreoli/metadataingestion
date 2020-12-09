@@ -6,7 +6,7 @@
 			"value": "mtcchimoderndwdf001d"
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
-			"value": "https://mtcchidatalake001d.dfs.core.windows.net"
+			"value": "https://andrdatalake001d.dfs.core.windows.net"
 		},
 		"key_vault_secrets_properties_typeProperties_baseUrl": {
 			"value": "https://mtcchimoderndwkv001d.vault.azure.net/"
@@ -40,6 +40,15 @@
 		},
 		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
 			"value": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"value": "mtcchioltp001d.database.windows.net"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"value": "phandreo"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+			"value": ""
 		},
 		"containerUri": {
 			"value": ""
