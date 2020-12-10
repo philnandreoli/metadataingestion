@@ -653,7 +653,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Execute SSIS package1",
+						"name": "execute master ssis package",
 						"type": "ExecuteSSISPackage",
 						"dependsOn": [],
 						"policy": {
