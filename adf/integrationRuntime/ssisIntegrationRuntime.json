@@ -12,11 +12,6 @@
 			"ssisProperties": {
 				"catalogInfo": {
 					"catalogServerEndpoint": "mtcchioltp001d.database.windows.net",
-					"catalogAdminUserName": "phandreo",
-					"catalogAdminPassword": {
-						"type": "SecureString",
-						"value": "**********"
-					},
 					"catalogPricingTier": "S1"
 				},
 				"edition": "Enterprise",
