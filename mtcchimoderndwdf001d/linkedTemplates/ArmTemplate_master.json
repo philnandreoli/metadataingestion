@@ -59,12 +59,21 @@
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
 			"type": "string",
-			"defaultValue": "phandreo"
+			"defaultValue": "@trigger().outputs.windowStartTime"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-			"type": "secureString"
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_endTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath": {
+			"type": "string",
+			"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
+			"type": "string",
+			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
 		},
 		"containerUri": {
 			"type": "string",
@@ -102,12 +111,6 @@
 					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]"
 					},
-					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
-						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]"
-					},
-					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
-					},
 					"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
 						"value": "[parameters('meta_data_configuration_db_properties_typeProperties_connectionString_secretName')]"
 					},
@@ -140,6 +143,18 @@
 					},
 					"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
 						"value": "[parameters('tumbling-window-1-hour_properties_pipeline_parameters_startDateTime')]"
+					},
+					"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
+						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_startTime')]"
+					},
+					"tumbling_window_every_6_hours_properties_pipeline_parameters_endTime": {
+						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_endTime')]"
+					},
+					"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath": {
+						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath')]"
+					},
+					"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
+						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin')]"
 					},
 					"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFolder')]"

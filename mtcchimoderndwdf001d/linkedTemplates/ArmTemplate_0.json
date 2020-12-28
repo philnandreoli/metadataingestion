@@ -19,13 +19,6 @@
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
-			"type": "string",
-			"defaultValue": "phandreo"
-		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-			"type": "secureString"
-		},
 		"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "MetaDataConfigurationConnectionString"
@@ -89,11 +82,6 @@
 					"ssisProperties": {
 						"catalogInfo": {
 							"catalogServerEndpoint": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]",
-							"catalogAdminUserName": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]",
-							"catalogAdminPassword": {
-								"type": "SecureString",
-								"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
-							},
 							"catalogPricingTier": "S1"
 						},
 						"edition": "Enterprise",
@@ -102,6 +90,46 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ssis-purview-demo')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "execute master ssis package",
+						"type": "ExecuteSSISPackage",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"packageLocation": {
+								"packagePath": "PurviewDemo/SSIS-With-Purview/Master_Package.dtsx",
+								"type": "SSISDB"
+							},
+							"environmentPath": null,
+							"connectVia": {
+								"referenceName": "ssisIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"loggingLevel": "Basic",
+							"projectConnectionManagers": {},
+							"packageConnectionManagers": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/ssisIntegrationRuntime')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/avro_ingestion_input_file')]",
@@ -543,26 +571,21 @@
 				"type": "AzureDatabricks",
 				"typeProperties": {
 					"domain": "https://adb-6393053478803514.14.azuredatabricks.net",
-					"accessToken": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "key_vault_secrets",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "databricks",
-						"secretVersion": "a311dd203b1c4d6abf113e7873711425"
-					},
+					"authentication": "MSI",
+					"workspaceResourceId": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Databricks/workspaces/andrdataprocessing001d",
 					"instancePoolId": "0806-153306-geode373-pool-KRKLmD5e",
 					"newClusterNumOfWorker": "2",
 					"newClusterSparkConf": {
 						"fs.azure.account.key.andrdatalake001d.dfs.core.windows.net": "askZROyq8oZ+mOuAjLDjUZbmPSGeLnZ5UGUXMTWcQSDV4hYhVFzYSzfXKJqgkdFxrDZhiIB9B3c2qCKtXAhi8g==",
 						"fs.azure.createRemoteFileSystemDuringInitialization": "true",
-						"spark.databricks.delta.preview.enabled": "true"
+						"spark.databricks.delta.preview.enabled": "true",
+						"spark.databricks.delta.optimizeWrite.enabled": "true",
+						"spark.databricks.delta.autoCompact.enabled": "true"
 					},
 					"newClusterSparkEnvVars": {
 						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
 					},
-					"newClusterVersion": "7.1.x-scala2.12",
+					"newClusterVersion": "7.5.x-scala2.12",
 					"newClusterInitScripts": []
 				}
 			},
@@ -644,46 +667,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ssis-purview-demo')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "execute master ssis package",
-						"type": "ExecuteSSISPackage",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"packageLocation": {
-								"packagePath": "PurviewDemo/SSIS-With-Purview/Master_Package.dtsx",
-								"type": "SSISDB"
-							},
-							"environmentPath": null,
-							"connectVia": {
-								"referenceName": "ssisIntegrationRuntime",
-								"type": "IntegrationRuntimeReference"
-							},
-							"loggingLevel": "Basic",
-							"projectConnectionManagers": {},
-							"packageConnectionManagers": {}
-						}
-					}
-				],
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/ssisIntegrationRuntime')]"
 			]
 		},
 		{
@@ -1050,393 +1033,72 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/data-extraction-sql')]",
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "set objectToExtract",
-						"type": "SetVariable",
+						"name": "Process IoT Event Data Raw To Exploration",
+						"type": "DatabricksNotebook",
 						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
 						"userProperties": [],
 						"typeProperties": {
-							"variableName": "objectsToExtract",
-							"value": {
-								"value": "@pipeline().parameters.platformToExtract[0].sourceObjects",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "set keyVaultSecretName",
-						"type": "SetVariable",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "keyVaultSecretName",
-							"value": {
-								"value": "@pipeline().parameters.platformToExtract[0].keyVaultSecretName",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "ForEach1",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "set objectToExtract",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "set keyVaultSecretName",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@variables('objectsToExtract')",
-								"type": "Expression"
-							},
-							"batchCount": 5,
-							"activities": [
-								{
-									"name": "extract sql tables",
-									"type": "Copy",
-									"dependsOn": [
-										{
-											"activity": "Start Logging of Activities",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "AzureSqlSource",
-											"queryTimeout": "06:00:00",
-											"partitionOption": "None"
-										},
-										"sink": {
-											"type": "AvroSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "AvroWriteSettings"
-											}
-										},
-										"enableStaging": false
-									},
-									"inputs": [
-										{
-											"referenceName": "azure_sql_table",
-											"type": "DatasetReference",
-											"parameters": {
-												"schema": {
-													"value": "@item().sourcingInformation.sourceSchemaName",
-													"type": "Expression"
-												},
-												"objectName": {
-													"value": "@item().sourcingInformation.sourceObject",
-													"type": "Expression"
-												},
-												"connectionString": {
-													"value": "@variables('keyVaultSecretName')",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "avro_ingestion_input_file",
-											"type": "DatasetReference",
-											"parameters": {
-												"filePath": {
-													"value": "@concat(item().landingZone.destination, '/', pipeline().parameters.sourceDatabaseName)",
-													"type": "Expression"
-												},
-												"fileName": {
-													"value": "@item().landingZone.fileName",
-													"type": "Expression"
-												},
-												"containerName": {
-													"value": "@item().landingZone.containerName",
-													"type": "Expression"
-												}
-											}
-										}
-									]
+							"notebookPath": "/Users/phandreo@microsoft.com/batch-python-exploration",
+							"baseParameters": {
+								"enqueuedDateTimeBegin": {
+									"value": "@pipeline().parameters.startTime",
+									"type": "Expression"
 								},
-								{
-									"name": "Start Logging of Activities",
-									"type": "WebActivity",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"url": {
-											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId)",
-											"type": "Expression"
-										},
-										"method": "POST",
-										"headers": {
-											"Authorization": {
-												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
-												"type": "Expression"
-											}
-										},
-										"body": {
-											"value": "@concat('{\"childPipelineRundId\": \"', pipeline().RunId, '\",\"childPipelineName\": \"', pipeline().Pipeline, '\",\"childSourceObjectName\": \"', item().sourcingInformation.sourceSchemaName, '.', item().sourcingInformation.sourceObject, '\", \"childDestinationObjectName\": \"/', item().landingZone.containerName, item().landingZone.destination, pipeline().parameters.sourceDatabaseName, '/', item().landingZone.fileName, '\", \"childExecutionStatus\": \"In-Progress\", \"childExecutionStartDate\": \"', utcnow(), '\"}')",
-											"type": "Expression"
-										}
-									}
+								"enqueuedDateTimeEnd": {
+									"value": "@pipeline().parameters.endTime",
+									"type": "Expression"
 								},
-								{
-									"name": "Success Logging Activity",
-									"type": "WebActivity",
-									"dependsOn": [
-										{
-											"activity": "extract sql tables",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"url": {
-											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
-											"type": "Expression"
-										},
-										"method": "PATCH",
-										"headers": {
-											"Authorization": {
-												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
-												"type": "Expression"
-											}
-										},
-										"body": {
-											"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Success\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
-											"type": "Expression"
-										}
-									}
+								"explorationPath": {
+									"value": "@pipeline().parameters.explorationPath",
+									"type": "Expression"
 								},
-								{
-									"name": "Failure Logging Activity",
-									"type": "WebActivity",
-									"dependsOn": [
-										{
-											"activity": "extract sql tables",
-											"dependencyConditions": [
-												"Failed"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"url": {
-											"value": "@concat(pipeline().parameters.loggingBaseURL,'executionlogs/', pipeline().parameters.LogId, '/', activity('Start Logging of Activities').output.data.childExecutionLogId)",
-											"type": "Expression"
-										},
-										"method": "PATCH",
-										"headers": {
-											"Authorization": {
-												"value": "@concat('Bearer ', pipeline().parameters.BearerToken)",
-												"type": "Expression"
-											}
-										},
-										"body": {
-											"value": "@concat('{\"childExecutions\": { \"childExecutionStatus\":  \"Failure\", \"childExecutionEndDate\": \"', utcnow(), '\"}}')",
-											"type": "Expression"
-										}
-									}
+								"mergeJoin": {
+									"value": "@pipeline().parameters.mergeJoin",
+									"type": "Expression"
 								}
-							]
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "databricks",
+							"type": "LinkedServiceReference"
 						}
 					}
 				],
 				"parameters": {
-					"platformToExtract": {
-						"type": "array",
-						"defaultValue": [
-							{
-								"_id": "5ecfcfa73e095f1d78ff3521",
-								"sourceDatabaseName": "WorldWideImporters",
-								"sourceObjects": [
-									{
-										"sourcingInformation": {
-											"sourceSchemaName": "etl",
-											"sourceObject": "customers",
-											"loadType": "full"
-										},
-										"landingZone": {
-											"fileName": "customers.avro",
-											"destination": "/",
-											"fileType": "avro",
-											"containerName": "landing"
-										},
-										"rawZone": {
-											"fileName": "customers.parquet",
-											"destination": "/WorldWideImporters/Customers",
-											"fileType": "parquet",
-											"containerName": "raw"
-										},
-										"_id": "5ecfea681e8b9a4cfcad5e86",
-										"name": "Customers",
-										"description": "Worldwide Importers Customer Information",
-										"columnCount": 29
-									},
-									{
-										"sourcingInformation": {
-											"sourceSchemaName": "etl",
-											"sourceObject": "invoices",
-											"loadType": "incremental"
-										},
-										"landingZone": {
-											"fileName": "invoices.avro",
-											"destination": "/",
-											"fileType": "avro",
-											"containerName": "landing"
-										},
-										"rawZone": {
-											"fileName": "invoices.parquet",
-											"destination": "/WorldWideImporters/Invoices",
-											"fileType": "parquet",
-											"containerName": "raw"
-										},
-										"_id": "5ecfed961e8b9a4cfcad5e87",
-										"name": "Invoices",
-										"description": "Worldwide Importers Invoices Information",
-										"columnCount": 29
-									}
-								],
-								"keyVaultSecretName": "WorldWideImportersConnectionString",
-								"serverName": "mtcchioltp001d.database.windows.net",
-								"databaseType": "SqlServer"
-							}
-						]
-					},
-					"sourceDatabaseName": {
+					"startTime": {
 						"type": "string",
-						"defaultValue": "WorldWideImporters"
+						"defaultValue": "2020-12-28 00:00:00"
 					},
-					"LogId": {
+					"endTime": {
 						"type": "string",
-						"defaultValue": "5ecfed961e8b9a4cfcad5e87"
+						"defaultValue": "2020-12-28 18:30:00"
 					},
-					"BearerToken": {
+					"explorationPath": {
 						"type": "string",
-						"defaultValue": "1234"
+						"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
 					},
-					"loggingBaseURL": {
-						"type": "string"
+					"mergeJoin": {
+						"type": "string",
+						"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
 					}
-				},
-				"variables": {
-					"objectsToExtract": {
-						"type": "Array",
-						"defaultValue": [
-							{
-								"sourcingInformation": {
-									"sourceSchemaName": "etl",
-									"sourceObject": "customers",
-									"loadType": "full"
-								},
-								"landingZone": {
-									"fileName": "customers.avro",
-									"destination": "/",
-									"fileType": "avro",
-									"containerName": "landing"
-								},
-								"rawZone": {
-									"fileName": "customers.parquet",
-									"destination": "/WorldWideImporters/Customers",
-									"fileType": "parquet",
-									"containerName": "raw"
-								},
-								"_id": "5ecfea681e8b9a4cfcad5e86",
-								"name": "Customers",
-								"description": "Worldwide Importers Customer Information",
-								"columnCount": 29
-							},
-							{
-								"sourcingInformation": {
-									"sourceSchemaName": "etl",
-									"sourceObject": "invoices",
-									"loadType": "incremental"
-								},
-								"landingZone": {
-									"fileName": "invoices.avro",
-									"destination": "/",
-									"fileType": "avro",
-									"containerName": "landing"
-								},
-								"rawZone": {
-									"fileName": "invoices.parquet",
-									"destination": "/WorldWideImporters/Invoices",
-									"fileType": "parquet",
-									"containerName": "raw"
-								},
-								"_id": "5ecfed961e8b9a4cfcad5e87",
-								"name": "Invoices",
-								"description": "Worldwide Importers Invoices Information",
-								"columnCount": 29
-							}
-						]
-					},
-					"keyVaultSecretName": {
-						"type": "String",
-						"defaultValue": "WorldWideImportersConnectionString"
-					},
-					"sourceDatabaseName": {
-						"type": "String",
-						"defaultValue": "WorldWideImporters"
-					}
-				},
-				"folder": {
-					"name": "data-extraction"
 				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/azure_sql_table')]",
-				"[concat(variables('factoryId'), '/datasets/avro_ingestion_input_file')]"
+				"[concat(variables('factoryId'), '/linkedServices/databricks')]"
 			]
 		}
 	]

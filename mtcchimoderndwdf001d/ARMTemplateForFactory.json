@@ -59,12 +59,21 @@
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
 			"type": "string",
-			"defaultValue": "phandreo"
+			"defaultValue": "@trigger().outputs.windowStartTime"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-			"type": "secureString"
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_endTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath": {
+			"type": "string",
+			"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
+			"type": "string",
+			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
 		}
 	},
 	"variables": {
@@ -2608,6 +2617,46 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ssis-purview-demo')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "execute master ssis package",
+						"type": "ExecuteSSISPackage",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"packageLocation": {
+								"packagePath": "PurviewDemo/SSIS-With-Purview/Master_Package.dtsx",
+								"type": "SSISDB"
+							},
+							"environmentPath": null,
+							"connectVia": {
+								"referenceName": "ssisIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"loggingLevel": "Basic",
+							"projectConnectionManagers": {},
+							"packageConnectionManagers": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/ssisIntegrationRuntime')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/avro_ingestion_input_file')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3110,26 +3159,21 @@
 				"type": "AzureDatabricks",
 				"typeProperties": {
 					"domain": "https://adb-6393053478803514.14.azuredatabricks.net",
-					"accessToken": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "key_vault_secrets",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "databricks",
-						"secretVersion": "a311dd203b1c4d6abf113e7873711425"
-					},
+					"authentication": "MSI",
+					"workspaceResourceId": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Databricks/workspaces/andrdataprocessing001d",
 					"instancePoolId": "0806-153306-geode373-pool-KRKLmD5e",
 					"newClusterNumOfWorker": "2",
 					"newClusterSparkConf": {
 						"fs.azure.account.key.andrdatalake001d.dfs.core.windows.net": "askZROyq8oZ+mOuAjLDjUZbmPSGeLnZ5UGUXMTWcQSDV4hYhVFzYSzfXKJqgkdFxrDZhiIB9B3c2qCKtXAhi8g==",
 						"fs.azure.createRemoteFileSystemDuringInitialization": "true",
-						"spark.databricks.delta.preview.enabled": "true"
+						"spark.databricks.delta.preview.enabled": "true",
+						"spark.databricks.delta.optimizeWrite.enabled": "true",
+						"spark.databricks.delta.autoCompact.enabled": "true"
 					},
 					"newClusterSparkEnvVars": {
 						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
 					},
-					"newClusterVersion": "7.1.x-scala2.12",
+					"newClusterVersion": "7.5.x-scala2.12",
 					"newClusterInitScripts": []
 				}
 			},
@@ -3310,11 +3354,6 @@
 					"ssisProperties": {
 						"catalogInfo": {
 							"catalogServerEndpoint": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]",
-							"catalogAdminUserName": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]",
-							"catalogAdminPassword": {
-								"type": "SecureString",
-								"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
-							},
 							"catalogPricingTier": "S1"
 						},
 						"edition": "Enterprise",
@@ -3325,14 +3364,14 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ssis-purview-demo')]",
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "execute master ssis package",
-						"type": "ExecuteSSISPackage",
+						"name": "Process IoT Event Data Raw To Exploration",
+						"type": "DatabricksNotebook",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
@@ -3343,25 +3382,90 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"packageLocation": {
-								"packagePath": "PurviewDemo/SSIS-With-Purview/Master_Package.dtsx",
-								"type": "SSISDB"
-							},
-							"environmentPath": null,
-							"connectVia": {
-								"referenceName": "ssisIntegrationRuntime",
-								"type": "IntegrationRuntimeReference"
-							},
-							"loggingLevel": "Basic",
-							"projectConnectionManagers": {},
-							"packageConnectionManagers": {}
+							"notebookPath": "/Users/phandreo@microsoft.com/batch-python-exploration",
+							"baseParameters": {
+								"enqueuedDateTimeBegin": {
+									"value": "@pipeline().parameters.startTime",
+									"type": "Expression"
+								},
+								"enqueuedDateTimeEnd": {
+									"value": "@pipeline().parameters.endTime",
+									"type": "Expression"
+								},
+								"explorationPath": {
+									"value": "@pipeline().parameters.explorationPath",
+									"type": "Expression"
+								},
+								"mergeJoin": {
+									"value": "@pipeline().parameters.mergeJoin",
+									"type": "Expression"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "databricks",
+							"type": "LinkedServiceReference"
 						}
 					}
 				],
+				"parameters": {
+					"startTime": {
+						"type": "string",
+						"defaultValue": "2020-12-28 00:00:00"
+					},
+					"endTime": {
+						"type": "string",
+						"defaultValue": "2020-12-28 18:30:00"
+					},
+					"explorationPath": {
+						"type": "string",
+						"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
+					},
+					"mergeJoin": {
+						"type": "string",
+						"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+					}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/ssisIntegrationRuntime')]"
+				"[concat(variables('factoryId'), '/linkedServices/databricks')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling_window_every_6_hours')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "pipeline1",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"startTime": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_startTime')]",
+						"endTime": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_endTime')]",
+						"explorationPath": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath')]",
+						"mergeJoin": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 6,
+					"startTime": "2020-12-28T18:00:00.000Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 1,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pipeline1')]"
 			]
 		}
 	]

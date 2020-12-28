@@ -44,11 +44,17 @@
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"value": "mtcchioltp001d.database.windows.net"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
-			"value": "phandreo"
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
+			"value": "@trigger().outputs.windowStartTime"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-			"value": ""
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_endTime": {
+			"value": "@trigger().outputs.windowEndTime"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath": {
+			"value": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
+			"value": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
 		}
 	}
 }
