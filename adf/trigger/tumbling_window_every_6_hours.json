@@ -1,0 +1,31 @@
+{
+	"name": "tumbling_window_every_6_hours",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "pipeline1",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"startTime": "@trigger().outputs.windowStartTime",
+				"endTime": "@trigger().outputs.windowEndTime",
+				"explorationPath": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta",
+				"mergeJoin": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+			}
+		},
+		"type": "TumblingWindowTrigger",
+		"typeProperties": {
+			"frequency": "Hour",
+			"interval": 6,
+			"startTime": "2020-12-28T18:00:00.000Z",
+			"delay": "00:00:00",
+			"maxConcurrency": 50,
+			"retryPolicy": {
+				"intervalInSeconds": 30
+			},
+			"dependsOn": []
+		}
+	}
+}
