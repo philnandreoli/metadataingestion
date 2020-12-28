@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Notebook1",
+				"name": "Process IoT Event Data Raw To Exploration",
 				"type": "DatabricksNotebook",
 				"dependsOn": [],
 				"policy": {
@@ -17,8 +17,14 @@
 				"typeProperties": {
 					"notebookPath": "/Users/phandreo@microsoft.com/batch-python-exploration",
 					"baseParameters": {
-						"enqueuedDateTimeBegin": "2020-12-28 00:00:00",
-						"enqueuedDateTimeEnd": "2020-12-28 18:30:00",
+						"enqueuedDateTimeBegin": {
+							"value": "@pipeline().parameters.startTime",
+							"type": "Expression"
+						},
+						"enqueuedDateTimeEnd": {
+							"value": "@pipeline().parameters.endTime",
+							"type": "Expression"
+						},
 						"explorationPath": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta",
 						"mergeJoin": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
 					}
@@ -29,6 +35,24 @@
 				}
 			}
 		],
+		"parameters": {
+			"startTime": {
+				"type": "string",
+				"defaultValue": "2020-12-28 00:00:00"
+			},
+			"endTime": {
+				"type": "string",
+				"defaultValue": "2020-12-28 18:30:00"
+			},
+			"explorationPath": {
+				"type": "string",
+				"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
+			},
+			"mergeJoin": {
+				"type": "string",
+				"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+			}
+		},
 		"annotations": []
 	}
 }
