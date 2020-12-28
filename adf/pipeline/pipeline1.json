@@ -1,0 +1,34 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Notebook1",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/phandreo@microsoft.com/batch-python-exploration",
+					"baseParameters": {
+						"enqueuedDateTimeBegin": "2020-12-28 00:00:00",
+						"enqueuedDateTimeEnd": "2020-12-28 18:30:00",
+						"explorationPath": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta",
+						"mergeJoin": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "databricks",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
