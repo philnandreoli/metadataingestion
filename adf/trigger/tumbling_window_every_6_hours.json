@@ -21,7 +21,7 @@
 			"interval": 6,
 			"startTime": "2020-12-28T18:00:00.000Z",
 			"delay": "00:00:00",
-			"maxConcurrency": 50,
+			"maxConcurrency": 1,
 			"retryPolicy": {
 				"intervalInSeconds": 30
 			},
