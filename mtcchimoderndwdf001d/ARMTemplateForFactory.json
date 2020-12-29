@@ -75,6 +75,14 @@
 			"type": "string",
 			"defaultValue": "sensor"
 		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates": {
+			"type": "string",
+			"defaultValue": "default.duplicateeventstemperature"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
+			"type": "string",
+			"defaultValue": "exploration.temperatureevents"
+		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
@@ -102,6 +110,14 @@
 		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
 			"type": "string",
 			"defaultValue": "sensor"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
+			"type": "string",
+			"defaultValue": "default.duplicateeventsairquality"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
+			"type": "string",
+			"defaultValue": "exploration.airqualityevents"
 		}
 	},
 	"variables": {
@@ -2567,6 +2583,14 @@
 								"partitionByColumn": {
 									"value": "@pipeline().parameters.partitionByColumn",
 									"type": "Expression"
+								},
+								"explorationTableDuplicates": {
+									"value": "@pipeline().parameters.explorationTableDuplicates",
+									"type": "Expression"
+								},
+								"explorationTable": {
+									"value": "@pipeline().parameters.explorationTable",
+									"type": "Expression"
 								}
 							}
 						},
@@ -2600,6 +2624,14 @@
 					"partitionByColumn": {
 						"type": "string",
 						"defaultValue": "sensor"
+					},
+					"explorationTableDuplicates": {
+						"type": "string",
+						"defaultValue": "default.duplicateeventstemperature"
+					},
+					"explorationTable": {
+						"type": "string",
+						"defaultValue": "exploration.temperatureevents"
 					}
 				},
 				"annotations": []
@@ -3409,7 +3441,9 @@
 						"explorationPath": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath')]",
 						"mergeJoin": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin')]",
 						"sqlStatement": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_sqlStatement')]",
-						"partitionByColumn": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn')]"
+						"partitionByColumn": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn')]",
+						"explorationTableDuplicates": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates')]",
+						"explorationTable": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable')]"
 					}
 				},
 				"type": "TumblingWindowTrigger",
@@ -3472,7 +3506,9 @@
 						"explorationPath": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath')]",
 						"mergeJoin": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin')]",
 						"sqlStatement": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement')]",
-						"partitionByColumn": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn')]"
+						"partitionByColumn": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn')]",
+						"explorationTableDuplicates": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates')]",
+						"explorationTable": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable')]"
 					}
 				},
 				"type": "TumblingWindowTrigger",

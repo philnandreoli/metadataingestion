@@ -75,6 +75,14 @@
 			"type": "string",
 			"defaultValue": "sensor"
 		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates": {
+			"type": "string",
+			"defaultValue": "default.duplicateeventstemperature"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
+			"type": "string",
+			"defaultValue": "exploration.temperatureevents"
+		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
@@ -102,6 +110,14 @@
 		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
 			"type": "string",
 			"defaultValue": "sensor"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
+			"type": "string",
+			"defaultValue": "default.duplicateeventsairquality"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
+			"type": "string",
+			"defaultValue": "exploration.airqualityevents"
 		},
 		"containerUri": {
 			"type": "string",
@@ -187,6 +203,12 @@
 					"tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn": {
 						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn')]"
 					},
+					"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates": {
+						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates')]"
+					},
+					"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
+						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable')]"
+					},
 					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
 						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime')]"
 					},
@@ -204,6 +226,12 @@
 					},
 					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
 						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable')]"
 					},
 					"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFolder')]"

@@ -56,6 +56,12 @@
 		"tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn": {
 			"value": "sensor"
 		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates": {
+			"value": "default.duplicateeventstemperature"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
+			"value": "exploration.temperatureevents"
+		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"value": "mtcchioltp001d.database.windows.net"
 		},
@@ -76,6 +82,12 @@
 		},
 		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
 			"value": "sensor"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
+			"value": "default.duplicateeventsairquality"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
+			"value": "exploration.airqualityevents"
 		},
 		"containerUri": {
 			"value": ""

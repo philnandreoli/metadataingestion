@@ -187,6 +187,14 @@
 								"partitionByColumn": {
 									"value": "@pipeline().parameters.partitionByColumn",
 									"type": "Expression"
+								},
+								"explorationTableDuplicates": {
+									"value": "@pipeline().parameters.explorationTableDuplicates",
+									"type": "Expression"
+								},
+								"explorationTable": {
+									"value": "@pipeline().parameters.explorationTable",
+									"type": "Expression"
 								}
 							}
 						},
@@ -220,6 +228,14 @@
 					"partitionByColumn": {
 						"type": "string",
 						"defaultValue": "sensor"
+					},
+					"explorationTableDuplicates": {
+						"type": "string",
+						"defaultValue": "default.duplicateeventstemperature"
+					},
+					"explorationTable": {
+						"type": "string",
+						"defaultValue": "exploration.temperatureevents"
 					}
 				},
 				"annotations": []
