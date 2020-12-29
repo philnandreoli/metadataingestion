@@ -65,7 +65,7 @@
 			},
 			"mergeJoin": {
 				"type": "string",
-				"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+				"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
 			},
 			"sqlStatement": {
 				"type": "string",
