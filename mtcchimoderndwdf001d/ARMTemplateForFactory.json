@@ -2627,11 +2627,11 @@
 					},
 					"explorationTableDuplicates": {
 						"type": "string",
-						"defaultValue": "default.duplicateeventstemperature"
+						"defaultValue": "default.duplicateeventsairquality"
 					},
 					"explorationTable": {
 						"type": "string",
-						"defaultValue": "exploration.temperatureevents"
+						"defaultValue": "exploration.airqualityevents"
 					}
 				},
 				"annotations": []
