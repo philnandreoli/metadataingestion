@@ -3,22 +3,6 @@
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
-		"pipeline": {
-			"pipelineReference": {
-				"referenceName": "process-environmental-events",
-				"type": "PipelineReference"
-			},
-			"parameters": {
-				"startTime": "@trigger().outputs.windowStartTime",
-				"endTime": "@trigger().outputs.windowEndTime",
-				"explorationPath": "/mnt/andrdatalake001x/exploration/iotevents/airquality-events/delta",
-				"mergeJoin": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp",
-				"sqlStatement": "SELECT DISTINCT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].CO as CarbonMonoxide, body.series[0].H2 as Hydrogen2, body.series[0].CH4 as Methane, body.series[0].LPG as LiquidfiedPetroleumGas, body.series[0].propane as Propane, body.series[0].alcohol as Alcohol, body.series[0].smoke as Smoke FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"mq2\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))",
-				"partitionByColumn": "sensor",
-				"explorationTableDuplicates": "default.duplicateeventsairquality",
-				"explorationTable": "exploration.airqualityevents"
-			}
-		},
 		"type": "TumblingWindowTrigger",
 		"typeProperties": {
 			"frequency": "Hour",
