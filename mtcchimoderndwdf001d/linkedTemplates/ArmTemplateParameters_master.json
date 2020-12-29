@@ -65,6 +65,30 @@
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"value": "mtcchioltp001d.database.windows.net"
 		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
+			"value": "@trigger().outputs.windowStartTime"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime": {
+			"value": "@trigger().outputs.windowEndTime"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath": {
+			"value": "/mnt/andrdatalake001x/exploration/iotevents/airquality-events/delta"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin": {
+			"value": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement": {
+			"value": "SELECT DISTINCT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].CO as CarbonMonoxide, body.series[0].H2 as Hydrogen2, body.series[0].CH4 as Methane, body.series[0].LPG as LiquidfiedPetroleumGas, body.series[0].propane as Propane, body.series[0].alcohol as Alcohol, body.series[0].smoke as Smoke FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"mq2\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
+			"value": "sensor"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
+			"value": "default.duplicateeventsairquality"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
+			"value": "exploration.airqualityevents"
+		},
 		"containerUri": {
 			"value": ""
 		},

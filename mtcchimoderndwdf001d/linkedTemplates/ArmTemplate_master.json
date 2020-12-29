@@ -87,6 +87,38 @@
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
 		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowStartTime"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath": {
+			"type": "string",
+			"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/airquality-events/delta"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin": {
+			"type": "string",
+			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement": {
+			"type": "string",
+			"defaultValue": "SELECT DISTINCT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].CO as CarbonMonoxide, body.series[0].H2 as Hydrogen2, body.series[0].CH4 as Methane, body.series[0].LPG as LiquidfiedPetroleumGas, body.series[0].propane as Propane, body.series[0].alcohol as Alcohol, body.series[0].smoke as Smoke FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"mq2\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
+			"type": "string",
+			"defaultValue": "sensor"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
+			"type": "string",
+			"defaultValue": "default.duplicateeventsairquality"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
+			"type": "string",
+			"defaultValue": "exploration.airqualityevents"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -176,6 +208,30 @@
 					},
 					"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
 						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates')]"
+					},
+					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
+						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable')]"
 					},
 					"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFolder')]"
