@@ -5,7 +5,7 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory name",
-			"defaultValue": "mtcchimoderndwdf001d"
+			"defaultValue": "MTCCHIMODERNDWDF001D"
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
@@ -51,14 +51,6 @@
 			"type": "string",
 			"defaultValue": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
 		},
-		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
-			"type": "string",
-			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
-		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"type": "string",
-			"defaultValue": "mtcchioltp001d.database.windows.net"
-		},
 		"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
 			"type": "string",
 			"defaultValue": "@trigger().outputs.windowStartTime"
@@ -74,6 +66,10 @@
 		"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
 			"type": "string",
 			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"type": "string",
+			"defaultValue": "mtcchioltp001d.database.windows.net"
 		},
 		"containerUri": {
 			"type": "string",
@@ -140,9 +136,6 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
-					},
-					"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
-						"value": "[parameters('tumbling-window-1-hour_properties_pipeline_parameters_startDateTime')]"
 					},
 					"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
 						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_startTime')]"

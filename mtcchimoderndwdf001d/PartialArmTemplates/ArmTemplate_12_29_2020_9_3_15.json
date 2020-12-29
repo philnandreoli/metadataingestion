@@ -1,0 +1,142 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "MTCCHIMODERNDWDF001D"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/process-environmental-events')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This process will move data from Raw to Exploration in some timeframe.",
+				"activities": [
+					{
+						"name": "Process IoT Event Data Raw To Exploration",
+						"type": "DatabricksNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/phandreo@microsoft.com/batch-python-exploration",
+							"baseParameters": {
+								"enqueuedDateTimeBegin": {
+									"value": "@pipeline().parameters.startTime",
+									"type": "Expression"
+								},
+								"enqueuedDateTimeEnd": {
+									"value": "@pipeline().parameters.endTime",
+									"type": "Expression"
+								},
+								"explorationPath": {
+									"value": "@pipeline().parameters.explorationPath",
+									"type": "Expression"
+								},
+								"mergeJoin": {
+									"value": "@pipeline().parameters.mergeJoin",
+									"type": "Expression"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "databricks",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"startTime": {
+						"type": "string",
+						"defaultValue": "2020-12-28 00:00:00"
+					},
+					"endTime": {
+						"type": "string",
+						"defaultValue": "2020-12-28 18:30:00"
+					},
+					"explorationPath": {
+						"type": "string",
+						"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
+					},
+					"mergeJoin": {
+						"type": "string",
+						"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling-window-1-hour')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 1,
+					"startTime": "2020-08-07T12:00:00.000Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling_window_every_6_hours')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "process-environmental-events",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"startTime": "@trigger().outputs.windowStartTime",
+						"endTime": "@trigger().outputs.windowEndTime",
+						"explorationPath": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta",
+						"mergeJoin": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 6,
+					"startTime": "2020-12-28T18:00:00.000Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 1,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/process-environmental-events')]"
+			]
+		}
+	]
+}

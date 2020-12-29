@@ -5,7 +5,7 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory name",
-			"defaultValue": "mtcchimoderndwdf001d"
+			"defaultValue": "MTCCHIMODERNDWDF001D"
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
@@ -51,14 +51,6 @@
 			"type": "string",
 			"defaultValue": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
 		},
-		"tumbling-window-1-hour_properties_pipeline_parameters_startDateTime": {
-			"type": "string",
-			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm')"
-		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"type": "string",
-			"defaultValue": "mtcchioltp001d.database.windows.net"
-		},
 		"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
 			"type": "string",
 			"defaultValue": "@trigger().outputs.windowStartTime"
@@ -74,6 +66,10 @@
 		"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
 			"type": "string",
 			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"type": "string",
+			"defaultValue": "mtcchioltp001d.database.windows.net"
 		}
 	},
 	"variables": {
@@ -2495,13 +2491,14 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/process-iot-events')]",
+			"name": "[concat(parameters('factoryName'), '/process-environmental-events')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"description": "This process will move data from Raw to Exploration in some timeframe.",
 				"activities": [
 					{
-						"name": "process-iot-events",
+						"name": "Process IoT Event Data Raw To Exploration",
 						"type": "DatabricksNotebook",
 						"dependsOn": [],
 						"policy": {
@@ -2513,14 +2510,24 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"notebookPath": "/Users/phandreo@microsoft.com/batchprocessing",
+							"notebookPath": "/Users/phandreo@microsoft.com/batch-python-exploration",
 							"baseParameters": {
-								"executionDateTime": {
-									"value": "@pipeline().parameters.startDateTime",
+								"enqueuedDateTimeBegin": {
+									"value": "@pipeline().parameters.startTime",
 									"type": "Expression"
 								},
-								"iotraweventlocations": "abfss://raw@andrdatalake001d.dfs.core.windows.net/iotevents/",
-								"iotporcessedlocations": "abfss://exploration@andrdatalake001d.dfs.core.windows.net/delta-lake/environment-sensor/"
+								"enqueuedDateTimeEnd": {
+									"value": "@pipeline().parameters.endTime",
+									"type": "Expression"
+								},
+								"explorationPath": {
+									"value": "@pipeline().parameters.explorationPath",
+									"type": "Expression"
+								},
+								"mergeJoin": {
+									"value": "@pipeline().parameters.mergeJoin",
+									"type": "Expression"
+								}
 							}
 						},
 						"linkedServiceName": {
@@ -2529,11 +2536,22 @@
 						}
 					}
 				],
-				"concurrency": 1,
 				"parameters": {
-					"startDateTime": {
+					"startTime": {
 						"type": "string",
-						"defaultValue": "2020-08-05 03:00:00"
+						"defaultValue": "2020-12-28 00:00:00"
+					},
+					"endTime": {
+						"type": "string",
+						"defaultValue": "2020-12-28 18:30:00"
+					},
+					"explorationPath": {
+						"type": "string",
+						"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
+					},
+					"mergeJoin": {
+						"type": "string",
+						"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
 					}
 				},
 				"annotations": []
@@ -3177,9 +3195,7 @@
 					"newClusterInitScripts": []
 				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/key_vault_secrets')]",
@@ -3311,16 +3327,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"runtimeState": "Started",
-				"pipeline": {
-					"pipelineReference": {
-						"referenceName": "process-iot-events",
-						"type": "PipelineReference"
-					},
-					"parameters": {
-						"startDateTime": "[parameters('tumbling-window-1-hour_properties_pipeline_parameters_startDateTime')]"
-					}
-				},
+				"runtimeState": "Stopped",
 				"type": "TumblingWindowTrigger",
 				"typeProperties": {
 					"frequency": "Hour",
@@ -3334,8 +3341,42 @@
 					"dependsOn": []
 				}
 			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling_window_every_6_hours')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "process-environmental-events",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"startTime": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_startTime')]",
+						"endTime": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_endTime')]",
+						"explorationPath": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath')]",
+						"mergeJoin": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 6,
+					"startTime": "2020-12-28T18:00:00.000Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 1,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/process-iot-events')]"
+				"[concat(variables('factoryId'), '/pipelines/process-environmental-events')]"
 			]
 		},
 		{
@@ -3362,111 +3403,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Process IoT Event Data Raw To Exploration",
-						"type": "DatabricksNotebook",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Users/phandreo@microsoft.com/batch-python-exploration",
-							"baseParameters": {
-								"enqueuedDateTimeBegin": {
-									"value": "@pipeline().parameters.startTime",
-									"type": "Expression"
-								},
-								"enqueuedDateTimeEnd": {
-									"value": "@pipeline().parameters.endTime",
-									"type": "Expression"
-								},
-								"explorationPath": {
-									"value": "@pipeline().parameters.explorationPath",
-									"type": "Expression"
-								},
-								"mergeJoin": {
-									"value": "@pipeline().parameters.mergeJoin",
-									"type": "Expression"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "databricks",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"parameters": {
-					"startTime": {
-						"type": "string",
-						"defaultValue": "2020-12-28 00:00:00"
-					},
-					"endTime": {
-						"type": "string",
-						"defaultValue": "2020-12-28 18:30:00"
-					},
-					"explorationPath": {
-						"type": "string",
-						"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
-					},
-					"mergeJoin": {
-						"type": "string",
-						"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/databricks')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/tumbling_window_every_6_hours')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipeline": {
-					"pipelineReference": {
-						"referenceName": "pipeline1",
-						"type": "PipelineReference"
-					},
-					"parameters": {
-						"startTime": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_startTime')]",
-						"endTime": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_endTime')]",
-						"explorationPath": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath')]",
-						"mergeJoin": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin')]"
-					}
-				},
-				"type": "TumblingWindowTrigger",
-				"typeProperties": {
-					"frequency": "Hour",
-					"interval": 6,
-					"startTime": "2020-12-28T18:00:00.000Z",
-					"delay": "00:00:00",
-					"maxConcurrency": 1,
-					"retryPolicy": {
-						"intervalInSeconds": 30
-					},
-					"dependsOn": []
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pipeline1')]"
-			]
 		}
 	]
 }
