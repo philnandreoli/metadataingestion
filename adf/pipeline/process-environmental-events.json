@@ -1,6 +1,7 @@
 {
-	"name": "pipeline1",
+	"name": "process-environmental-events",
 	"properties": {
+		"description": "This process will move data from Raw to Exploration in some timeframe.",
 		"activities": [
 			{
 				"name": "Process IoT Event Data Raw To Exploration",
