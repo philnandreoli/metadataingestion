@@ -58,24 +58,6 @@
 		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"value": "mtcchioltp001d.database.windows.net"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_process-environmental-events_parameters_startTime": {
-			"value": "@trigger().outputs.windowStartTime"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_process-environmental-events_parameters_endTime": {
-			"value": "@trigger().outputs.windowEndTime"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_process-environmental-events_parameters_explorationPath": {
-			"value": "/mnt/andrdatalake001x/exploration/iotevents/airquality-events/delta"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_process-environmental-events_parameters_mergeJoin": {
-			"value": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_process-environmental-events_parameters_sqlStatement": {
-			"value": "SELECT DISTINCT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].temperature as temperature, body.series[0].humidity as humidity, body.series[0].dewpoint as dewpoint, body.series[0].altitude as altitude, body.series[0].pressure as pressure FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"dht11\", \"bme280\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))\n"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_process-environmental-events_parameters_partitionByColumn": {
-			"value": "sensor"
 		}
 	}
 }
