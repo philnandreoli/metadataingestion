@@ -1,0 +1,33 @@
+{
+	"name": "tumbling_window_every_6_hours_airquality",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "process-environmental-events",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"startTime": "@trigger().outputs.windowStartTime",
+				"endTime": "@trigger().outputs.windowEndTime",
+				"explorationPath": "/mnt/andrdatalake001x/exploration/iotevents/airquality-events/delta",
+				"mergeJoin": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp",
+				"sqlStatement": "SELECT DISTINCT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].temperature as temperature, body.series[0].humidity as humidity, body.series[0].dewpoint as dewpoint, body.series[0].altitude as altitude, body.series[0].pressure as pressure FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"dht11\", \"bme280\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))",
+				"partitionByColumn": "sensor"
+			}
+		},
+		"type": "TumblingWindowTrigger",
+		"typeProperties": {
+			"frequency": "Hour",
+			"interval": 6,
+			"startTime": "2020-12-29T12:00:00.000Z",
+			"delay": "00:00:00",
+			"maxConcurrency": 50,
+			"retryPolicy": {
+				"intervalInSeconds": 30
+			},
+			"dependsOn": []
+		}
+	}
+}
