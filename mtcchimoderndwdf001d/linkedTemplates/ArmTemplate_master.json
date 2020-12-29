@@ -5,7 +5,7 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory name",
-			"defaultValue": "MTCCHIMODERNDWDF001D"
+			"defaultValue": "mtcchimoderndwdf001d"
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
@@ -65,7 +65,15 @@
 		},
 		"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
 			"type": "string",
-			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_sqlStatement": {
+			"type": "string",
+			"defaultValue": "SELECT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].temperature as temperature, body.series[0].humidity as humidity, body.series[0].dewpoint as dewpoint, body.series[0].altitude as altitude, body.series[0].pressure as pressure FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"dht11\", \"bme280\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
+		},
+		"tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn": {
+			"type": "string",
+			"defaultValue": "sensor"
 		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"type": "string",
@@ -148,6 +156,12 @@
 					},
 					"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
 						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin')]"
+					},
+					"tumbling_window_every_6_hours_properties_pipeline_parameters_sqlStatement": {
+						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_sqlStatement')]"
+					},
+					"tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn": {
+						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn')]"
 					},
 					"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFolder')]"

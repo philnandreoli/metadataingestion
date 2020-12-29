@@ -5,7 +5,7 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory name",
-			"defaultValue": "MTCCHIMODERNDWDF001D"
+			"defaultValue": "mtcchimoderndwdf001d"
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
@@ -179,6 +179,14 @@
 								"mergeJoin": {
 									"value": "@pipeline().parameters.mergeJoin",
 									"type": "Expression"
+								},
+								"sqlStatement": {
+									"value": "@pipeline().parameters.sqlStatement",
+									"type": "Expression"
+								},
+								"partitionByColumn": {
+									"value": "@pipeline().parameters.partitionByColumn",
+									"type": "Expression"
 								}
 							}
 						},
@@ -203,7 +211,15 @@
 					},
 					"mergeJoin": {
 						"type": "string",
-						"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime"
+						"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
+					},
+					"sqlStatement": {
+						"type": "string",
+						"defaultValue": "SELECT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].temperature as temperature, body.series[0].humidity as humidity, body.series[0].dewpoint as dewpoint, body.series[0].altitude as altitude, body.series[0].pressure as pressure FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"dht11\", \"bme280\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
+					},
+					"partitionByColumn": {
+						"type": "string",
+						"defaultValue": "sensor"
 					}
 				},
 				"annotations": []
