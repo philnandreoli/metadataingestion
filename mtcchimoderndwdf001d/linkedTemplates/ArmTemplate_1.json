@@ -31,6 +31,30 @@
 			"type": "string",
 			"defaultValue": "sensor"
 		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowStartTime"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath": {
+			"type": "string",
+			"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/airquality-events/delta"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin": {
+			"type": "string",
+			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement": {
+			"type": "string",
+			"defaultValue": "SELECT DISTINCT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].CO as CarbonMonoxide, body.series[0].H2 as Hydrogen2, body.series[0].CH4 as Methane, body.series[0].LPG as LiquidfiedPetroleumGas, body.series[0].propane as Propane, body.series[0].alcohol as Alcohol, body.series[0].smoke as Smoke FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"mq2\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
+		},
+		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
+			"type": "string",
+			"defaultValue": "sensor"
+		},
 		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 			"type": "string",
 			"defaultValue": "@triggerBody().folderPath"
@@ -84,6 +108,42 @@
 					"startTime": "2020-12-28T18:00:00.000Z",
 					"delay": "00:00:00",
 					"maxConcurrency": 1,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling_window_every_6_hours_airquality')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "process-environmental-events",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"startTime": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime')]",
+						"endTime": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime')]",
+						"explorationPath": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath')]",
+						"mergeJoin": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin')]",
+						"sqlStatement": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement')]",
+						"partitionByColumn": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 6,
+					"startTime": "2020-12-29T12:00:00.000Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
 					"retryPolicy": {
 						"intervalInSeconds": 30
 					},
