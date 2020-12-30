@@ -1,10 +1,10 @@
 # Databricks notebook source
-# MAGIC %md
-# MAGIC This will run for a specific time period
+# MAGIC %md # Documentation
 
 # COMMAND ----------
 
-# Parameters that will be passed into the notebook leveraging ADF
+
+3# Parameters that will be passed into the notebook leveraging ADF
 dbutils.widgets.text("enqueuedDateTimeBegin", "", "Enqueued Date Time Begin Time")
 dbutils.widgets.text("enqueuedDateTimeEnd", "", "Enqueued Date Time End Time")
 dbutils.widgets.text("explorationPath", "", "Exploration Path")
