@@ -89,7 +89,7 @@
 				"typeProperties": {
 					"variableName": "relativePath",
 					"value": {
-						"value": "@concat(pipeline().parameters.relative-path, pipeline().parameters.api-version, '&query=', pipeline().parameters.query, '&subscription\\-key=', pipeline().parameters.subscription-key)",
+						"value": "@concat(pipeline().parameters.relativePath, pipeline().parameters.apiVersion, '&query=', pipeline().parameters.query, '&subscription-key=', pipeline().parameters.subscriptionKey)",
 						"type": "Expression"
 					}
 				}
