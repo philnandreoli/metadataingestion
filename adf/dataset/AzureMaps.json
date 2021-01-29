@@ -25,6 +25,12 @@
 		},
 		"annotations": [],
 		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat(dataset().relativePath, 'api-version=', dataset().apiVersion, '&query=', dataset().query, '&subscription-key=', dataset().subscriptionKey)",
+				"type": "Expression"
+			}
+		},
 		"schema": []
 	}
 }
