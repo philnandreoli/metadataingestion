@@ -27,7 +27,7 @@
 		"type": "RestResource",
 		"typeProperties": {
 			"relativeUrl": {
-				"value": "@concat(dataset().path, 'api-version=', dataset().api-version, '&query=', dataset().query, '&subscription-key=', dataset().subscription-key)",
+				"value": "@concat(dataset().path, 'apiVersion=', dataset().apiVersion, '&query=', dataset().query, '&subscriptionKey=', dataset().subscriptionKey)",
 				"type": "Expression"
 			}
 		},
