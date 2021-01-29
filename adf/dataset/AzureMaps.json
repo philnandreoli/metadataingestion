@@ -6,18 +6,6 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"apiVersion": {
-				"type": "string",
-				"defaultValue": "1.0"
-			},
-			"query": {
-				"type": "string",
-				"defaultValue": "42.148924384904156,-87.99537852892261"
-			},
-			"subscriptionKey": {
-				"type": "string",
-				"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
-			},
 			"path": {
 				"type": "string",
 				"defaultValue": "weather/currentConditions/json?"
@@ -27,7 +15,7 @@
 		"type": "RestResource",
 		"typeProperties": {
 			"relativeUrl": {
-				"value": "@concat(dataset().path, 'api-version=', dataset().apiVersion, '&query=', dataset().query, '&subscriptionKey=', dataset().subscriptionKey)",
+				"value": "@dataset().path",
 				"type": "Expression"
 			}
 		},
