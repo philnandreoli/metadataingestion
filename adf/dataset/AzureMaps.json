@@ -5,10 +5,31 @@
 			"referenceName": "AzureMapsAPI",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"api-version": {
+				"type": "string",
+				"defaultValue": "1.0"
+			},
+			"query": {
+				"type": "string",
+				"defaultValue": "42.148924384904156,-87.99537852892261"
+			},
+			"subscription-ley": {
+				"type": "string",
+				"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
+			},
+			"path": {
+				"type": "string",
+				"defaultValue": "weather/currentConditions/json?"
+			}
+		},
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {
-			"relativeUrl": "weather/currentConditions/json?api-version=1.0&query=42.148924384904156,-87.99537852892261&subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
+			"relativeUrl": {
+				"value": "@concat(dataset().path, 'api-version=', dataset().api-version, '&query=', dataset().query, '&subscription-key=', dataset().subscription-ley)",
+				"type": "Expression"
+			}
 		},
 		"schema": []
 	}
