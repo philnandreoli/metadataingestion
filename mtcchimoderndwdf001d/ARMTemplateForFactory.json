@@ -37,7 +37,7 @@
 		},
 		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_executionTime": {
 			"type": "string",
-			"defaultValue": "@trigger.startTime"
+			"defaultValue": "@trigger().scheduledTime"
 		},
 		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_relativePath": {
 			"type": "string",

@@ -27,7 +27,7 @@
 			"value": "@linkedService().databaseConnectionStringSecretName"
 		},
 		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_executionTime": {
-			"value": "@trigger.startTime"
+			"value": "@trigger().scheduledTime"
 		},
 		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_relativePath": {
 			"value": "weather/currentConditions/json?"
