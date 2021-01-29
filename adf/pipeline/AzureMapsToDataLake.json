@@ -35,7 +35,25 @@
 				"inputs": [
 					{
 						"referenceName": "AzureMaps",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"relativePath": {
+								"value": "@pipeline().parameters.relativePath",
+								"type": "Expression"
+							},
+							"apiVersion": {
+								"value": "@pipeline().parameters.apiVersion",
+								"type": "Expression"
+							},
+							"subscriptionKey": {
+								"value": "@pipeline().parameters.subscriptionKey",
+								"type": "Expression"
+							},
+							"query": {
+								"value": "@pipeline().parameters.query",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"outputs": [
