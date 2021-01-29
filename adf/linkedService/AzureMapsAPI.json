@@ -1,0 +1,12 @@
+{
+	"name": "AzureMapsAPI",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://atlas.microsoft.com/",
+			"enableServerCertificateValidation": false,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
