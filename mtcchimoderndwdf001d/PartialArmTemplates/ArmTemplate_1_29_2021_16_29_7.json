@@ -1,0 +1,121 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mtcchimoderndwdf001d"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/azure-maps-to-datalake')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "get-azure-maps-information",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET"
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureMaps",
+								"type": "DatasetReference",
+								"parameters": {
+									"relativePath": {
+										"value": "@pipeline().parameters.relativePath",
+										"type": "Expression"
+									},
+									"apiVersion": {
+										"value": "@pipeline().parameters.apiVersion",
+										"type": "Expression"
+									},
+									"subscriptionKey": {
+										"value": "@pipeline().parameters.subscriptionKey",
+										"type": "Expression"
+									},
+									"query": {
+										"value": "@pipeline().parameters.query",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "json_ingestion_input_file",
+								"type": "DatasetReference",
+								"parameters": {
+									"filePath": {
+										"value": "@concat('weather/loadDate=', formatDateTime(pipeline().parameters.executionTime, 'yyyy-MM-dd'), '/hour=', formatDateTime(pipeline().parameters.executionTime, 'HH'), '/')",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@concat('weather-', formatDateTime(pipeline().parameters.executionTime, 'yyyyMMddHHmm'), '.json')",
+										"type": "Expression"
+									},
+									"containerName": "raw"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"executionTime": {
+						"type": "string",
+						"defaultValue": "2020-10-05 01:01:00"
+					},
+					"relativePath": {
+						"type": "string",
+						"defaultValue": "weather/currentConditions/json?"
+					},
+					"apiVersion": {
+						"type": "string",
+						"defaultValue": "1.0"
+					},
+					"query": {
+						"type": "string",
+						"defaultValue": "42.148924384904156,-87.99537852892261"
+					},
+					"subscriptionKey": {
+						"type": "string",
+						"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}

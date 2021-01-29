@@ -155,7 +155,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "get-current-weather",
+						"name": "get-azure-maps-information",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
