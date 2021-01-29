@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf001d"
 		},
+		"AzureMapsAPI_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://atlas.microsoft.com/"
+		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://andrdatalake001d.dfs.core.windows.net"
@@ -30,6 +34,26 @@
 		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "@linkedService().databaseConnectionStringSecretName"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_executionTime": {
+			"type": "string",
+			"defaultValue": "@trigger.startTime"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_relativePath": {
+			"type": "string",
+			"defaultValue": "weather/currentConditions/json?"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_apiVersion": {
+			"type": "string",
+			"defaultValue": "1.0"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_query": {
+			"type": "string",
+			"defaultValue": "42.148924384904156,-87.99537852892261"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_subscriptionKey": {
+			"type": "string",
+			"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
 		},
 		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 			"type": "string",
@@ -83,10 +107,6 @@
 			"type": "string",
 			"defaultValue": "exploration.temperatureevents"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"type": "string",
-			"defaultValue": "mtcchioltp001d.database.windows.net"
-		},
 		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
 			"type": "string",
 			"defaultValue": "@trigger().outputs.windowStartTime"
@@ -118,12 +138,124 @@
 		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
 			"type": "string",
 			"defaultValue": "exploration.airqualityevents"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"type": "string",
+			"defaultValue": "mtcchioltp001d.database.windows.net"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/azure-maps-to-datalake')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "get-current-weather",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET"
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureMaps",
+								"type": "DatasetReference",
+								"parameters": {
+									"relativePath": {
+										"value": "@pipeline().parameters.relativePath",
+										"type": "Expression"
+									},
+									"apiVersion": {
+										"value": "@pipeline().parameters.apiVersion",
+										"type": "Expression"
+									},
+									"subscriptionKey": {
+										"value": "@pipeline().parameters.subscriptionKey",
+										"type": "Expression"
+									},
+									"query": {
+										"value": "@pipeline().parameters.query",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "json_ingestion_input_file",
+								"type": "DatasetReference",
+								"parameters": {
+									"filePath": {
+										"value": "@concat('weather/loadDate=', formatDateTime(pipeline().parameters.executionTime, 'yyyy-MM-dd'), '/hour=', formatDateTime(pipeline().parameters.executionTime, 'HH'), '/')",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@concat('weather-', formatDateTime(pipeline().parameters.executionTime, 'yyyyMMddHHmm'), '.json')",
+										"type": "Expression"
+									},
+									"containerName": "raw"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"executionTime": {
+						"type": "string",
+						"defaultValue": "2020-10-05 01:01:00"
+					},
+					"relativePath": {
+						"type": "string",
+						"defaultValue": "weather/currentConditions/json?"
+					},
+					"apiVersion": {
+						"type": "string",
+						"defaultValue": "1.0"
+					},
+					"query": {
+						"type": "string",
+						"defaultValue": "42.148924384904156,-87.99537852892261"
+					},
+					"subscriptionKey": {
+						"type": "string",
+						"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AzureMaps')]",
+				"[concat(variables('factoryId'), '/datasets/json_ingestion_input_file')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/data-extraction-sql')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -2755,6 +2887,47 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureMaps')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureMapsAPI",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"relativePath": {
+						"type": "string",
+						"defaultValue": "weather/currentConditions/json?"
+					},
+					"apiVersion": {
+						"type": "string",
+						"defaultValue": "1.0"
+					},
+					"subscriptionKey": {
+						"type": "string",
+						"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
+					},
+					"query": {
+						"type": "string",
+						"defaultValue": "42.148924384904156,-87.99537852892261"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat(dataset().relativePath, 'api-version=', dataset().apiVersion, '&query=', dataset().query, '&subscription-key=', dataset().subscriptionKey)",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureMapsAPI')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/avro_ingestion_input_file')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -3236,6 +3409,21 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureMapsAPI')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('AzureMapsAPI_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": false,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/data_lake_storage_account')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -3367,6 +3555,42 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/15-minute-schedule')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "azure-maps-to-datalake",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"executionTime": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_executionTime')]",
+							"relativePath": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_relativePath')]",
+							"apiVersion": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_apiVersion')]",
+							"query": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_query')]",
+							"subscriptionKey": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_subscriptionKey')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2021-01-29T20:30:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/azure-maps-to-datalake')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/landing_file_pickup')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -3412,7 +3636,7 @@
 				"typeProperties": {
 					"frequency": "Hour",
 					"interval": 1,
-					"startTime": "2020-08-07T12:00:00.000Z",
+					"startTime": "2020-08-07T12:00:00Z",
 					"delay": "00:00:00",
 					"maxConcurrency": 50,
 					"retryPolicy": {
@@ -3450,9 +3674,49 @@
 				"typeProperties": {
 					"frequency": "Hour",
 					"interval": 6,
-					"startTime": "2020-12-28T18:00:00.000Z",
+					"startTime": "2020-12-28T18:00:00Z",
 					"delay": "00:00:00",
 					"maxConcurrency": 1,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/process-environmental-events')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumbling_window_every_6_hours_airquality')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "process-environmental-events",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"startTime": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime')]",
+						"endTime": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime')]",
+						"explorationPath": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath')]",
+						"mergeJoin": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin')]",
+						"sqlStatement": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement')]",
+						"partitionByColumn": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn')]",
+						"explorationTableDuplicates": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates')]",
+						"explorationTable": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 6,
+					"startTime": "2020-12-29T18:00:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
 					"retryPolicy": {
 						"intervalInSeconds": 30
 					},
@@ -3487,46 +3751,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/tumbling_window_every_6_hours_airquality')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipeline": {
-					"pipelineReference": {
-						"referenceName": "process-environmental-events",
-						"type": "PipelineReference"
-					},
-					"parameters": {
-						"startTime": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime')]",
-						"endTime": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime')]",
-						"explorationPath": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath')]",
-						"mergeJoin": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin')]",
-						"sqlStatement": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement')]",
-						"partitionByColumn": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn')]",
-						"explorationTableDuplicates": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates')]",
-						"explorationTable": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable')]"
-					}
-				},
-				"type": "TumblingWindowTrigger",
-				"typeProperties": {
-					"frequency": "Hour",
-					"interval": 6,
-					"startTime": "2020-12-29T18:00:00.000Z",
-					"delay": "00:00:00",
-					"maxConcurrency": 50,
-					"retryPolicy": {
-						"intervalInSeconds": 30
-					},
-					"dependsOn": []
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/process-environmental-events')]"
-			]
 		}
 	]
 }

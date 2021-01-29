@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "mtcchimoderndwdf001d"
 		},
+		"AzureMapsAPI_properties_typeProperties_url": {
+			"value": "https://atlas.microsoft.com/"
+		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"value": "https://andrdatalake001d.dfs.core.windows.net"
 		},
@@ -22,6 +25,21 @@
 		},
 		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
 			"value": "@linkedService().databaseConnectionStringSecretName"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_executionTime": {
+			"value": "@trigger.startTime"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_relativePath": {
+			"value": "weather/currentConditions/json?"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_apiVersion": {
+			"value": "1.0"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_query": {
+			"value": "42.148924384904156,-87.99537852892261"
+		},
+		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_subscriptionKey": {
+			"value": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
 		},
 		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
 			"value": "@triggerBody().folderPath"
@@ -62,9 +80,6 @@
 		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
 			"value": "exploration.temperatureevents"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"value": "mtcchioltp001d.database.windows.net"
-		},
 		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
 			"value": "@trigger().outputs.windowStartTime"
 		},
@@ -88,6 +103,9 @@
 		},
 		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
 			"value": "exploration.airqualityevents"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"value": "mtcchioltp001d.database.windows.net"
 		}
 	}
 }
