@@ -35,23 +35,23 @@
 			"type": "string",
 			"defaultValue": "@linkedService().databaseConnectionStringSecretName"
 		},
-		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_executionTime": {
+		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_executionTime": {
 			"type": "string",
 			"defaultValue": "@trigger().scheduledTime"
 		},
-		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_relativePath": {
+		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_relativePath": {
 			"type": "string",
 			"defaultValue": "weather/currentConditions/json?"
 		},
-		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_apiVersion": {
+		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_apiVersion": {
 			"type": "string",
 			"defaultValue": "1.0"
 		},
-		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_query": {
+		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_query": {
 			"type": "string",
 			"defaultValue": "42.148924384904156,-87.99537852892261"
 		},
-		"15-minute-schedule_properties_azure-maps-to-datalake_parameters_subscriptionKey": {
+		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_subscriptionKey": {
 			"type": "string",
 			"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
 		},
@@ -3555,7 +3555,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/15-minute-schedule')]",
+			"name": "[concat(parameters('factoryName'), '/15-minute-schedule-weather-info')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -3568,11 +3568,11 @@
 							"type": "PipelineReference"
 						},
 						"parameters": {
-							"executionTime": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_executionTime')]",
-							"relativePath": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_relativePath')]",
-							"apiVersion": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_apiVersion')]",
-							"query": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_query')]",
-							"subscriptionKey": "[parameters('15-minute-schedule_properties_azure-maps-to-datalake_parameters_subscriptionKey')]"
+							"executionTime": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_executionTime')]",
+							"relativePath": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_relativePath')]",
+							"apiVersion": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_apiVersion')]",
+							"query": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_query')]",
+							"subscriptionKey": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_subscriptionKey')]"
 						}
 					}
 				],
