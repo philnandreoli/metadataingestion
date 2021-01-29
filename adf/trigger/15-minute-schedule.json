@@ -1,0 +1,27 @@
+{
+	"name": "15-minute-schedule",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "AzureMapsToDataLake",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"executionTime": "@trigger.startTime"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2021-01-29T20:30:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}
