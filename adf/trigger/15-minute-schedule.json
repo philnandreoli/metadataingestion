@@ -10,7 +10,11 @@
 					"type": "PipelineReference"
 				},
 				"parameters": {
-					"executionTime": "@trigger.startTime"
+					"executionTime": "@trigger.startTime",
+					"relativePath": "weather/currentConditions/json?",
+					"apiVersion": "1.0",
+					"query": "42.148924384904156,-87.99537852892261",
+					"subscriptionKey": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
 				}
 			}
 		],
