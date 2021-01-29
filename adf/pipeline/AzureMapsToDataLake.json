@@ -110,7 +110,7 @@
 			},
 			"query": {
 				"type": "string",
-				"defaultValue": "42.148924384904156\\,-87.99537852892261"
+				"defaultValue": "42.148924384904156,-87.99537852892261"
 			},
 			"relativePath": {
 				"type": "string",
