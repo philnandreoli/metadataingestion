@@ -89,7 +89,7 @@
 				"typeProperties": {
 					"variableName": "relativePath",
 					"value": {
-						"value": "@concat(pipeline().parameters.relative-path, 'api\\-version=', pipeline().parameters.api-version, '&query=', pipeline().parameters.query, '&subscription\\-key=', pipeline().parameters.subscription-key)",
+						"value": "@concat(pipeline().parameters.relative-path, pipeline().parameters.api-version, '&query=', pipeline().parameters.query, '&subscription\\-key=', pipeline().parameters.subscription-key)",
 						"type": "Expression"
 					}
 				}
@@ -114,7 +114,7 @@
 			},
 			"relative-path": {
 				"type": "string",
-				"defaultValue": "weather/currentConditions/json?"
+				"defaultValue": "weather/currentConditions/json?api-version="
 			}
 		},
 		"variables": {
