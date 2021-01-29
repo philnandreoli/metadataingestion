@@ -26,10 +26,7 @@
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {
-			"relativeUrl": {
-				"value": "@concat(dataset().relative-path, '?api-version=', dataset().api-version, '&query=', dataset().query, '&subscription-key=', dataset().subscription-key)",
-				"type": "Expression"
-			}
+			"relativeUrl": ""
 		},
 		"schema": []
 	}
