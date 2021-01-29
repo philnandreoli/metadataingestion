@@ -5,7 +5,14 @@
 			{
 				"name": "get-current-weather",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -73,6 +80,19 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "relativePath",
+					"value": {
+						"value": "@concat(pipeline().parameters.relativePath, 'apiVersion=', pipeline().parameters.apiVersion, '&query=', pipeline().parameters.query, '&subscriptionKey=', pipeline().parameters.subscriptionKey)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
