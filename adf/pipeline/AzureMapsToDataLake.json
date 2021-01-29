@@ -44,20 +44,8 @@
 						"referenceName": "AzureMaps",
 						"type": "DatasetReference",
 						"parameters": {
-							"apiVersion": {
-								"value": "@pipeline().parameters.apiVersion",
-								"type": "Expression"
-							},
-							"query": {
-								"value": "@pipeline().parameters.query",
-								"type": "Expression"
-							},
-							"subscriptionKey": {
-								"value": "@pipeline().parameters.subscriptionKey",
-								"type": "Expression"
-							},
 							"path": {
-								"value": "@pipeline().parameters.relativePath",
+								"value": "@variables('relativePath')",
 								"type": "Expression"
 							}
 						}
@@ -89,7 +77,7 @@
 				"typeProperties": {
 					"variableName": "relativePath",
 					"value": {
-						"value": "@concat(pipeline().parameters.relativePath, 'apiVersion=', pipeline().parameters.apiVersion, '&query=', pipeline().parameters.query, '&subscriptionKey=', pipeline().parameters.subscriptionKey)",
+						"value": "@concat(pipeline().parameters.relativePath, 'api-version=', pipeline().parameters.apiVersion, '&query=', pipeline().parameters.query, '&subscriptionKey=', pipeline().parameters.subscriptionKey)",
 						"type": "Expression"
 					}
 				}
