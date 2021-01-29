@@ -1,5 +1,5 @@
 {
-	"name": "AzureMapsToDataLake",
+	"name": "azure-maps-to-datalake",
 	"properties": {
 		"activities": [
 			{

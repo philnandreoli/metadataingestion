@@ -6,7 +6,7 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "AzureMapsToDataLake",
+					"referenceName": "azure-maps-to-datalake",
 					"type": "PipelineReference"
 				},
 				"parameters": {
