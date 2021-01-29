@@ -5,14 +5,7 @@
 			{
 				"name": "get-current-weather",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "Set variable1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -44,20 +37,20 @@
 						"referenceName": "AzureMaps",
 						"type": "DatasetReference",
 						"parameters": {
-							"api-version": {
-								"value": "@pipeline().parameters.api-version",
+							"apiVersion": {
+								"value": "@pipeline().parameters.apiVersion",
 								"type": "Expression"
 							},
 							"query": {
 								"value": "@pipeline().parameters.query",
 								"type": "Expression"
 							},
-							"subscription-key": {
-								"value": "@pipeline().parameters.subscription-key",
+							"subscriptionKey": {
+								"value": "@pipeline().parameters.subscriptionKey",
 								"type": "Expression"
 							},
 							"path": {
-								"value": "@pipeline().parameters.relative-path",
+								"value": "@pipeline().parameters.relativePath",
 								"type": "Expression"
 							}
 						}
@@ -80,19 +73,6 @@
 						}
 					}
 				]
-			},
-			{
-				"name": "Set variable1",
-				"type": "SetVariable",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "relativePath",
-					"value": {
-						"value": "@concat(pipeline().parameters.relativePath, pipeline().parameters.apiVersion, '&query=', pipeline().parameters.query, '&subscription-key=', pipeline().parameters.subscriptionKey)",
-						"type": "Expression"
-					}
-				}
 			}
 		],
 		"parameters": {
@@ -114,7 +94,7 @@
 			},
 			"relativePath": {
 				"type": "string",
-				"defaultValue": "weather/currentConditions/json?api-version="
+				"defaultValue": "weather/currentConditions/json?"
 			}
 		},
 		"variables": {
