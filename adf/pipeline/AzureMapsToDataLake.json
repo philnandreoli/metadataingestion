@@ -64,7 +64,19 @@
 			},
 			"relativePath": {
 				"type": "string",
-				"defaultValue": "weather/currentConditions/json?api-version=1.0&query=42.148924384904156,-87.99537852892261&subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
+				"defaultValue": "weather/currentConditions/json?"
+			},
+			"apiVersion": {
+				"type": "string",
+				"defaultValue": "1.0"
+			},
+			"query": {
+				"type": "string",
+				"defaultValue": "42.148924384904156,-87.99537852892261"
+			},
+			"subscriptionKey": {
+				"type": "string",
+				"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
 			}
 		},
 		"annotations": []
