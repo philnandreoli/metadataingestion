@@ -100,11 +100,11 @@
 				"type": "string",
 				"defaultValue": "2020-10-05 01:01:00"
 			},
-			"api-version": {
+			"apiVersion": {
 				"type": "string",
 				"defaultValue": "1.0"
 			},
-			"subscription-key": {
+			"subscriptionKey": {
 				"type": "string",
 				"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
 			},
@@ -112,7 +112,7 @@
 				"type": "string",
 				"defaultValue": "42.148924384904156\\,-87.99537852892261"
 			},
-			"relative-path": {
+			"relativePath": {
 				"type": "string",
 				"defaultValue": "weather/currentConditions/json?api-version="
 			}
