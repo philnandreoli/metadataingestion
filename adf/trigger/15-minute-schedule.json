@@ -2,7 +2,7 @@
 	"name": "15-minute-schedule",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipelines": [
 			{
 				"pipelineReference": {
@@ -10,7 +10,7 @@
 					"type": "PipelineReference"
 				},
 				"parameters": {
-					"executionTime": "@trigger.startTime",
+					"executionTime": "@trigger().scheduledTime",
 					"relativePath": "weather/currentConditions/json?",
 					"apiVersion": "1.0",
 					"query": "42.148924384904156,-87.99537852892261",
