@@ -5,24 +5,6 @@
 			"referenceName": "AzureMapsAPI",
 			"type": "LinkedServiceReference"
 		},
-		"parameters": {
-			"api-version": {
-				"type": "string",
-				"defaultValue": "1.0"
-			},
-			"relative-path": {
-				"type": "string",
-				"defaultValue": "weather/currentConditions/json?"
-			},
-			"subscription-key": {
-				"type": "string",
-				"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
-			},
-			"query": {
-				"type": "string",
-				"defaultValue": "42.148924384904156,-87.99537852892261"
-			}
-		},
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {
