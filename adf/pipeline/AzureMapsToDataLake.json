@@ -5,14 +5,7 @@
 			{
 				"name": "get-current-weather",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "Set variable1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -42,13 +35,7 @@
 				"inputs": [
 					{
 						"referenceName": "AzureMaps",
-						"type": "DatasetReference",
-						"parameters": {
-							"path": {
-								"value": "@variables('relativePath')",
-								"type": "Expression"
-							}
-						}
+						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
@@ -68,19 +55,6 @@
 						}
 					}
 				]
-			},
-			{
-				"name": "Set variable1",
-				"type": "SetVariable",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "relativePath",
-					"value": {
-						"value": "@concat(pipeline().parameters.relativePath, 'api-version=', pipeline().parameters.apiVersion, '&query=', pipeline().parameters.query, '&subscriptionKey=', pipeline().parameters.subscriptionKey)",
-						"type": "Expression"
-					}
-				}
 			}
 		],
 		"parameters": {
@@ -88,27 +62,9 @@
 				"type": "string",
 				"defaultValue": "2020-10-05 01:01:00"
 			},
-			"apiVersion": {
-				"type": "string",
-				"defaultValue": "1.0"
-			},
-			"subscriptionKey": {
-				"type": "string",
-				"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
-			},
-			"query": {
-				"type": "string",
-				"defaultValue": "42.148924384904156,-87.99537852892261"
-			},
 			"relativePath": {
 				"type": "string",
-				"defaultValue": "weather/currentConditions/json?"
-			}
-		},
-		"variables": {
-			"relativePath": {
-				"type": "String",
-				"defaultValue": "test"
+				"defaultValue": "weather/currentConditions/json?api-version=1.0&query=42.148924384904156,-87.99537852892261&subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
 			}
 		},
 		"annotations": []
