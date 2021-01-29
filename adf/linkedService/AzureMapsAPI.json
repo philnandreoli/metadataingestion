@@ -4,7 +4,7 @@
 		"annotations": [],
 		"type": "RestService",
 		"typeProperties": {
-			"url": "weather/currentConditions/json?api-version=1.0&query=42.148924384904156,-87.99537852892261&subscriptionKey=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec",
+			"url": "https://atlas.microsoft.com/weather/currentConditions/json?api-version=1.0&query=42.148924384904156,-87.99537852892261&subscriptionKey=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		}
