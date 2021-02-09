@@ -1,0 +1,24 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Json1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "pageResults"
+				}
+			],
+			"script": "source(output(\n\t\tanalyzeResult as (pageResults as (page as short, tables as (boundingBox as double[], cells as (boundingBox as double[], columnIndex as short, elements as string[], rowIndex as short, text as string)[], columns as short, rows as short)[])[], readResults as (angle as double, height as double, lines as (appearance as (style as (confidence as double, name as string)), boundingBox as double[], text as string, words as (boundingBox as double[], confidence as double, text as string)[])[], page as short, unit as string, width as double)[], version as string),\n\t\tcreatedDateTime as timestamp,\n\t\tlastUpdatedDateTime as timestamp,\n\t\tstatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tinferDriftedColumnTypes: true,\n\tdocumentForm: 'documentPerLine') ~> source1\nsource1 foldDown(unroll(analyzeResult.pageResults, analyzeResult.pageResults),\n\tmapColumn(\n\t\tpageResults = analyzeResult.pageResults\n\t),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> pageResults"
+		}
+	}
+}
