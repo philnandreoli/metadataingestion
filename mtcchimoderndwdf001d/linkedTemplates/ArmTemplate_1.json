@@ -117,6 +117,186 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Json1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Layout-Result-A320NeoIPCSmaller.json",
+						"folderPath": "aarcorp",
+						"fileSystem": "raw"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"status": {
+							"type": "string"
+						},
+						"createdDateTime": {
+							"type": "string"
+						},
+						"lastUpdatedDateTime": {
+							"type": "string"
+						},
+						"analyzeResult": {
+							"type": "object",
+							"properties": {
+								"version": {
+									"type": "string"
+								},
+								"readResults": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"page": {
+												"type": "integer"
+											},
+											"angle": {
+												"type": "number"
+											},
+											"width": {
+												"type": "number"
+											},
+											"height": {
+												"type": "number"
+											},
+											"unit": {
+												"type": "string"
+											},
+											"lines": {
+												"type": "array",
+												"items": {
+													"type": "object",
+													"properties": {
+														"boundingBox": {
+															"type": "array",
+															"items": {
+																"type": "number"
+															}
+														},
+														"text": {
+															"type": "string"
+														},
+														"appearance": {
+															"type": "object",
+															"properties": {
+																"style": {
+																	"type": "object",
+																	"properties": {
+																		"name": {
+																			"type": "string"
+																		},
+																		"confidence": {
+																			"type": "integer"
+																		}
+																	}
+																}
+															}
+														},
+														"words": {
+															"type": "array",
+															"items": {
+																"type": "object",
+																"properties": {
+																	"boundingBox": {
+																		"type": "array",
+																		"items": {
+																			"type": "number"
+																		}
+																	},
+																	"text": {
+																		"type": "string"
+																	},
+																	"confidence": {
+																		"type": "number"
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								},
+								"pageResults": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"page": {
+												"type": "integer"
+											},
+											"tables": {
+												"type": "array"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Parquet1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "ipc/pageResults",
+						"fileSystem": "exploration"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Parquet2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "ipc/readResults",
+						"fileSystem": "exploration"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/azure-maps-to-datalake')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -606,6 +786,55 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Json1",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Parquet1",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "Parquet2",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
+						}
+					],
+					"transformations": [
+						{
+							"name": "pageResults"
+						},
+						{
+							"name": "readResults"
+						}
+					],
+					"script": "source(output(\n\t\tanalyzeResult as (pageResults as (page as short, tables as (boundingBox as double[], cells as (boundingBox as double[], columnIndex as short, elements as string[], rowIndex as short, text as string)[], columns as short, rows as short)[])[], readResults as (angle as double, height as double, lines as (appearance as (style as (confidence as double, name as string)), boundingBox as double[], text as string, words as (boundingBox as double[], confidence as double, text as string)[])[], page as short, unit as string, width as double)[], version as string),\n\t\tcreatedDateTime as timestamp,\n\t\tlastUpdatedDateTime as timestamp,\n\t\tstatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tinferDriftedColumnTypes: true,\n\tdocumentForm: 'documentPerLine') ~> source1\nsource1 foldDown(unroll(analyzeResult.pageResults, analyzeResult.pageResults),\n\tmapColumn(\n\t\tpageResults = analyzeResult.pageResults\n\t),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> pageResults\nsource1 foldDown(unroll(analyzeResult.readResults, analyzeResult.readResults),\n\tmapColumn(\n\t\tanalyzeResult = analyzeResult.readResults\n\t),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> readResults\npageResults sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nreadResults sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Json1')]",
+				"[concat(variables('factoryId'), '/datasets/Parquet1')]",
+				"[concat(variables('factoryId'), '/datasets/Parquet2')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/data-extraction-sql')]",
