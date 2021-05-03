@@ -2,7 +2,7 @@
 	"name": "tumbling_window_every_6_hours_airquality",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Started",
+		"runtimeState": "Stopped",
 		"pipeline": {
 			"pipelineReference": {
 				"referenceName": "process-environmental-events",
@@ -23,7 +23,7 @@
 		"typeProperties": {
 			"frequency": "Hour",
 			"interval": 6,
-			"startTime": "2020-12-29T18:00:00.000Z",
+			"startTime": "2020-12-29T18:00:00Z",
 			"delay": "00:00:00",
 			"maxConcurrency": 50,
 			"retryPolicy": {
