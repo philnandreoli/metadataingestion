@@ -43,6 +43,26 @@
 					},
 					"firstRowOnly": false
 				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Azure SQL Tables To Extract",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Azure SQL Tables To Extract').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 10
+				}
 			}
 		],
 		"parameters": {
