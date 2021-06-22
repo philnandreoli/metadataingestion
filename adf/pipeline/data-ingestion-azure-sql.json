@@ -81,15 +81,6 @@
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
-								"sink": {
-									"type": "ParquetSink",
-									"storeSettings": {
-										"type": "AzureBlobFSWriteSettings"
-									},
-									"formatSettings": {
-										"type": "ParquetWriteSettings"
-									}
-								},
 								"enableStaging": false
 							},
 							"inputs": [
@@ -129,6 +120,10 @@
 			"sourceDatabaseName": {
 				"type": "string",
 				"defaultValue": "CloudSales"
+			},
+			"extractionDateTime": {
+				"type": "string",
+				"defaultValue": "2021-06-22"
 			}
 		},
 		"annotations": []
