@@ -2,13 +2,11 @@
 	"name": "azure_sql_table",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "worldwide_importers_db",
+			"referenceName": "azure_sql_db",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"databaseConnectionStringSecretName": {
-					"value": "@dataset().connectionString",
-					"type": "Expression"
-				}
+				"databaseName": "CloudSales",
+				"serverFQDN": "andrmdwopenhacksourcesql001d.database.windows.net"
 			}
 		},
 		"parameters": {
@@ -20,9 +18,13 @@
 				"type": "string",
 				"defaultValue": "customers"
 			},
-			"connectionString": {
+			"databaseName": {
 				"type": "string",
-				"defaultValue": "WorldWideImportersConnectionString"
+				"defaultValue": "CloudSales"
+			},
+			"serverName": {
+				"type": "string",
+				"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
 			}
 		},
 		"folder": {
