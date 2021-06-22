@@ -30,9 +30,6 @@
 				"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
 			}
 		},
-		"folder": {
-			"name": "data-extraction"
-		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [],
