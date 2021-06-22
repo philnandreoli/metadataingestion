@@ -5,7 +5,10 @@
 			"referenceName": "azure_sql_db",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"databaseName": "CloudSales",
+				"databaseName": {
+					"value": "@dataset().databaseName",
+					"type": "Expression"
+				},
 				"serverFQDN": "andrmdwopenhacksourcesql001d.database.windows.net"
 			}
 		},
