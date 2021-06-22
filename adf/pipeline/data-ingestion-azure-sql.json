@@ -37,10 +37,6 @@
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
-					"dataset": {
-						"referenceName": "metadataTablesToExtract",
-						"type": "DatasetReference"
-					},
 					"firstRowOnly": false
 				}
 			},
@@ -81,7 +77,24 @@
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
-								"enableStaging": false
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
 							},
 							"inputs": [
 								{
@@ -104,6 +117,15 @@
 											"value": "@pipeline().parameters.sourceServerFQDN",
 											"type": "Expression"
 										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "data_ingestion_raw_output_file_parquet",
+									"type": "DatasetReference",
+									"parameters": {
+										"containerName": "raw"
 									}
 								}
 							]
