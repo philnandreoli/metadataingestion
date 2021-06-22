@@ -5,7 +5,10 @@
 			"referenceName": "data_lake_storage_account",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"storageAccountName": "andrdatalake001d"
+				"storageAccountName": {
+					"value": "@dataset().storageAccountName",
+					"type": "Expression"
+				}
 			}
 		},
 		"parameters": {
