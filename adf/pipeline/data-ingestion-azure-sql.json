@@ -37,6 +37,10 @@
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
+					"dataset": {
+						"referenceName": "metadata_objects_to_extract",
+						"type": "DatasetReference"
+					},
 					"firstRowOnly": false
 				}
 			},
@@ -86,15 +90,7 @@
 										"type": "ParquetWriteSettings"
 									}
 								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
+								"enableStaging": false
 							},
 							"inputs": [
 								{
@@ -117,15 +113,6 @@
 											"value": "@pipeline().parameters.sourceServerFQDN",
 											"type": "Expression"
 										}
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "data_ingestion_raw_output_file_parquet",
-									"type": "DatasetReference",
-									"parameters": {
-										"containerName": "raw"
 									}
 								}
 							]
