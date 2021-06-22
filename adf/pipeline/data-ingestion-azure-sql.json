@@ -61,7 +61,54 @@
 						"value": "@activity('Get Azure SQL Tables To Extract').output.value",
 						"type": "Expression"
 					},
-					"batchCount": 10
+					"batchCount": 10,
+					"activities": [
+						{
+							"name": "Copy Source Data To ADLS",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "azure_sql_table",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema": {
+											"value": "@item().SCHEMA_NAME",
+											"type": "Expression"
+										},
+										"objectName": {
+											"value": "@item().OBJECT_NAME",
+											"type": "Expression"
+										},
+										"databaseName": {
+											"value": "@pipeline().parameters.sourceDatabaseName",
+											"type": "Expression"
+										},
+										"serverName": {
+											"value": "@pipeline().parameters.sourceServerFQDN",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
 				}
 			}
 		],
