@@ -171,6 +171,9 @@
 				"defaultValue": "2021-06-22"
 			}
 		},
+		"folder": {
+			"name": "data-ingestion"
+		},
 		"annotations": []
 	}
 }
