@@ -25,6 +25,10 @@
 			"storageAccountName": {
 				"type": "string",
 				"defaultValue": "andrdatalake001d"
+			},
+			"extraction-date": {
+				"type": "string",
+				"defaultValue": "2021-06-22"
 			}
 		},
 		"folder": {
