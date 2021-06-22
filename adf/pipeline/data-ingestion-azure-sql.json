@@ -1,6 +1,60 @@
 {
 	"name": "data-ingestion-azure-sql",
 	"properties": {
+		"activities": [
+			{
+				"name": "Get Azure SQL Tables To Extract",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "[metadata].[GET_SOURCE_DESTINATION_OBJECTS]",
+						"storedProcedureParameters": {
+							"SERVER_DATABASE": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.sourceDatabaseName",
+									"type": "Expression"
+								}
+							},
+							"SERVER_FQDN": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.sourceServerFQDN",
+									"type": "Expression"
+								}
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "metadataTablesToExtract",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			}
+		],
+		"parameters": {
+			"sourceServerFQDN": {
+				"type": "string",
+				"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+			},
+			"sourceDatabaseName": {
+				"type": "string",
+				"defaultValue": "CloudSales"
+			}
+		},
 		"annotations": []
 	}
 }
