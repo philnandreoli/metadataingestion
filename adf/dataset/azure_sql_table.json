@@ -30,6 +30,9 @@
 				"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
 			}
 		},
+		"folder": {
+			"name": "source objects"
+		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [],
