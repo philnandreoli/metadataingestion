@@ -75,7 +75,8 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
-									"queryTimeout": "06:00:00"
+									"queryTimeout": "06:00:00",
+									"partitionOption": "None"
 								},
 								"sink": {
 									"type": "AvroSink",
@@ -83,8 +84,7 @@
 										"type": "AzureBlobFSWriteSettings"
 									},
 									"formatSettings": {
-										"type": "AvroWriteSettings",
-										"quoteAllText": true
+										"type": "AvroWriteSettings"
 									}
 								},
 								"enableStaging": false
