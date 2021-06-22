@@ -81,7 +81,24 @@
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
-								"enableStaging": false
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
 							},
 							"inputs": [
 								{
@@ -102,6 +119,34 @@
 										},
 										"serverName": {
 											"value": "@pipeline().parameters.sourceServerFQDN",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_data_lake_store_object",
+									"type": "DatasetReference",
+									"parameters": {
+										"storageAccountName": {
+											"value": "@item().BRONZE_STORAGE_ACCOUNT_NAME",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@item().BRONZE_CONTAINER_NAME",
+											"type": "Expression"
+										},
+										"directory": {
+											"value": "@item().BRONZE_DIRECTORY",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@concat(toLower(item().OBJECT_NAME), '.snappy.parquet')",
+											"type": "Expression"
+										},
+										"extractionDate": {
+											"value": "@pipeline().parameters.extractionDateTime",
 											"type": "Expression"
 										}
 									}
