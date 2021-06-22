@@ -1,10 +1,16 @@
 {
 	"name": "data_lake_storage_account",
 	"properties": {
+		"parameters": {
+			"storageAccountName": {
+				"type": "string",
+				"defaultValue": "andrdatalake001d"
+			}
+		},
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://andrdatalake001d.dfs.core.windows.net"
+			"url": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
 		}
 	}
 }
