@@ -45,7 +45,7 @@
 				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "Loop Through Each Object To Process",
 				"type": "ForEach",
 				"dependsOn": [
 					{
