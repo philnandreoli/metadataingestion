@@ -3,7 +3,10 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "data_lake_storage_account",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"storageAccountName": "andrdatalake001d"
+			}
 		},
 		"parameters": {
 			"filePath": {
@@ -13,7 +16,12 @@
 				"type": "string"
 			},
 			"containerName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "bronze"
+			},
+			"storageAccountName": {
+				"type": "string",
+				"defaultValue": "andrdatalake001d"
 			}
 		},
 		"folder": {
