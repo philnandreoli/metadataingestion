@@ -1,5 +1,5 @@
 {
-	"name": "data-ingestion-azure-sql",
+	"name": "azure-sql-data-ingestion",
 	"properties": {
 		"activities": [
 			{

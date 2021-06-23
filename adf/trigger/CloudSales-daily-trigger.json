@@ -1,12 +1,12 @@
 {
-	"name": "daily-trigger",
+	"name": "CloudSales-daily-trigger",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "data-ingestion-azure-sql",
+					"referenceName": "azure-sql-data-ingestion",
 					"type": "PipelineReference"
 				},
 				"parameters": {
