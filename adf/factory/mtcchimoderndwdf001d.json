@@ -1,0 +1,9 @@
+{
+	"name": "mtcchimoderndwdf001d",
+	"location": "centralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "09234443-c80c-4d04-a2c0-dcb811f691fc",
+		"tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+	}
+}
