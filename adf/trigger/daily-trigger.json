@@ -1,0 +1,29 @@
+{
+	"name": "daily-trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "data-ingestion-azure-sql",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"sourceServerFQDN": "andrmdwopenhacksourcesql001d.database.windows.net",
+					"sourceDatabaseName": "CloudSales",
+					"extractionDateTime": "@trigger().startTime"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2021-06-22T20:45:00",
+				"timeZone": "Central Standard Time"
+			}
+		}
+	}
+}
