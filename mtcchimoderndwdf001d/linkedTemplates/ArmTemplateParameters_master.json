@@ -14,13 +14,13 @@
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"value": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
 		},
-		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN": {
+		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
 			"value": "andrmdwopenhacksourcesql001d.database.windows.net"
 		},
-		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName": {
+		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
 			"value": "CloudSales"
 		},
-		"daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime": {
+		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 			"value": "@trigger().startTime"
 		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {

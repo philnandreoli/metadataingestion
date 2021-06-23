@@ -19,15 +19,15 @@
 			"type": "string",
 			"defaultValue": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
 		},
-		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN": {
+		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
 			"type": "string",
 			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
 		},
-		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName": {
+		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
 			"type": "string",
 			"defaultValue": "CloudSales"
 		},
-		"daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime": {
+		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 			"type": "string",
 			"defaultValue": "@trigger().startTime"
 		},
@@ -41,7 +41,7 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/data-ingestion-azure-sql')]",
+			"name": "[concat(parameters('factoryName'), '/azure-sql-data-ingestion')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -129,7 +129,72 @@
 										"sink": {
 											"type": "ParquetSink",
 											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
+												"type": "AzureBlobFSWriteSettings",
+												"metadata": [
+													{
+														"name": "SILVER_STORAGE_ACCOUNT_NAME",
+														"value": {
+															"value": "@item().SILVER_STORAGE_ACCOUNT_NAME",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "SILVER_CONTAINER_NAME",
+														"value": {
+															"value": "@item().SILVER_CONTAINER_NAME",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "SILVER_DIRECTORY",
+														"value": {
+															"value": "@item().SILVER_DIRECTORY",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "SILVER_LOAD_TYPE",
+														"value": {
+															"value": "@item().SILVER_LOAD_TYPE",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "GOLD_STORAGE_ACCOUNT_NAME",
+														"value": {
+															"value": "@item().GOLD_STORAGE_ACCOUNT_NAME",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "GOLD_CONTAINER_NAME",
+														"value": {
+															"value": "@item().GOLD_CONTAINER_NAME",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "GOLD_DIRECTORY",
+														"value": {
+															"value": "@item().GOLD_DIRECTORY",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "GOLD_LOAD_TYPE",
+														"value": {
+															"value": "@item().GOLD_LOAD_TYPE",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "PRIMARY_KEY_FIELDS",
+														"value": {
+															"value": "@item().PRIMARY_KEY_FIELDS",
+															"type": "Expression"
+														}
+													}
+												]
 											},
 											"formatSettings": {
 												"type": "ParquetWriteSettings"
@@ -219,7 +284,8 @@
 				"folder": {
 					"name": "data-ingestion"
 				},
-				"annotations": []
+				"annotations": [],
+				"lastPublishTime": "2021-06-23T01:42:04Z"
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metadata_objects_to_extract')]",
@@ -451,7 +517,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/daily-trigger')]",
+			"name": "[concat(parameters('factoryName'), '/CloudSales-daily-trigger')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -460,13 +526,13 @@
 				"pipelines": [
 					{
 						"pipelineReference": {
-							"referenceName": "data-ingestion-azure-sql",
+							"referenceName": "azure-sql-data-ingestion",
 							"type": "PipelineReference"
 						},
 						"parameters": {
-							"sourceServerFQDN": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN')]",
-							"sourceDatabaseName": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName')]",
-							"extractionDateTime": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime')]"
+							"sourceServerFQDN": "[parameters('CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN')]",
+							"sourceDatabaseName": "[parameters('CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName')]",
+							"extractionDateTime": "[parameters('CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime')]"
 						}
 					}
 				],
@@ -481,7 +547,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/data-ingestion-azure-sql')]"
+				"[concat(variables('factoryId'), '/pipelines/azure-sql-data-ingestion')]"
 			]
 		},
 		{

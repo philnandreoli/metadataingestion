@@ -1,0 +1,298 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mtcchimoderndwdf001d"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/azure-sql-data-ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Azure SQL Tables To Extract",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "[[metadata].[GET_SOURCE_DESTINATION_OBJECTS]",
+								"storedProcedureParameters": {
+									"SERVER_DATABASE": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.sourceDatabaseName",
+											"type": "Expression"
+										}
+									},
+									"SERVER_FQDN": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.sourceServerFQDN",
+											"type": "Expression"
+										}
+									}
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "metadata_objects_to_extract",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Loop Through Each Object To Process",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Azure SQL Tables To Extract",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Azure SQL Tables To Extract').output.value",
+								"type": "Expression"
+							},
+							"batchCount": 10,
+							"activities": [
+								{
+									"name": "Copy Source Data To ADLS",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings",
+												"metadata": [
+													{
+														"name": "SILVER_STORAGE_ACCOUNT_NAME",
+														"value": {
+															"value": "@item().SILVER_STORAGE_ACCOUNT_NAME",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "SILVER_CONTAINER_NAME",
+														"value": {
+															"value": "@item().SILVER_CONTAINER_NAME",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "SILVER_DIRECTORY",
+														"value": {
+															"value": "@item().SILVER_DIRECTORY",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "SILVER_LOAD_TYPE",
+														"value": {
+															"value": "@item().SILVER_LOAD_TYPE",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "GOLD_STORAGE_ACCOUNT_NAME",
+														"value": {
+															"value": "@item().GOLD_STORAGE_ACCOUNT_NAME",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "GOLD_CONTAINER_NAME",
+														"value": {
+															"value": "@item().GOLD_CONTAINER_NAME",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "GOLD_DIRECTORY",
+														"value": {
+															"value": "@item().GOLD_DIRECTORY",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "GOLD_LOAD_TYPE",
+														"value": {
+															"value": "@item().GOLD_LOAD_TYPE",
+															"type": "Expression"
+														}
+													},
+													{
+														"name": "PRIMARY_KEY_FIELDS",
+														"value": {
+															"value": "@item().PRIMARY_KEY_FIELDS",
+															"type": "Expression"
+														}
+													}
+												]
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "azure_sql_table",
+											"type": "DatasetReference",
+											"parameters": {
+												"schema": {
+													"value": "@item().SCHEMA_NAME",
+													"type": "Expression"
+												},
+												"objectName": {
+													"value": "@item().OBJECT_NAME",
+													"type": "Expression"
+												},
+												"databaseName": {
+													"value": "@pipeline().parameters.sourceDatabaseName",
+													"type": "Expression"
+												},
+												"serverName": {
+													"value": "@pipeline().parameters.sourceServerFQDN",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "azure_data_lake_store_object",
+											"type": "DatasetReference",
+											"parameters": {
+												"storageAccountName": {
+													"value": "@item().BRONZE_STORAGE_ACCOUNT_NAME",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@item().BRONZE_CONTAINER_NAME",
+													"type": "Expression"
+												},
+												"directory": {
+													"value": "@item().BRONZE_DIRECTORY",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@concat(toLower(item().OBJECT_NAME), '.snappy.parquet')",
+													"type": "Expression"
+												},
+												"extractionDate": {
+													"value": "@pipeline().parameters.extractionDateTime",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"sourceServerFQDN": {
+						"type": "string",
+						"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+					},
+					"sourceDatabaseName": {
+						"type": "string",
+						"defaultValue": "CloudSales"
+					},
+					"extractionDateTime": {
+						"type": "string",
+						"defaultValue": "2021-06-22"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion"
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-06-23T01:42:04Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CloudSales-daily-trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "azure-sql-data-ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"sourceServerFQDN": "andrmdwopenhacksourcesql001d.database.windows.net",
+							"sourceDatabaseName": "CloudSales",
+							"extractionDateTime": "@trigger().startTime"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2021-06-22T20:45:00",
+						"timeZone": "Central Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/azure-sql-data-ingestion')]"
+			]
+		}
+	]
+}
