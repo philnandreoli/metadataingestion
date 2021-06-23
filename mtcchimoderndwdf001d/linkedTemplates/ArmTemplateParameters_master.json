@@ -5,104 +5,23 @@
 		"factoryName": {
 			"value": "mtcchimoderndwdf001d"
 		},
-		"AzureMapsAPI_properties_typeProperties_url": {
-			"value": "https://atlas.microsoft.com/"
+		"azure_sql_db_connectionString": {
+			"value": ""
+		},
+		"metadata_db_connectionString": {
+			"value": ""
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
-			"value": "https://andrdatalake001d.dfs.core.windows.net"
+			"value": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
 		},
-		"key_vault_secrets_properties_typeProperties_baseUrl": {
-			"value": "https://mtcchimoderndwkv001d.vault.azure.net/"
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN": {
+			"value": "andrmdwopenhacksourcesql001d.database.windows.net"
 		},
-		"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
-			"value": "MetaDataConfigurationConnectionString"
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName": {
+			"value": "CloudSales"
 		},
-		"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
-			"value": "MetaDataConfigurationMongoDB"
-		},
-		"meta_data_configuration_db_v2_properties_typeProperties_database": {
-			"value": "MetaDataConfiguration"
-		},
-		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
-			"value": "@linkedService().databaseConnectionStringSecretName"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_executionTime": {
-			"value": "@trigger().scheduledTime"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_relativePath": {
-			"value": "weather/currentConditions/json?"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_apiVersion": {
-			"value": "1.0"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_query": {
-			"value": "42.148924384904156,-87.99537852892261"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_subscriptionKey": {
-			"value": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
-		},
-		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
-			"value": "@triggerBody().folderPath"
-		},
-		"landing_file_pickup_properties_data-ingestion_parameters_sourceFile": {
-			"value": "@triggerBody().fileName"
-		},
-		"landing_file_pickup_properties_data-ingestion_parameters_ingestionContainerName": {
-			"value": "landing"
-		},
-		"landing_file_pickup_properties_data-ingestion_parameters_errorContainerName": {
-			"value": "error"
-		},
-		"landing_file_pickup_properties_typeProperties_scope": {
-			"value": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
-			"value": "@trigger().outputs.windowStartTime"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_endTime": {
-			"value": "@trigger().outputs.windowEndTime"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath": {
-			"value": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
-			"value": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_sqlStatement": {
-			"value": "SELECT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].temperature as temperature, body.series[0].humidity as humidity, body.series[0].dewpoint as dewpoint, body.series[0].altitude as altitude, body.series[0].pressure as pressure FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"dht11\", \"bme280\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn": {
-			"value": "sensor"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates": {
-			"value": "default.duplicateeventstemperature"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
-			"value": "exploration.temperatureevents"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
-			"value": "@trigger().outputs.windowStartTime"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime": {
-			"value": "@trigger().outputs.windowEndTime"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath": {
-			"value": "/mnt/andrdatalake001x/exploration/iotevents/airquality-events/delta"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin": {
-			"value": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement": {
-			"value": "SELECT DISTINCT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].CO as CarbonMonoxide, body.series[0].H2 as Hydrogen2, body.series[0].CH4 as Methane, body.series[0].LPG as LiquidfiedPetroleumGas, body.series[0].propane as Propane, body.series[0].alcohol as Alcohol, body.series[0].smoke as Smoke FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"mq2\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
-			"value": "sensor"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
-			"value": "default.duplicateeventsairquality"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
-			"value": "exploration.airqualityevents"
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime": {
+			"value": "@trigger().startTime"
 		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"value": "mtcchioltp001d.database.windows.net"

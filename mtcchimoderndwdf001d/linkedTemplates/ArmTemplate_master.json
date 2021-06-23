@@ -7,137 +7,29 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf001d"
 		},
-		"AzureMapsAPI_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://atlas.microsoft.com/"
+		"azure_sql_db_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'azure_sql_db'"
+		},
+		"metadata_db_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'metadata_db'"
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://andrdatalake001d.dfs.core.windows.net"
+			"defaultValue": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
 		},
-		"key_vault_secrets_properties_typeProperties_baseUrl": {
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN": {
 			"type": "string",
-			"defaultValue": "https://mtcchimoderndwkv001d.vault.azure.net/"
+			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
 		},
-		"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName": {
 			"type": "string",
-			"defaultValue": "MetaDataConfigurationConnectionString"
+			"defaultValue": "CloudSales"
 		},
-		"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime": {
 			"type": "string",
-			"defaultValue": "MetaDataConfigurationMongoDB"
-		},
-		"meta_data_configuration_db_v2_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "MetaDataConfiguration"
-		},
-		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
-			"type": "string",
-			"defaultValue": "@linkedService().databaseConnectionStringSecretName"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_executionTime": {
-			"type": "string",
-			"defaultValue": "@trigger().scheduledTime"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_relativePath": {
-			"type": "string",
-			"defaultValue": "weather/currentConditions/json?"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_apiVersion": {
-			"type": "string",
-			"defaultValue": "1.0"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_query": {
-			"type": "string",
-			"defaultValue": "42.148924384904156,-87.99537852892261"
-		},
-		"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_subscriptionKey": {
-			"type": "string",
-			"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
-		},
-		"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
-			"type": "string",
-			"defaultValue": "@triggerBody().folderPath"
-		},
-		"landing_file_pickup_properties_data-ingestion_parameters_sourceFile": {
-			"type": "string",
-			"defaultValue": "@triggerBody().fileName"
-		},
-		"landing_file_pickup_properties_data-ingestion_parameters_ingestionContainerName": {
-			"type": "string",
-			"defaultValue": "landing"
-		},
-		"landing_file_pickup_properties_data-ingestion_parameters_errorContainerName": {
-			"type": "string",
-			"defaultValue": "error"
-		},
-		"landing_file_pickup_properties_typeProperties_scope": {
-			"type": "string",
-			"defaultValue": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Storage/storageAccounts/mtcchidatalake001d"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
-			"type": "string",
-			"defaultValue": "@trigger().outputs.windowStartTime"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_endTime": {
-			"type": "string",
-			"defaultValue": "@trigger().outputs.windowEndTime"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath": {
-			"type": "string",
-			"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
-			"type": "string",
-			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_sqlStatement": {
-			"type": "string",
-			"defaultValue": "SELECT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].temperature as temperature, body.series[0].humidity as humidity, body.series[0].dewpoint as dewpoint, body.series[0].altitude as altitude, body.series[0].pressure as pressure FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"dht11\", \"bme280\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn": {
-			"type": "string",
-			"defaultValue": "sensor"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates": {
-			"type": "string",
-			"defaultValue": "default.duplicateeventstemperature"
-		},
-		"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
-			"type": "string",
-			"defaultValue": "exploration.temperatureevents"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
-			"type": "string",
-			"defaultValue": "@trigger().outputs.windowStartTime"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime": {
-			"type": "string",
-			"defaultValue": "@trigger().outputs.windowEndTime"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath": {
-			"type": "string",
-			"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/airquality-events/delta"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin": {
-			"type": "string",
-			"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement": {
-			"type": "string",
-			"defaultValue": "SELECT DISTINCT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].CO as CarbonMonoxide, body.series[0].H2 as Hydrogen2, body.series[0].CH4 as Methane, body.series[0].LPG as LiquidfiedPetroleumGas, body.series[0].propane as Propane, body.series[0].alcohol as Alcohol, body.series[0].smoke as Smoke FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"mq2\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
-			"type": "string",
-			"defaultValue": "sensor"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
-			"type": "string",
-			"defaultValue": "default.duplicateeventsairquality"
-		},
-		"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
-			"type": "string",
-			"defaultValue": "exploration.airqualityevents"
+			"defaultValue": "@trigger().startTime"
 		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"type": "string",
@@ -170,131 +62,30 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"AzureMapsAPI_properties_typeProperties_url": {
-						"value": "[parameters('AzureMapsAPI_properties_typeProperties_url')]"
+					"azure_sql_db_connectionString": {
+						"value": "[parameters('azure_sql_db_connectionString')]"
+					},
+					"metadata_db_connectionString": {
+						"value": "[parameters('metadata_db_connectionString')]"
 					},
 					"data_lake_storage_account_properties_typeProperties_url": {
 						"value": "[parameters('data_lake_storage_account_properties_typeProperties_url')]"
 					},
-					"key_vault_secrets_properties_typeProperties_baseUrl": {
-						"value": "[parameters('key_vault_secrets_properties_typeProperties_baseUrl')]"
-					},
 					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]"
 					},
-					"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
-						"value": "[parameters('meta_data_configuration_db_properties_typeProperties_connectionString_secretName')]"
+					"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN": {
+						"value": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN')]"
 					},
-					"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
-						"value": "[parameters('meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName')]"
+					"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName": {
+						"value": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName')]"
 					},
-					"meta_data_configuration_db_v2_properties_typeProperties_database": {
-						"value": "[parameters('meta_data_configuration_db_v2_properties_typeProperties_database')]"
-					},
-					"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
-						"value": "[parameters('worldwide_importers_db_properties_typeProperties_connectionString_secretName')]"
+					"daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime": {
+						"value": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime')]"
 					}
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "mtcchimoderndwdf001d_ArmTemplate_1",
-			"type": "Microsoft.Resources/deployments",
-			"apiVersion": "2018-02-01",
-			"properties": {
-				"mode": "incremental",
-				"templateLink": {
-					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
-					"contentVersion": "1.0.0.0"
-				},
-				"parameters": {
-					"factoryName": {
-						"value": "[parameters('factoryName')]"
-					},
-					"tumbling_window_every_6_hours_properties_pipeline_parameters_startTime": {
-						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_startTime')]"
-					},
-					"tumbling_window_every_6_hours_properties_pipeline_parameters_endTime": {
-						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_endTime')]"
-					},
-					"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath": {
-						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationPath')]"
-					},
-					"tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin": {
-						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_mergeJoin')]"
-					},
-					"tumbling_window_every_6_hours_properties_pipeline_parameters_sqlStatement": {
-						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_sqlStatement')]"
-					},
-					"tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn": {
-						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_partitionByColumn')]"
-					},
-					"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates": {
-						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTableDuplicates')]"
-					},
-					"tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable": {
-						"value": "[parameters('tumbling_window_every_6_hours_properties_pipeline_parameters_explorationTable')]"
-					},
-					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime": {
-						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_startTime')]"
-					},
-					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime": {
-						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_endTime')]"
-					},
-					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath": {
-						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationPath')]"
-					},
-					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin": {
-						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_mergeJoin')]"
-					},
-					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement": {
-						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_sqlStatement')]"
-					},
-					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn": {
-						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_partitionByColumn')]"
-					},
-					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates": {
-						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTableDuplicates')]"
-					},
-					"tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable": {
-						"value": "[parameters('tumbling_window_every_6_hours_airquality_properties_pipeline_parameters_explorationTable')]"
-					},
-					"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_executionTime": {
-						"value": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_executionTime')]"
-					},
-					"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_relativePath": {
-						"value": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_relativePath')]"
-					},
-					"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_apiVersion": {
-						"value": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_apiVersion')]"
-					},
-					"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_query": {
-						"value": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_query')]"
-					},
-					"15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_subscriptionKey": {
-						"value": "[parameters('15-minute-schedule-weather-info_properties_azure-maps-to-datalake_parameters_subscriptionKey')]"
-					},
-					"landing_file_pickup_properties_data-ingestion_parameters_sourceFolder": {
-						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFolder')]"
-					},
-					"landing_file_pickup_properties_data-ingestion_parameters_sourceFile": {
-						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_sourceFile')]"
-					},
-					"landing_file_pickup_properties_data-ingestion_parameters_ingestionContainerName": {
-						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_ingestionContainerName')]"
-					},
-					"landing_file_pickup_properties_data-ingestion_parameters_errorContainerName": {
-						"value": "[parameters('landing_file_pickup_properties_data-ingestion_parameters_errorContainerName')]"
-					},
-					"landing_file_pickup_properties_typeProperties_scope": {
-						"value": "[parameters('landing_file_pickup_properties_typeProperties_scope')]"
-					}
-				}
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.Resources/deployments', 'mtcchimoderndwdf001d_ArmTemplate_0')]"
-			]
 		}
 	]
 }

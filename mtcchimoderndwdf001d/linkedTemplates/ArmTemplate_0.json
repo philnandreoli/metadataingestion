@@ -7,37 +7,33 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf001d"
 		},
-		"AzureMapsAPI_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://atlas.microsoft.com/"
+		"azure_sql_db_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'azure_sql_db'"
+		},
+		"metadata_db_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'metadata_db'"
 		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://andrdatalake001d.dfs.core.windows.net"
-		},
-		"key_vault_secrets_properties_typeProperties_baseUrl": {
-			"type": "string",
-			"defaultValue": "https://mtcchimoderndwkv001d.vault.azure.net/"
+			"defaultValue": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
 		},
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
 		},
-		"meta_data_configuration_db_properties_typeProperties_connectionString_secretName": {
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN": {
 			"type": "string",
-			"defaultValue": "MetaDataConfigurationConnectionString"
+			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
 		},
-		"meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName": {
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName": {
 			"type": "string",
-			"defaultValue": "MetaDataConfigurationMongoDB"
+			"defaultValue": "CloudSales"
 		},
-		"meta_data_configuration_db_v2_properties_typeProperties_database": {
+		"daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime": {
 			"type": "string",
-			"defaultValue": "MetaDataConfiguration"
-		},
-		"worldwide_importers_db_properties_typeProperties_connectionString_secretName": {
-			"type": "string",
-			"defaultValue": "@linkedService().databaseConnectionStringSecretName"
+			"defaultValue": "@trigger().startTime"
 		}
 	},
 	"variables": {
@@ -45,16 +41,24 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureMapsAPI')]",
+			"name": "[concat(parameters('factoryName'), '/azure_sql_db')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"parameters": {
+					"databaseName": {
+						"type": "string",
+						"defaultValue": "CloudSales"
+					},
+					"serverFQDN": {
+						"type": "string",
+						"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+					}
+				},
 				"annotations": [],
-				"type": "RestService",
+				"type": "AzureSqlDatabase",
 				"typeProperties": {
-					"url": "[parameters('AzureMapsAPI_properties_typeProperties_url')]",
-					"enableServerCertificateValidation": false,
-					"authenticationType": "Anonymous"
+					"connectionString": "[parameters('azure_sql_db_connectionString')]"
 				}
 			},
 			"dependsOn": []
@@ -64,6 +68,12 @@
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"parameters": {
+					"storageAccountName": {
+						"type": "string",
+						"defaultValue": "andrdatalake001d"
+					}
+				},
 				"annotations": [],
 				"type": "AzureBlobFS",
 				"typeProperties": {
@@ -102,37 +112,25 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/key_vault_secrets')]",
+			"name": "[concat(parameters('factoryName'), '/metadata_db')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"type": "AzureKeyVault",
+				"type": "AzureSqlDatabase",
 				"typeProperties": {
-					"baseUrl": "[parameters('key_vault_secrets_properties_typeProperties_baseUrl')]"
+					"connectionString": "[parameters('metadata_db_connectionString')]"
 				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/tumbling-window-1-hour')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
+			"name": "[concat(parameters('factoryName'), '/sapIntegrationRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"type": "TumblingWindowTrigger",
-				"typeProperties": {
-					"frequency": "Hour",
-					"interval": 1,
-					"startTime": "2020-08-07T12:00:00Z",
-					"delay": "00:00:00",
-					"maxConcurrency": 50,
-					"retryPolicy": {
-						"intervalInSeconds": 30
-					},
-					"dependsOn": []
-				}
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},
@@ -162,15 +160,153 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/process-environmental-events')]",
+			"name": "[concat(parameters('factoryName'), '/azure_data_lake_store_object')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"storageAccountName": {
+							"value": "@dataset().storageAccountName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"storageAccountName": {
+						"type": "string",
+						"defaultValue": "andrdatalake001d"
+					},
+					"containerName": {
+						"type": "string",
+						"defaultValue": "bronze"
+					},
+					"directory": {
+						"type": "string",
+						"defaultValue": "southridge/cloudsales/addresses"
+					},
+					"fileName": {
+						"type": "string",
+						"defaultValue": "addresses.snappy.parquet"
+					},
+					"extractionDate": {
+						"type": "string",
+						"defaultValue": "2021-06-22"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@concat(dataset().directory, '/extraction-date=', formatDateTime(dataset().extractionDate, 'yyyy-MM-dd'))",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/azure_sql_table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azure_sql_db",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"databaseName": {
+							"value": "@dataset().databaseName",
+							"type": "Expression"
+						},
+						"serverFQDN": "andrmdwopenhacksourcesql001d.database.windows.net"
+					}
+				},
+				"parameters": {
+					"schema": {
+						"type": "string",
+						"defaultValue": "etl"
+					},
+					"objectName": {
+						"type": "string",
+						"defaultValue": "customers"
+					},
+					"databaseName": {
+						"type": "string",
+						"defaultValue": "CloudSales"
+					},
+					"serverName": {
+						"type": "string",
+						"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+					}
+				},
+				"folder": {
+					"name": "source objects"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().schema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().objectName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/azure_sql_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/metadata_objects_to_extract')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "metadata_db",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "metadata objects"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/metadata_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/data-ingestion-azure-sql')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "This process will move data from Raw to Exploration in some timeframe.",
 				"activities": [
 					{
-						"name": "Process IoT Event Data Raw To Exploration",
-						"type": "DatabricksNotebook",
+						"name": "Get Azure SQL Tables To Extract",
+						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
@@ -181,674 +317,206 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"notebookPath": "/Users/phandreo@microsoft.com/batch-python-exploration",
-							"baseParameters": {
-								"enqueuedDateTimeBegin": {
-									"value": "@pipeline().parameters.startTime",
-									"type": "Expression"
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "[[metadata].[GET_SOURCE_DESTINATION_OBJECTS]",
+								"storedProcedureParameters": {
+									"SERVER_DATABASE": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.sourceDatabaseName",
+											"type": "Expression"
+										}
+									},
+									"SERVER_FQDN": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.sourceServerFQDN",
+											"type": "Expression"
+										}
+									}
 								},
-								"enqueuedDateTimeEnd": {
-									"value": "@pipeline().parameters.endTime",
-									"type": "Expression"
-								},
-								"explorationPath": {
-									"value": "@pipeline().parameters.explorationPath",
-									"type": "Expression"
-								},
-								"mergeJoin": {
-									"value": "@pipeline().parameters.mergeJoin",
-									"type": "Expression"
-								},
-								"sqlStatement": {
-									"value": "@pipeline().parameters.sqlStatement",
-									"type": "Expression"
-								},
-								"partitionByColumn": {
-									"value": "@pipeline().parameters.partitionByColumn",
-									"type": "Expression"
-								},
-								"explorationTableDuplicates": {
-									"value": "@pipeline().parameters.explorationTableDuplicates",
-									"type": "Expression"
-								},
-								"explorationTable": {
-									"value": "@pipeline().parameters.explorationTable",
-									"type": "Expression"
-								}
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "metadata_objects_to_extract",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Loop Through Each Object To Process",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Azure SQL Tables To Extract",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
-						},
-						"linkedServiceName": {
-							"referenceName": "databricks",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"parameters": {
-					"startTime": {
-						"type": "string",
-						"defaultValue": "2020-12-28 00:00:00"
-					},
-					"endTime": {
-						"type": "string",
-						"defaultValue": "2020-12-28 18:30:00"
-					},
-					"explorationPath": {
-						"type": "string",
-						"defaultValue": "/mnt/andrdatalake001x/exploration/iotevents/temperature-events/delta"
-					},
-					"mergeJoin": {
-						"type": "string",
-						"defaultValue": "t.sensor = s.sensor and t.deviceId = s.deviceId and t.enqueuedTime = s.enqueuedTime and t.timestamp = s.timestamp"
-					},
-					"sqlStatement": {
-						"type": "string",
-						"defaultValue": "SELECT body.sensor, enqueuedTime, enqueuedDate, systemProperties[\"iothub-connection-device-id\"] as deviceId, body.timestamp, body.series[0].temperature as temperature, body.series[0].humidity as humidity, body.series[0].dewpoint as dewpoint, body.series[0].altitude as altitude, body.series[0].pressure as pressure FROM raw.iotenvironmentalsensor WHERE body.sensor IN (\"dht11\", \"bme280\") and (enqueuedTime >= to_timestamp(\"%s\") and enqueuedTime < to_timestamp(\"%s\"))"
-					},
-					"partitionByColumn": {
-						"type": "string",
-						"defaultValue": "sensor"
-					},
-					"explorationTableDuplicates": {
-						"type": "string",
-						"defaultValue": "default.duplicateeventsairquality"
-					},
-					"explorationTable": {
-						"type": "string",
-						"defaultValue": "exploration.airqualityevents"
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/databricks')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ssis-purview-demo')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "execute master ssis package",
-						"type": "ExecuteSSISPackage",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
+						],
 						"userProperties": [],
 						"typeProperties": {
-							"packageLocation": {
-								"packagePath": "PurviewDemo/SSIS-With-Purview/Master_Package.dtsx",
-								"type": "SSISDB"
+							"items": {
+								"value": "@activity('Get Azure SQL Tables To Extract').output.value",
+								"type": "Expression"
 							},
-							"environmentPath": null,
-							"connectVia": {
-								"referenceName": "ssisIntegrationRuntime",
-								"type": "IntegrationRuntimeReference"
-							},
-							"loggingLevel": "Basic",
-							"projectConnectionManagers": {},
-							"packageConnectionManagers": {}
+							"batchCount": 10,
+							"activities": [
+								{
+									"name": "Copy Source Data To ADLS",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "azure_sql_table",
+											"type": "DatasetReference",
+											"parameters": {
+												"schema": {
+													"value": "@item().SCHEMA_NAME",
+													"type": "Expression"
+												},
+												"objectName": {
+													"value": "@item().OBJECT_NAME",
+													"type": "Expression"
+												},
+												"databaseName": {
+													"value": "@pipeline().parameters.sourceDatabaseName",
+													"type": "Expression"
+												},
+												"serverName": {
+													"value": "@pipeline().parameters.sourceServerFQDN",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "azure_data_lake_store_object",
+											"type": "DatasetReference",
+											"parameters": {
+												"storageAccountName": {
+													"value": "@item().BRONZE_STORAGE_ACCOUNT_NAME",
+													"type": "Expression"
+												},
+												"containerName": {
+													"value": "@item().BRONZE_CONTAINER_NAME",
+													"type": "Expression"
+												},
+												"directory": {
+													"value": "@item().BRONZE_DIRECTORY",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@concat(toLower(item().OBJECT_NAME), '.snappy.parquet')",
+													"type": "Expression"
+												},
+												"extractionDate": {
+													"value": "@pipeline().parameters.extractionDateTime",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
 						}
 					}
 				],
+				"parameters": {
+					"sourceServerFQDN": {
+						"type": "string",
+						"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+					},
+					"sourceDatabaseName": {
+						"type": "string",
+						"defaultValue": "CloudSales"
+					},
+					"extractionDateTime": {
+						"type": "string",
+						"defaultValue": "2021-06-22"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/ssisIntegrationRuntime')]"
+				"[concat(variables('factoryId'), '/datasets/metadata_objects_to_extract')]",
+				"[concat(variables('factoryId'), '/datasets/azure_sql_table')]",
+				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureMaps')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/daily-trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureMapsAPI",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"relativePath": {
-						"type": "string",
-						"defaultValue": "weather/currentConditions/json?"
-					},
-					"apiVersion": {
-						"type": "string",
-						"defaultValue": "1.0"
-					},
-					"subscriptionKey": {
-						"type": "string",
-						"defaultValue": "8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec"
-					},
-					"query": {
-						"type": "string",
-						"defaultValue": "42.148924384904156,-87.99537852892261"
-					}
-				},
 				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "@concat(dataset().relativePath, 'api-version=', dataset().apiVersion, '&query=', dataset().query, '&subscription-key=', dataset().subscriptionKey)",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureMapsAPI')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/avro_ingestion_input_file')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"filePath": {
-						"type": "string"
-					},
-					"fileName": {
-						"type": "string"
-					},
-					"containerName": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion-input"
-				},
-				"annotations": [],
-				"type": "Avro",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().fileName",
-							"type": "Expression"
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "data-ingestion-azure-sql",
+							"type": "PipelineReference"
 						},
-						"folderPath": {
-							"value": "@dataset().filePath",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().containerName",
-							"type": "Expression"
+						"parameters": {
+							"sourceServerFQDN": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceServerFQDN')]",
+							"sourceDatabaseName": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_sourceDatabaseName')]",
+							"extractionDateTime": "[parameters('daily-trigger_properties_data-ingestion-azure-sql_parameters_extractionDateTime')]"
 						}
 					}
-				},
-				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/data_ingestion_error_output_file')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"containerName": {
-						"type": "string"
-					},
-					"filePath": {
-						"type": "string"
-					},
-					"fileName": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion-output"
-				},
-				"annotations": [],
-				"type": "Binary",
+				],
+				"type": "ScheduleTrigger",
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().fileName",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().filePath",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().containerName",
-							"type": "Expression"
-						}
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2021-06-22T20:45:00",
+						"timeZone": "Central Standard Time"
 					}
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/data_ingestion_raw_output_file_avro')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"containerName": {
-						"type": "string",
-						"defaultValue": "raw"
-					},
-					"filePath": {
-						"type": "string"
-					},
-					"fileName": {
-						"type": "string",
-						"defaultValue": "invoices.avro"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion-output"
-				},
-				"annotations": [],
-				"type": "Avro",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation"
-					}
-				},
-				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/data_ingestion_raw_output_file_parquet')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"containerName": {
-						"type": "string",
-						"defaultValue": "raw"
-					},
-					"filePath": {
-						"type": "string"
-					},
-					"fileName": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion-output"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().fileName",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().filePath",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().containerName",
-							"type": "Expression"
-						}
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/delmited_ingestion_input_file')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"filePath": {
-						"type": "string"
-					},
-					"fileName": {
-						"type": "string"
-					},
-					"containerName": {
-						"type": "string"
-					},
-					"compressionType": {
-						"type": "string",
-						"defaultValue": "none"
-					},
-					"compressionLevel": {
-						"type": "string",
-						"defaultValue": "Optimal"
-					},
-					"columnDelimiter": {
-						"type": "string",
-						"defaultValue": ","
-					},
-					"encoding": {
-						"type": "string",
-						"defaultValue": "UTF-8"
-					},
-					"escapeCharacter": {
-						"type": "string",
-						"defaultValue": "\\"
-					},
-					"quoteCharacter": {
-						"type": "string",
-						"defaultValue": "\""
-					},
-					"firstRowAsHeader": {
-						"type": "bool",
-						"defaultValue": true
-					}
-				},
-				"folder": {
-					"name": "data-ingestion-input"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().fileName",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().filePath",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().containerName",
-							"type": "Expression"
-						}
-					},
-					"columnDelimiter": {
-						"value": "@dataset().columnDelimiter",
-						"type": "Expression"
-					},
-					"compressionCodec": {
-						"value": "@dataset().compressionType",
-						"type": "Expression"
-					},
-					"compressionLevel": {
-						"value": "@dataset().compressionLevel",
-						"type": "Expression"
-					},
-					"encodingName": {
-						"value": "@dataset().encoding",
-						"type": "Expression"
-					},
-					"escapeChar": {
-						"value": "@dataset().escapeCharacter",
-						"type": "Expression"
-					},
-					"firstRowAsHeader": {
-						"value": "@dataset().firstRowAsHeader",
-						"type": "Expression"
-					},
-					"quoteChar": {
-						"value": "@dataset().quoteCharacter",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/error_ingestion_input_file')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"filePath": {
-						"type": "string"
-					},
-					"fileName": {
-						"type": "string"
-					},
-					"containerName": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion-input"
-				},
-				"annotations": [],
-				"type": "Binary",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().fileName",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().filePath",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().containerName",
-							"type": "Expression"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/json_ingestion_input_file')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"filePath": {
-						"type": "string"
-					},
-					"fileName": {
-						"type": "string"
-					},
-					"containerName": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion-input"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().fileName",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().filePath",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().containerName",
-							"type": "Expression"
-						}
-					}
-				},
-				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/parquet_ingestion_input_file')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"filePath": {
-						"type": "string"
-					},
-					"fileName": {
-						"type": "string"
-					},
-					"containerName": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion-input"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().fileName",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().filePath",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().containerName",
-							"type": "Expression"
-						}
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/meta_data_configuration_db')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "key_vault_secrets",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "[parameters('meta_data_configuration_db_properties_typeProperties_connectionString_secretName')]"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/meta_data_configuration_db_v2')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "CosmosDbMongoDbApi",
-				"typeProperties": {
-					"connectionString": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "key_vault_secrets",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "[parameters('meta_data_configuration_db_v2_properties_typeProperties_connectionString_secretName')]"
-					},
-					"database": "[parameters('meta_data_configuration_db_v2_properties_typeProperties_database')]"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/worldwide_importers_db')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"databaseConnectionStringSecretName": {
-						"type": "string",
-						"defaultValue": "WorldWideImportersConnectionString"
-					}
-				},
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "key_vault_secrets",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": {
-							"value": "[parameters('worldwide_importers_db_properties_typeProperties_connectionString_secretName')]",
-							"type": "Expression"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/key_vault_secrets')]"
+				"[concat(variables('factoryId'), '/pipelines/data-ingestion-azure-sql')]"
 			]
 		}
 	]
