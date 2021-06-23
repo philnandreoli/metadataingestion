@@ -84,7 +84,72 @@
 								"sink": {
 									"type": "ParquetSink",
 									"storeSettings": {
-										"type": "AzureBlobFSWriteSettings"
+										"type": "AzureBlobFSWriteSettings",
+										"metadata": [
+											{
+												"name": "SILVER_STORAGE_ACCOUNT_NAME",
+												"value": {
+													"value": "@item().SILVER_STORAGE_ACCOUNT_NAME",
+													"type": "Expression"
+												}
+											},
+											{
+												"name": "SILVER_CONTAINER_NAME",
+												"value": {
+													"value": "@item().SILVER_CONTAINER_NAME",
+													"type": "Expression"
+												}
+											},
+											{
+												"name": "SILVER_DIRECTORY",
+												"value": {
+													"value": "@item().SILVER_DIRECTORY",
+													"type": "Expression"
+												}
+											},
+											{
+												"name": "SILVER_LOAD_TYPE",
+												"value": {
+													"value": "@item().SILVER_LOAD_TYPE",
+													"type": "Expression"
+												}
+											},
+											{
+												"name": "GOLD_STORAGE_ACCOUNT_NAME",
+												"value": {
+													"value": "@item().GOLD_STORAGE_ACCOUNT_NAME",
+													"type": "Expression"
+												}
+											},
+											{
+												"name": "GOLD_CONTAINER_NAME",
+												"value": {
+													"value": "@item().GOLD_CONTAINER_NAME",
+													"type": "Expression"
+												}
+											},
+											{
+												"name": "GOLD_DIRECTORY",
+												"value": {
+													"value": "@item().GOLD_DIRECTORY",
+													"type": "Expression"
+												}
+											},
+											{
+												"name": "GOLD_LOAD_TYPE",
+												"value": {
+													"value": "@item().GOLD_LOAD_TYPE",
+													"type": "Expression"
+												}
+											},
+											{
+												"name": "PRIMARY_KEY_FIELDS",
+												"value": {
+													"value": "@item().PRIMARY_KEY_FIELDS",
+													"type": "Expression"
+												}
+											}
+										]
 									},
 									"formatSettings": {
 										"type": "ParquetWriteSettings"
