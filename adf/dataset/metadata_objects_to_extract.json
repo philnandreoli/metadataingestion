@@ -1,0 +1,15 @@
+{
+	"name": "metadata_objects_to_extract",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "metadata_db",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "metadata objects"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}

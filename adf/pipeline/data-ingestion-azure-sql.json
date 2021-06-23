@@ -1,0 +1,179 @@
+{
+	"name": "data-ingestion-azure-sql",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Azure SQL Tables To Extract",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "[metadata].[GET_SOURCE_DESTINATION_OBJECTS]",
+						"storedProcedureParameters": {
+							"SERVER_DATABASE": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.sourceDatabaseName",
+									"type": "Expression"
+								}
+							},
+							"SERVER_FQDN": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.sourceServerFQDN",
+									"type": "Expression"
+								}
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "metadata_objects_to_extract",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Loop Through Each Object To Process",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Azure SQL Tables To Extract",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Azure SQL Tables To Extract').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 10,
+					"activities": [
+						{
+							"name": "Copy Source Data To ADLS",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "azure_sql_table",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema": {
+											"value": "@item().SCHEMA_NAME",
+											"type": "Expression"
+										},
+										"objectName": {
+											"value": "@item().OBJECT_NAME",
+											"type": "Expression"
+										},
+										"databaseName": {
+											"value": "@pipeline().parameters.sourceDatabaseName",
+											"type": "Expression"
+										},
+										"serverName": {
+											"value": "@pipeline().parameters.sourceServerFQDN",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "azure_data_lake_store_object",
+									"type": "DatasetReference",
+									"parameters": {
+										"storageAccountName": {
+											"value": "@item().BRONZE_STORAGE_ACCOUNT_NAME",
+											"type": "Expression"
+										},
+										"containerName": {
+											"value": "@item().BRONZE_CONTAINER_NAME",
+											"type": "Expression"
+										},
+										"directory": {
+											"value": "@item().BRONZE_DIRECTORY",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@concat(toLower(item().OBJECT_NAME), '.snappy.parquet')",
+											"type": "Expression"
+										},
+										"extractionDate": {
+											"value": "@pipeline().parameters.extractionDateTime",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"sourceServerFQDN": {
+				"type": "string",
+				"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+			},
+			"sourceDatabaseName": {
+				"type": "string",
+				"defaultValue": "CloudSales"
+			},
+			"extractionDateTime": {
+				"type": "string",
+				"defaultValue": "2021-06-22"
+			}
+		},
+		"folder": {
+			"name": "data-ingestion"
+		},
+		"annotations": []
+	}
+}
