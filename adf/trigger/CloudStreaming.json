@@ -1,0 +1,29 @@
+{
+	"name": "CloudStreaming",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "azure-sql-data-ingestion",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"sourceServerFQDN": "andrmdwopenhacksourcesql001d.database.windows.net",
+					"sourceDatabaseName": "CloudStreaming",
+					"extractionDateTime": "@trigger().startTime"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2021-06-25T20:30:00",
+				"timeZone": "Central Standard Time"
+			}
+		}
+	}
+}
