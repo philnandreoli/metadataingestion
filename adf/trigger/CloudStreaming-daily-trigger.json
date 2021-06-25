@@ -1,5 +1,5 @@
 {
-	"name": "CloudStreaming",
+	"name": "CloudStreaming-daily-trigger",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
