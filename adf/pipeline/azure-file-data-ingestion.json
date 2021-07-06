@@ -1,0 +1,9 @@
+{
+	"name": "azure-file-data-ingestion",
+	"properties": {
+		"folder": {
+			"name": "data-ingestion"
+		},
+		"annotations": []
+	}
+}
