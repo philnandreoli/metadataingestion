@@ -34,6 +34,18 @@
 		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 			"type": "string",
 			"defaultValue": "@trigger().startTime"
+		},
+		"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
+			"type": "string",
+			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+		},
+		"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
+			"type": "string",
+			"defaultValue": "CloudStreaming"
+		},
+		"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
+			"type": "string",
+			"defaultValue": "@trigger().startTime"
 		}
 	},
 	"variables": {
@@ -78,35 +90,6 @@
 				"type": "AzureBlobFS",
 				"typeProperties": {
 					"url": "[parameters('data_lake_storage_account_properties_typeProperties_url')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/databricks')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureDatabricks",
-				"typeProperties": {
-					"domain": "https://adb-6393053478803514.14.azuredatabricks.net",
-					"authentication": "MSI",
-					"workspaceResourceId": "/subscriptions/a6ead19a-5000-4940-a53c-fd7fb677e402/resourceGroups/ANDR-MODERN-DW-001-D/providers/Microsoft.Databricks/workspaces/andrdataprocessing001d",
-					"instancePoolId": "0806-153306-geode373-pool-KRKLmD5e",
-					"newClusterNumOfWorker": "2",
-					"newClusterSparkConf": {
-						"fs.azure.account.key.andrdatalake001d.dfs.core.windows.net": "askZROyq8oZ+mOuAjLDjUZbmPSGeLnZ5UGUXMTWcQSDV4hYhVFzYSzfXKJqgkdFxrDZhiIB9B3c2qCKtXAhi8g==",
-						"fs.azure.createRemoteFileSystemDuringInitialization": "true",
-						"spark.databricks.delta.preview.enabled": "true",
-						"spark.databricks.delta.optimizeWrite.enabled": "true",
-						"spark.databricks.delta.autoCompact.enabled": "true"
-					},
-					"newClusterSparkEnvVars": {
-						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
-					},
-					"newClusterVersion": "7.5.x-scala2.12",
-					"newClusterInitScripts": []
 				}
 			},
 			"dependsOn": []
@@ -577,6 +560,40 @@
 						"frequency": "Day",
 						"interval": 1,
 						"startTime": "2021-06-22T20:45:00",
+						"timeZone": "Central Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/azure-sql-data-ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CloudStreaming-daily-trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "azure-sql-data-ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"sourceServerFQDN": "[parameters('CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN')]",
+							"sourceDatabaseName": "[parameters('CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName')]",
+							"extractionDateTime": "[parameters('CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2021-06-25T20:30:00",
 						"timeZone": "Central Standard Time"
 					}
 				}
