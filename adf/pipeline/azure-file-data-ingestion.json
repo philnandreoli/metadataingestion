@@ -72,6 +72,12 @@
 				]
 			}
 		],
+		"parameters": {
+			"extractionDateTime": {
+				"type": "string",
+				"defaultValue": "2021-06-06"
+			}
+		},
 		"folder": {
 			"name": "data-ingestion"
 		},
