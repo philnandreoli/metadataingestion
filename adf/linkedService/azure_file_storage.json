@@ -22,7 +22,7 @@
 				},
 				"secretName": "@{linkedService().keyVaultSecretName}"
 			},
-			"fileShare": "@{linkedService.fileShare}"
+			"fileShare": "@{linkedService().fileShare}"
 		}
 	}
 }
