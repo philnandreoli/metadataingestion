@@ -1,6 +1,7 @@
 {
 	"name": "azure_file_storage",
 	"properties": {
+		"type": "AzureFileStorage",
 		"parameters": {
 			"keyVaultSecretName": {
 				"type": "String",
@@ -8,7 +9,6 @@
 			}
 		},
 		"annotations": [],
-		"type": "AzureFileStorage",
 		"typeProperties": {
 			"connectionString": {
 				"type": "AzureKeyVaultSecret",
