@@ -6,6 +6,10 @@
 			"keyVaultSecretName": {
 				"type": "String",
 				"defaultValue": "andronpremfilesystem001d"
+			},
+			"fileShare": {
+				"type": "String",
+				"defaultValue": "files"
 			}
 		},
 		"annotations": [],
@@ -18,7 +22,7 @@
 				},
 				"secretName": "@{linkedService().keyVaultSecretName}"
 			},
-			"fileShare": "files"
+			"fileShare": "@{linkedService.fileShare}"
 		}
 	}
 }
