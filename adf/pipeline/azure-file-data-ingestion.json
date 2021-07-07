@@ -47,11 +47,12 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "azure-delimited-objects",
+						"referenceName": "azure_delimited_objects",
 						"type": "DatasetReference",
 						"parameters": {
 							"keyVaultSecretName": "andronpremfilesystem001d",
 							"fileShare": "files",
+							"directoryName": "/",
 							"fileName": "Actors.csv"
 						}
 					}
@@ -64,6 +65,7 @@
 							"storageAccountName": "andrdatalake001d",
 							"containerName": "bronze",
 							"directory": "southridge/onpremises/files",
+							"fileName": "actors.snappy.parquet",
 							"extractionDate": "2021-06-22"
 						}
 					}
