@@ -1,6 +1,65 @@
 {
 	"name": "azure-file-data-ingestion",
 	"properties": {
+		"activities": [
+			{
+				"name": "Copy All Files From Folder",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureFileStorageReadSettings",
+							"recursive": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "azure_file_binary",
+						"type": "DatasetReference",
+						"parameters": {
+							"keyVaultSecretName": "andronpremfilesystem001d",
+							"fileShare": "files"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "azure_data_lake_store_object",
+						"type": "DatasetReference",
+						"parameters": {
+							"storageAccountName": "andrdatalake001d",
+							"containerName": "bronze",
+							"directory": "southridge/onpremises/files",
+							"extractionDate": "2021-06-22"
+						}
+					}
+				]
+			}
+		],
 		"folder": {
 			"name": "data-ingestion"
 		},
