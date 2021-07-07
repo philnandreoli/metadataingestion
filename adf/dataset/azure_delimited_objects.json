@@ -1,5 +1,5 @@
 {
-	"name": "azure-delimited-objects",
+	"name": "azure_delimited_objects",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "azure_file_storage",
@@ -25,7 +25,8 @@
 				"defaultValue": "files"
 			},
 			"directoryName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "/"
 			},
 			"fileName": {
 				"type": "string",
