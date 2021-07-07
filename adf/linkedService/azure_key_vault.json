@@ -1,0 +1,16 @@
+{
+	"name": "azure_key_vault",
+	"properties": {
+		"parameters": {
+			"keyVaultName": {
+				"type": "string",
+				"defaultValue": "andrmoderdwkv001d"
+			}
+		},
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "@{concat('https://', linkedService().keyVaultName, '.vault.azure.net')}"
+		}
+	}
+}
