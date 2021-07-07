@@ -1,6 +1,12 @@
 {
 	"name": "azure_file_storage",
 	"properties": {
+		"parameters": {
+			"keyVaultSecretName": {
+				"type": "String",
+				"defaultValue": "andronpremfilesystem001d"
+			}
+		},
 		"annotations": [],
 		"type": "AzureFileStorage",
 		"typeProperties": {
@@ -10,7 +16,7 @@
 					"referenceName": "azure_key_vault",
 					"type": "LinkedServiceReference"
 				},
-				"secretName": "andronpremfilesystem001d"
+				"secretName": "@{linkedService.keyVaultSecretName}"
 			},
 			"fileShare": "files"
 		}
