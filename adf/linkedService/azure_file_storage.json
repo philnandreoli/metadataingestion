@@ -16,7 +16,7 @@
 					"referenceName": "azure_key_vault",
 					"type": "LinkedServiceReference"
 				},
-				"secretName": "@{linkedService.keyVaultSecretName}"
+				"secretName": "@{linkedService().keyVaultSecretName}"
 			},
 			"fileShare": "files"
 		}
