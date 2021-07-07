@@ -1,0 +1,59 @@
+{
+	"name": "azure-delimited-objects",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_file_storage",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"keyVaultSecretName": {
+					"value": "@dataset().keyVaultSecretName",
+					"type": "Expression"
+				},
+				"fileShare": {
+					"value": "@dataset().fileShare",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"keyVaultSecretName": {
+				"type": "string",
+				"defaultValue": "andronpremfilesystem001d"
+			},
+			"fileShare": {
+				"type": "string",
+				"defaultValue": "files"
+			},
+			"directoryName": {
+				"type": "string"
+			},
+			"fileName": {
+				"type": "string",
+				"defaultValue": "Actors.csv"
+			}
+		},
+		"folder": {
+			"name": "source objects"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureFileStorageLocation",
+				"fileName": {
+					"value": "@dataset().fileName",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().directoryName",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

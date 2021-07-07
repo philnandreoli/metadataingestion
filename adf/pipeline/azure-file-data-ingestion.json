@@ -16,13 +16,14 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "BinarySource",
+						"type": "DelimitedTextSource",
 						"storeSettings": {
 							"type": "AzureFileStorageReadSettings",
-							"recursive": true
+							"recursive": true,
+							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
-							"type": "BinaryReadSettings"
+							"type": "DelimitedTextReadSettings"
 						}
 					},
 					"sink": {
@@ -34,15 +35,24 @@
 							"type": "ParquetWriteSettings"
 						}
 					},
-					"enableStaging": false
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
 				},
 				"inputs": [
 					{
-						"referenceName": "azure_file_binary",
+						"referenceName": "azure-delimited-objects",
 						"type": "DatasetReference",
 						"parameters": {
 							"keyVaultSecretName": "andronpremfilesystem001d",
-							"fileShare": "files"
+							"fileShare": "files",
+							"fileName": "Actors.csv"
 						}
 					}
 				],
