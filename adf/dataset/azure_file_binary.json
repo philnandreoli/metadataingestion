@@ -5,8 +5,14 @@
 			"referenceName": "azure_file_storage",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"keyVaultSecretName": "andronpremfilesystem001d",
-				"fileShare": "files"
+				"keyVaultSecretName": {
+					"value": "@dataset().keyVaultSecretName",
+					"type": "Expression"
+				},
+				"fileShare": {
+					"value": "@dataset().fileShare",
+					"type": "Expression"
+				}
 			}
 		},
 		"parameters": {
