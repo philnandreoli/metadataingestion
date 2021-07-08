@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'metadata_db'"
 		},
+		"azure_key_vault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "@{concat('https://', linkedService().keyVaultName, '.vault.azure.net')}"
+		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
@@ -22,6 +26,10 @@
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
+		},
+		"azure_file_storage_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().keyVaultSecretName}"
 		},
 		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
 			"type": "string",
@@ -46,12 +54,43 @@
 		"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 			"type": "string",
 			"defaultValue": "@trigger().startTime"
+		},
+		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
+			"type": "string",
+			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+		},
+		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
+			"type": "string",
+			"defaultValue": "OnPremRentals"
+		},
+		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
+			"type": "string",
+			"defaultValue": "@trigger().startTime"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/azure_key_vault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"keyVaultName": {
+						"type": "string",
+						"defaultValue": "andrmoderdwkv001d"
+					}
+				},
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('azure_key_vault_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/azure_sql_db')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -279,6 +318,39 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/metadata_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/azure_file_storage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "AzureFileStorage",
+				"parameters": {
+					"keyVaultSecretName": {
+						"type": "String",
+						"defaultValue": "andronpremfilesystem001d"
+					},
+					"fileShare": {
+						"type": "String",
+						"defaultValue": "files"
+					}
+				},
+				"annotations": [],
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "azure_key_vault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "[parameters('azure_file_storage_properties_typeProperties_connectionString_secretName')]"
+					},
+					"fileShare": "@{linkedService().fileShare}"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/azure_key_vault')]"
 			]
 		},
 		{
@@ -535,6 +607,163 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/azure_delimited_objects')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azure_file_storage",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"keyVaultSecretName": {
+							"value": "@dataset().keyVaultSecretName",
+							"type": "Expression"
+						},
+						"fileShare": {
+							"value": "@dataset().fileShare",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"keyVaultSecretName": {
+						"type": "string",
+						"defaultValue": "andronpremfilesystem001d"
+					},
+					"fileShare": {
+						"type": "string",
+						"defaultValue": "files"
+					},
+					"directoryName": {
+						"type": "string",
+						"defaultValue": "/"
+					},
+					"fileName": {
+						"type": "string",
+						"defaultValue": "Actors.csv"
+					}
+				},
+				"folder": {
+					"name": "source objects"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureFileStorageLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().directoryName",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/azure_file_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/azure-file-data-ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy All Files From Folder",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureFileStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "azure_delimited_objects",
+								"type": "DatasetReference",
+								"parameters": {
+									"keyVaultSecretName": "andronpremfilesystem001d",
+									"fileShare": "files",
+									"directoryName": "/",
+									"fileName": "Actors.csv"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "azure_data_lake_store_object",
+								"type": "DatasetReference",
+								"parameters": {
+									"storageAccountName": "andrdatalake001d",
+									"containerName": "bronze",
+									"directory": "southridge/onpremises/files",
+									"fileName": "actors.snappy.parquet",
+									"extractionDate": "2021-06-22"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"extractionDateTime": {
+						"type": "string",
+						"defaultValue": "2021-06-06"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/azure_delimited_objects')]",
+				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/CloudSales-daily-trigger')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -595,6 +824,41 @@
 						"interval": 1,
 						"startTime": "2021-06-25T20:30:00",
 						"timeZone": "Central Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/azure-sql-data-ingestion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OnPremRentals-daily-trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "azure-sql-data-ingestion",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"sourceServerFQDN": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN')]",
+							"sourceDatabaseName": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName')]",
+							"extractionDateTime": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2021-07-08T18:30:00",
+						"timeZone": "Central Standard Time",
+						"schedule": {}
 					}
 				}
 			},

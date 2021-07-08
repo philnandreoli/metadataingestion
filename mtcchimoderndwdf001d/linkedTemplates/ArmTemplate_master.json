@@ -15,6 +15,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'metadata_db'"
 		},
+		"azure_file_storage_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().keyVaultSecretName}"
+		},
+		"azure_key_vault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "@{concat('https://', linkedService().keyVaultName, '.vault.azure.net')}"
+		},
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
@@ -46,6 +54,18 @@
 		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
+		},
+		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
+			"type": "string",
+			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
+		},
+		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
+			"type": "string",
+			"defaultValue": "OnPremRentals"
+		},
+		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
+			"type": "string",
+			"defaultValue": "@trigger().startTime"
 		},
 		"containerUri": {
 			"type": "string",
@@ -80,11 +100,17 @@
 					"metadata_db_connectionString": {
 						"value": "[parameters('metadata_db_connectionString')]"
 					},
+					"azure_key_vault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('azure_key_vault_properties_typeProperties_baseUrl')]"
+					},
 					"data_lake_storage_account_properties_typeProperties_url": {
 						"value": "[parameters('data_lake_storage_account_properties_typeProperties_url')]"
 					},
 					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]"
+					},
+					"azure_file_storage_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('azure_file_storage_properties_typeProperties_connectionString_secretName')]"
 					},
 					"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
 						"value": "[parameters('CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN')]"
@@ -103,6 +129,15 @@
 					},
 					"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 						"value": "[parameters('CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime')]"
+					},
+					"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
+						"value": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN')]"
+					},
+					"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
+						"value": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName')]"
+					},
+					"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
+						"value": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime')]"
 					}
 				}
 			},
