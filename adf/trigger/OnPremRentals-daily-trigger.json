@@ -1,0 +1,29 @@
+{
+	"name": "OnPremRentals-daily-trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "azure-sql-data-ingestion",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"sourceServerFQDN": "andrmdwopenhacksourcesql001d.database.windows.net",
+					"sourceDatabaseName": "OnPremRentals",
+					"extractionDateTime": "@trigger().startTime"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2021-07-08T18:30:00",
+				"timeZone": "Central Standard Time"
+			}
+		}
+	}
+}
