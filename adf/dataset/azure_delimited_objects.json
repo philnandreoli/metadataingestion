@@ -34,7 +34,7 @@
 			}
 		},
 		"folder": {
-			"name": "source objects"
+			"name": "source objects/Azure"
 		},
 		"annotations": [],
 		"type": "DelimitedText",
