@@ -5,9 +5,18 @@
 			"referenceName": "aws_s3_storage",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"keyVaultName": "andrmoderdwkv001d",
-				"keyVaultS3AccessId": "s3accesskeyid",
-				"keyVaultS3AccessKey": "s3accesskey"
+				"keyVaultName": {
+					"value": "@dataset().keyVaultName",
+					"type": "Expression"
+				},
+				"keyVaultS3AccessId": {
+					"value": "@dataset().keyVaultS3AccessId",
+					"type": "Expression"
+				},
+				"keyVaultS3AccessKey": {
+					"value": "@dataset().keyVaultS3AccessKey",
+					"type": "Expression"
+				}
 			}
 		},
 		"parameters": {
