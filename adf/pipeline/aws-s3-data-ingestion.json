@@ -1,0 +1,6 @@
+{
+	"name": "aws-s3-data-ingestion",
+	"properties": {
+		"annotations": []
+	}
+}
