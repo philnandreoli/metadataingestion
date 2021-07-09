@@ -5,6 +5,20 @@
 			"referenceName": "aws_s3_storage",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"s3BucketName": {
+				"type": "string",
+				"defaultValue": "andronpremrentals001x"
+			},
+			"s3DirectoryName": {
+				"type": "string",
+				"defaultValue": "files"
+			},
+			"s3FileName": {
+				"type": "string",
+				"defaultValue": "Actors.csv"
+			}
+		},
 		"folder": {
 			"name": "source objects"
 		},
@@ -13,23 +27,24 @@
 		"typeProperties": {
 			"location": {
 				"type": "AmazonS3Location",
-				"bucketName": "andronpremrentals001x",
-				"folderPath": "files"
+				"bucketName": {
+					"value": "@dataset().s3BucketName",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().s3DirectoryName",
+					"type": "Expression"
+				},
+				"fileName": {
+					"value": "@dataset().s3FileName",
+					"type": "Expression"
+				}
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
+			"firstRowAsHeader": true,
 			"quoteChar": "\""
 		},
-		"schema": [
-			{
-				"type": "String"
-			},
-			{
-				"type": "String"
-			},
-			{
-				"type": "String"
-			}
-		]
+		"schema": []
 	}
 }
