@@ -1,6 +1,20 @@
 {
 	"name": "aws_s3_storage",
 	"properties": {
+		"parameters": {
+			"keyVaultName": {
+				"type": "string",
+				"defaultValue": "andrmoderdwkv001d"
+			},
+			"keyVaultS3AccessId": {
+				"type": "string",
+				"defaultValue": "s3accesskeyid"
+			},
+			"keyVaultS3AccessKey": {
+				"type": "string",
+				"defaultValue": "s3accesskey"
+			}
+		},
 		"annotations": [],
 		"type": "AmazonS3",
 		"typeProperties": {
@@ -11,10 +25,16 @@
 					"referenceName": "azure_key_vault",
 					"type": "LinkedServiceReference",
 					"parameters": {
-						"keyVaultName": "andrmoderdwkv001d"
+						"keyVaultName": {
+							"value": "@linkedService().keyVaultName",
+							"type": "Expression"
+						}
 					}
 				},
-				"secretName": "s3accesskeyid",
+				"secretName": {
+					"value": "@linkedService().keyVaultS3AccessId",
+					"type": "Expression"
+				},
 				"secretVersion": ""
 			},
 			"secretAccessKey": {
@@ -23,10 +43,17 @@
 					"referenceName": "azure_key_vault",
 					"type": "LinkedServiceReference",
 					"parameters": {
-						"keyVaultName": "andrmoderdwkv001d"
+						"keyVaultName": {
+							"value": "@linkedService().keyVaultName",
+							"type": "Expression"
+						}
 					}
 				},
-				"secretName": "s3accesskey"
+				"secretName": {
+					"value": "@linkedService().keyVaultS3AccessKey",
+					"type": "Expression"
+				},
+				"secretVersion": ""
 			},
 			"authenticationType": "AccessKey"
 		}
