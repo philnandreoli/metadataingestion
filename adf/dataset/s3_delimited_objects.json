@@ -3,7 +3,12 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "aws_s3_storage",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"keyVaultName": "andrmoderdwkv001d",
+				"keyVaultS3AccessId": "s3accesskeyid",
+				"keyVaultS3AccessKey": "s3accesskey"
+			}
 		},
 		"parameters": {
 			"s3BucketName": {
@@ -17,6 +22,18 @@
 			"s3FileName": {
 				"type": "string",
 				"defaultValue": "Actors.csv"
+			},
+			"keyVaultName": {
+				"type": "string",
+				"defaultValue": "andrmoderdwkv001d"
+			},
+			"keyVaultS3AccessId": {
+				"type": "string",
+				"defaultValue": "s3accesskeyid"
+			},
+			"keyVaultS3AccessKey": {
+				"type": "string",
+				"defaultValue": "s3accesskey"
 			}
 		},
 		"folder": {
