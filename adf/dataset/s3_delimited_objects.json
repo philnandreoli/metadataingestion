@@ -20,7 +20,7 @@
 			}
 		},
 		"folder": {
-			"name": "source objects"
+			"name": "source objects/AWS"
 		},
 		"annotations": [],
 		"type": "DelimitedText",
