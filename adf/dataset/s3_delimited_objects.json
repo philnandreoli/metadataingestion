@@ -1,0 +1,35 @@
+{
+	"name": "s3_delimited_objects",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "aws_s3_storage",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "source objects"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AmazonS3Location",
+				"bucketName": "andronpremrentals001x",
+				"folderPath": "files"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			}
+		]
+	}
+}
