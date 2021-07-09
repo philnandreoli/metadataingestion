@@ -1,6 +1,9 @@
 {
 	"name": "aws-s3-data-ingestion",
 	"properties": {
+		"folder": {
+			"name": "data-ingestion/AWS"
+		},
 		"annotations": []
 	}
 }

@@ -237,7 +237,7 @@
 			}
 		},
 		"folder": {
-			"name": "data-ingestion"
+			"name": "data-ingestion/Azure"
 		},
 		"annotations": [],
 		"lastPublishTime": "2021-06-23T01:42:04Z"

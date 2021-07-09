@@ -79,7 +79,7 @@
 			}
 		},
 		"folder": {
-			"name": "data-ingestion"
+			"name": "data-ingestion/Azure"
 		},
 		"annotations": []
 	}
