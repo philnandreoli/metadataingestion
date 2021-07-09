@@ -53,7 +53,10 @@
 							"s3BucketName": "andronpremrentals001x",
 							"s3DirectoryName": "files",
 							"s3FileName": "Actors.csv",
-							"keyVaultName": "andrmoderdwkv001d",
+							"keyVaultName": {
+								"value": "@pipeline().parameters.keyVaultName",
+								"type": "Expression"
+							},
 							"keyVaultS3AccessId": "s3accesskeyid",
 							"keyVaultS3AccessKey": "s3accesskey"
 						}
@@ -74,6 +77,20 @@
 				]
 			}
 		],
+		"parameters": {
+			"keyVaultName": {
+				"type": "string",
+				"defaultValue": "andrmoderdwkv001d"
+			},
+			"extractionDate": {
+				"type": "string",
+				"defaultValue": "2021-07-09"
+			},
+			"s3BucketName": {
+				"type": "string",
+				"defaultValue": "andronpremrentals001x"
+			}
+		},
 		"folder": {
 			"name": "data-ingestion/AWS"
 		},
