@@ -27,45 +27,34 @@
 			"type": "string",
 			"defaultValue": "mtcchioltp001d.database.windows.net"
 		},
+		"rest_api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().baseURL}"
+		},
+		"aws_s3_storage_properties_typeProperties_accessKeyId": {
+			"type": "object",
+			"defaultValue": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "azure_key_vault",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"keyVaultName": {
+							"value": "@linkedService().keyVaultName",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().keyVaultS3AccessId",
+					"type": "Expression"
+				},
+				"secretVersion": ""
+			}
+		},
 		"azure_file_storage_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "@{linkedService().keyVaultSecretName}"
-		},
-		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
-			"type": "string",
-			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
-		},
-		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
-			"type": "string",
-			"defaultValue": "CloudSales"
-		},
-		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
-			"type": "string",
-			"defaultValue": "@trigger().startTime"
-		},
-		"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
-			"type": "string",
-			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
-		},
-		"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
-			"type": "string",
-			"defaultValue": "CloudStreaming"
-		},
-		"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
-			"type": "string",
-			"defaultValue": "@trigger().startTime"
-		},
-		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
-			"type": "string",
-			"defaultValue": "andrmdwopenhacksourcesql001d.database.windows.net"
-		},
-		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName": {
-			"type": "string",
-			"defaultValue": "OnPremRentals"
-		},
-		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
-			"type": "string",
-			"defaultValue": "@trigger().startTime"
 		}
 	},
 	"variables": {
@@ -182,6 +171,27 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/rest_api')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"baseURL": {
+						"type": "string",
+						"defaultValue": "https://atlas.microsoft.com/"
+					}
+				},
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('rest_api_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/azure_data_lake_store_object')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -279,7 +289,7 @@
 					}
 				},
 				"folder": {
-					"name": "source objects"
+					"name": "source objects/Azure"
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
@@ -321,6 +331,55 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/aws_s3_storage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"keyVaultName": {
+						"type": "string",
+						"defaultValue": "andrmoderdwkv001d"
+					},
+					"keyVaultS3AccessId": {
+						"type": "string",
+						"defaultValue": "s3accesskeyid"
+					},
+					"keyVaultS3AccessKey": {
+						"type": "string",
+						"defaultValue": "s3accesskey"
+					}
+				},
+				"annotations": [],
+				"type": "AmazonS3",
+				"typeProperties": {
+					"serviceUrl": "",
+					"accessKeyId": "[parameters('aws_s3_storage_properties_typeProperties_accessKeyId')]",
+					"secretAccessKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "azure_key_vault",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"keyVaultName": {
+									"value": "@linkedService().keyVaultName",
+									"type": "Expression"
+								}
+							}
+						},
+						"secretName": {
+							"value": "@linkedService().keyVaultS3AccessKey",
+							"type": "Expression"
+						},
+						"secretVersion": ""
+					},
+					"authenticationType": "AccessKey"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/azure_key_vault')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/azure_file_storage')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -351,6 +410,110 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/azure_key_vault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/rest_api')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "rest_api",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"baseURL": {
+							"value": "@dataset().baseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"baseURL": {
+						"type": "string",
+						"defaultValue": "https://atlas.microsoft.com/"
+					},
+					"relativeURL": {
+						"type": "string",
+						"defaultValue": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
+					}
+				},
+				"folder": {
+					"name": "source objects"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().relativeURL",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/rest_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/azure_data_lake_store_object_json')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"storageAccountName": {
+							"value": "@dataset().storageAccountName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"storageAccountName": {
+						"type": "string",
+						"defaultValue": "andrdatalake001d"
+					},
+					"containerName": {
+						"type": "string",
+						"defaultValue": "bronze"
+					},
+					"directory": {
+						"type": "string",
+						"defaultValue": "weather/"
+					},
+					"fileName": {
+						"type": "string",
+						"defaultValue": "weather.json"
+					},
+					"extractionDate": {
+						"type": "string",
+						"defaultValue": "2021-08-25"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat(utcnow(), '-', dataset().fileName)",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@concat(dataset().directory, '/extraction-date=', formatDateTime(dataset().extractionDate, 'yyyy-MM-dd'))",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
 			]
 		},
 		{
@@ -595,7 +758,7 @@
 					}
 				},
 				"folder": {
-					"name": "data-ingestion"
+					"name": "data-ingestion/Azure"
 				},
 				"annotations": [],
 				"lastPublishTime": "2021-06-23T01:42:04Z"
@@ -644,7 +807,7 @@
 					}
 				},
 				"folder": {
-					"name": "source objects"
+					"name": "source objects/Azure"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -669,6 +832,314 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/azure_file_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/s3_delimited_objects')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "aws_s3_storage",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"keyVaultName": {
+							"value": "@dataset().keyVaultName",
+							"type": "Expression"
+						},
+						"keyVaultS3AccessId": {
+							"value": "@dataset().keyVaultS3AccessId",
+							"type": "Expression"
+						},
+						"keyVaultS3AccessKey": {
+							"value": "@dataset().keyVaultS3AccessKey",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"s3BucketName": {
+						"type": "string",
+						"defaultValue": "andronpremrentals001x"
+					},
+					"s3DirectoryName": {
+						"type": "string",
+						"defaultValue": "files"
+					},
+					"s3FileName": {
+						"type": "string",
+						"defaultValue": "Actors.csv"
+					},
+					"keyVaultName": {
+						"type": "string",
+						"defaultValue": "andrmoderdwkv001d"
+					},
+					"keyVaultS3AccessId": {
+						"type": "string",
+						"defaultValue": "s3accesskeyid"
+					},
+					"keyVaultS3AccessKey": {
+						"type": "string",
+						"defaultValue": "s3accesskey"
+					}
+				},
+				"folder": {
+					"name": "source objects/AWS"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AmazonS3Location",
+						"bucketName": {
+							"value": "@dataset().s3BucketName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().s3DirectoryName",
+							"type": "Expression"
+						},
+						"fileName": {
+							"value": "@dataset().s3FileName",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/aws_s3_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/rest-api-data-ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy JSON Results to Data Lake Store",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET"
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "rest_api",
+								"type": "DatasetReference",
+								"parameters": {
+									"baseURL": {
+										"value": "@pipeline().parameters.baseURL",
+										"type": "Expression"
+									},
+									"relativeURL": {
+										"value": "@pipeline().parameters.relativeURL",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "azure_data_lake_store_object_json",
+								"type": "DatasetReference",
+								"parameters": {
+									"storageAccountName": {
+										"value": "@pipeline().parameters.storageAccountName",
+										"type": "Expression"
+									},
+									"containerName": {
+										"value": "@pipeline().parameters.containerName",
+										"type": "Expression"
+									},
+									"directory": {
+										"value": "@pipeline().parameters.directory",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"extractionDate": {
+										"value": "@pipeline().parameters.extractionDate",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"extractionDate": {
+						"type": "string",
+						"defaultValue": "2021-08-25"
+					},
+					"storageAccountName": {
+						"type": "string",
+						"defaultValue": "andrdatalake001d"
+					},
+					"containerName": {
+						"type": "string",
+						"defaultValue": "bronze"
+					},
+					"directory": {
+						"type": "string",
+						"defaultValue": "weather/"
+					},
+					"fileName": {
+						"type": "string",
+						"defaultValue": "weather.json"
+					},
+					"baseURL": {
+						"type": "string",
+						"defaultValue": "https://atlas.microsoft.com/"
+					},
+					"relativeURL": {
+						"type": "string",
+						"defaultValue": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion/REST"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/rest_api')]",
+				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object_json')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/aws-s3-data-ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AmazonS3ReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "s3_delimited_objects",
+								"type": "DatasetReference",
+								"parameters": {
+									"s3BucketName": "andronpremrentals001x",
+									"s3DirectoryName": "files",
+									"s3FileName": "Actors.csv",
+									"keyVaultName": {
+										"value": "@pipeline().parameters.keyVaultName",
+										"type": "Expression"
+									},
+									"keyVaultS3AccessId": "s3accesskeyid",
+									"keyVaultS3AccessKey": "s3accesskey"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "azure_data_lake_store_object",
+								"type": "DatasetReference",
+								"parameters": {
+									"storageAccountName": "andrdatalake001d",
+									"containerName": "bronze",
+									"directory": "southridge/cloudsales/addresses",
+									"fileName": "addresses.snappy.parquet",
+									"extractionDate": "2021-06-22"
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"keyVaultName": {
+						"type": "string",
+						"defaultValue": "andrmoderdwkv001d"
+					},
+					"extractionDate": {
+						"type": "string",
+						"defaultValue": "2021-07-09"
+					},
+					"s3BucketName": {
+						"type": "string",
+						"defaultValue": "andronpremrentals001x"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion/AWS"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/s3_delimited_objects')]",
+				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object')]"
 			]
 		},
 		{
@@ -754,116 +1225,13 @@
 					}
 				},
 				"folder": {
-					"name": "data-ingestion"
+					"name": "data-ingestion/Azure"
 				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/azure_delimited_objects')]",
 				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/CloudSales-daily-trigger')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "azure-sql-data-ingestion",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"sourceServerFQDN": "[parameters('CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN')]",
-							"sourceDatabaseName": "[parameters('CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName')]",
-							"extractionDateTime": "[parameters('CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime')]"
-						}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2021-06-22T20:45:00",
-						"timeZone": "Central Standard Time"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/azure-sql-data-ingestion')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/CloudStreaming-daily-trigger')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "azure-sql-data-ingestion",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"sourceServerFQDN": "[parameters('CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN')]",
-							"sourceDatabaseName": "[parameters('CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName')]",
-							"extractionDateTime": "[parameters('CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime')]"
-						}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2021-06-25T20:30:00",
-						"timeZone": "Central Standard Time"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/azure-sql-data-ingestion')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/OnPremRentals-daily-trigger')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "azure-sql-data-ingestion",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"sourceServerFQDN": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN')]",
-							"sourceDatabaseName": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceDatabaseName')]",
-							"extractionDateTime": "[parameters('OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime')]"
-						}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2021-07-08T18:30:00",
-						"timeZone": "Central Standard Time",
-						"schedule": {}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/azure-sql-data-ingestion')]"
 			]
 		}
 	]

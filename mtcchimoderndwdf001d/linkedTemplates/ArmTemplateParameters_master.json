@@ -11,6 +11,26 @@
 		"metadata_db_connectionString": {
 			"value": ""
 		},
+		"aws_s3_storage_properties_typeProperties_accessKeyId": {
+			"value": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "azure_key_vault",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"keyVaultName": {
+							"value": "@linkedService().keyVaultName",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().keyVaultS3AccessId",
+					"type": "Expression"
+				},
+				"secretVersion": ""
+			}
+		},
 		"azure_file_storage_properties_typeProperties_connectionString_secretName": {
 			"value": "@{linkedService().keyVaultSecretName}"
 		},
@@ -38,9 +58,6 @@
 		"CloudStreaming-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 			"value": "@trigger().startTime"
 		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"value": "mtcchioltp001d.database.windows.net"
-		},
 		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
 			"value": "andrmdwopenhacksourcesql001d.database.windows.net"
 		},
@@ -49,6 +66,33 @@
 		},
 		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 			"value": "@trigger().startTime"
+		},
+		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"value": "mtcchioltp001d.database.windows.net"
+		},
+		"rest_api_properties_typeProperties_url": {
+			"value": "@{linkedService().baseURL}"
+		},
+		"RestAPI-30-minute-trigger_properties_pipeline_parameters_extractionDate": {
+			"value": "@trigger().startTime"
+		},
+		"RestAPI-30-minute-trigger_properties_pipeline_parameters_storageAccountName": {
+			"value": "andrdatalake001d"
+		},
+		"RestAPI-30-minute-trigger_properties_pipeline_parameters_containerName": {
+			"value": "bronze"
+		},
+		"RestAPI-30-minute-trigger_properties_pipeline_parameters_directory": {
+			"value": "weather"
+		},
+		"RestAPI-30-minute-trigger_properties_pipeline_parameters_fileName": {
+			"value": "weather.json"
+		},
+		"RestAPI-30-minute-trigger_properties_pipeline_parameters_baseURL": {
+			"value": "https://atlas.microsoft.com/"
+		},
+		"RestAPI-30-minute-trigger_properties_pipeline_parameters_relativeURL": {
+			"value": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
 		},
 		"containerUri": {
 			"value": ""
