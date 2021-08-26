@@ -1,10 +1,16 @@
 {
 	"name": "RestService1",
 	"properties": {
+		"parameters": {
+			"baseURL": {
+				"type": "string",
+				"defaultValue": "https://atlas.microsoft.com"
+			}
+		},
 		"annotations": [],
 		"type": "RestService",
 		"typeProperties": {
-			"url": "https://atlas.microsoft.com",
+			"url": "@{linkedService().baseURL}",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		}
