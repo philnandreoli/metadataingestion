@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy data1",
+				"name": "Copy JSON Results to Data Lake Store",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -21,6 +21,15 @@
 						"requestInterval": "00.00:00:00.010",
 						"requestMethod": "GET"
 					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
 					"enableStaging": false
 				},
 				"inputs": [
@@ -30,6 +39,18 @@
 						"parameters": {
 							"baseURL": "https://atlas.microsoft.com/",
 							"relativeURL": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "azure_data_lake_store_object_json",
+						"type": "DatasetReference",
+						"parameters": {
+							"storageAccountName": "andrdatalake001d",
+							"containerName": "bronze",
+							"directory": "weather/",
+							"fileName": "weather.json"
 						}
 					}
 				]

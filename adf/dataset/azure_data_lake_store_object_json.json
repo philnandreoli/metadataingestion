@@ -27,6 +27,10 @@
 			"fileName": {
 				"type": "string",
 				"defaultValue": "weather.json"
+			},
+			"extractionDate": {
+				"type": "string",
+				"defaultValue": "2021-08-25"
 			}
 		},
 		"annotations": [],
@@ -39,7 +43,7 @@
 					"type": "Expression"
 				},
 				"folderPath": {
-					"value": "@dataset().directory",
+					"value": "@concat(dataset().directory, '/extraction-date=', formatDateTime(dataset().extractionDate, 'yyyy-MM-dd'))",
 					"type": "Expression"
 				},
 				"fileSystem": {
