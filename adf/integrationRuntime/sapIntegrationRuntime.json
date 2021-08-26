@@ -1,6 +1,0 @@
-{
-	"name": "sapIntegrationRuntime",
-	"properties": {
-		"type": "SelfHosted"
-	}
-}
