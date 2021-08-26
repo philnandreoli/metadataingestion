@@ -1,0 +1,53 @@
+{
+	"name": "azure_data_lake_store_object_json",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "data_lake_storage_account",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"storageAccountName": {
+					"value": "@dataset().storageAccountName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"storageAccountName": {
+				"type": "string",
+				"defaultValue": "andrdatalake001d"
+			},
+			"containerName": {
+				"type": "string",
+				"defaultValue": "bronze"
+			},
+			"directory": {
+				"type": "string",
+				"defaultValue": "weather/"
+			},
+			"fileName": {
+				"type": "string",
+				"defaultValue": "weather.json"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@concat(utcnow(), '-', dataset().fileName)",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().directory",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().containerName",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {}
+	}
+}
