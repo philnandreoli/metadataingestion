@@ -1,0 +1,34 @@
+{
+	"name": "RestResource1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "rest_api",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"baseURL": {
+					"value": "@dataset().baseURL",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"baseURL": {
+				"type": "string",
+				"defaultValue": "https://atlas.microsoft.com/"
+			},
+			"relativeURL": {
+				"type": "string",
+				"defaultValue": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().relativeURL",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}
