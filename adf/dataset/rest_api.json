@@ -21,6 +21,9 @@
 				"defaultValue": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
 			}
 		},
+		"folder": {
+			"name": "source objects"
+		},
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {
