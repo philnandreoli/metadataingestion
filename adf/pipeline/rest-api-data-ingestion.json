@@ -1,0 +1,43 @@
+{
+	"name": "rest-api-data-ingestion",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "rest_api",
+						"type": "DatasetReference",
+						"parameters": {
+							"baseURL": "https://atlas.microsoft.com/",
+							"relativeURL": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "data-ingestion/REST"
+		},
+		"annotations": []
+	}
+}
