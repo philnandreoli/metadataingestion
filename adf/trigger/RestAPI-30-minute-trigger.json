@@ -7,6 +7,15 @@
 			"pipelineReference": {
 				"referenceName": "rest-api-data-ingestion",
 				"type": "PipelineReference"
+			},
+			"parameters": {
+				"extractionDate": "@trigger().startTime",
+				"storageAccountName": "andrdatalake001d",
+				"containerName": "bronze",
+				"directory": "weather",
+				"fileName": "weather.json",
+				"baseURL": "https://atlas.microsoft.com/",
+				"relativeURL": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
 			}
 		},
 		"type": "TumblingWindowTrigger",
