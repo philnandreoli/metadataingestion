@@ -5,11 +5,20 @@
 		"factoryName": {
 			"value": "mtcchimoderndwdf001d"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"AzureFileStorage1_connectionString": {
+			"value": ""
+		},
 		"azure_sql_db_connectionString": {
 			"value": ""
 		},
 		"metadata_db_connectionString": {
 			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://andrdatalake001d.dfs.core.windows.net"
 		},
 		"aws_s3_storage_properties_typeProperties_accessKeyId": {
 			"value": {
@@ -40,6 +49,9 @@
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"value": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
 		},
+		"rest_api_properties_typeProperties_url": {
+			"value": "@{linkedService().baseURL}"
+		},
 		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
 			"value": "andrmdwopenhacksourcesql001d.database.windows.net"
 		},
@@ -66,12 +78,6 @@
 		},
 		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 			"value": "@trigger().startTime"
-		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"value": "mtcchioltp001d.database.windows.net"
-		},
-		"rest_api_properties_typeProperties_url": {
-			"value": "@{linkedService().baseURL}"
 		},
 		"RestAPI-30-minute-trigger_properties_pipeline_parameters_extractionDate": {
 			"value": "@trigger().startTime"

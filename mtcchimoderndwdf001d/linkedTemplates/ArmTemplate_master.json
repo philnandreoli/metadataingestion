@@ -7,6 +7,14 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf001d"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
+		"AzureFileStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureFileStorage1'"
+		},
 		"azure_sql_db_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'azure_sql_db'"
@@ -14,6 +22,10 @@
 		"metadata_db_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'metadata_db'"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://andrdatalake001d.dfs.core.windows.net"
 		},
 		"aws_s3_storage_properties_typeProperties_accessKeyId": {
 			"type": "object",
@@ -47,6 +59,10 @@
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
+		},
+		"rest_api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().baseURL}"
 		},
 		"CloudSales-daily-trigger_properties_azure-sql-data-ingestion_parameters_sourceServerFQDN": {
 			"type": "string",
@@ -83,14 +99,6 @@
 		"OnPremRentals-daily-trigger_properties_azure-sql-data-ingestion_parameters_extractionDateTime": {
 			"type": "string",
 			"defaultValue": "@trigger().startTime"
-		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"type": "string",
-			"defaultValue": "mtcchioltp001d.database.windows.net"
-		},
-		"rest_api_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "@{linkedService().baseURL}"
 		},
 		"RestAPI-30-minute-trigger_properties_pipeline_parameters_extractionDate": {
 			"type": "string",
@@ -147,20 +155,26 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"AzureDataLakeStorage1_accountKey": {
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					},
+					"AzureFileStorage1_connectionString": {
+						"value": "[parameters('AzureFileStorage1_connectionString')]"
+					},
 					"azure_sql_db_connectionString": {
 						"value": "[parameters('azure_sql_db_connectionString')]"
 					},
 					"metadata_db_connectionString": {
 						"value": "[parameters('metadata_db_connectionString')]"
 					},
+					"AzureDataLakeStorage1_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
+					},
 					"azure_key_vault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('azure_key_vault_properties_typeProperties_baseUrl')]"
 					},
 					"data_lake_storage_account_properties_typeProperties_url": {
 						"value": "[parameters('data_lake_storage_account_properties_typeProperties_url')]"
-					},
-					"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-						"value": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]"
 					},
 					"rest_api_properties_typeProperties_url": {
 						"value": "[parameters('rest_api_properties_typeProperties_url')]"

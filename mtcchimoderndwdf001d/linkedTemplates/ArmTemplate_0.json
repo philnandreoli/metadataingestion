@@ -7,6 +7,14 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mtcchimoderndwdf001d"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
+		"AzureFileStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureFileStorage1'"
+		},
 		"azure_sql_db_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'azure_sql_db'"
@@ -15,6 +23,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'metadata_db'"
 		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://andrdatalake001d.dfs.core.windows.net"
+		},
 		"azure_key_vault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "@{concat('https://', linkedService().keyVaultName, '.vault.azure.net')}"
@@ -22,10 +34,6 @@
 		"data_lake_storage_account_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{concat('https://', linkedService().storageAccountName, '.dfs.core.windows.net')}"
-		},
-		"ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"type": "string",
-			"defaultValue": "mtcchioltp001d.database.windows.net"
 		},
 		"rest_api_properties_typeProperties_url": {
 			"type": "string",
@@ -61,6 +69,37 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureFileStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureFileStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureFileStorage1_connectionString')]",
+					"fileShare": "files"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/azure_key_vault')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -136,41 +175,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/sapIntegrationRuntime')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ssisIntegrationRuntime')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "Managed",
-				"typeProperties": {
-					"computeProperties": {
-						"location": "East US",
-						"nodeSize": "Standard_D2_v3",
-						"numberOfNodes": 1,
-						"maxParallelExecutionsPerNode": 2
-					},
-					"ssisProperties": {
-						"catalogInfo": {
-							"catalogServerEndpoint": "[parameters('ssisIntegrationRuntime_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]",
-							"catalogPricingTier": "S1"
-						},
-						"edition": "Enterprise",
-						"licenseType": "BasePrice"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/rest_api')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -188,6 +192,16 @@
 					"enableServerCertificateValidation": true,
 					"authenticationType": "Anonymous"
 				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/integrationRuntime1')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},
@@ -249,6 +263,68 @@
 					"compressionCodec": "snappy"
 				},
 				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/azure_data_lake_store_object_json')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "data_lake_storage_account",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"storageAccountName": {
+							"value": "@dataset().storageAccountName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"storageAccountName": {
+						"type": "string",
+						"defaultValue": "andrdatalake001d"
+					},
+					"containerName": {
+						"type": "string",
+						"defaultValue": "bronze"
+					},
+					"directory": {
+						"type": "string",
+						"defaultValue": "weather/"
+					},
+					"fileName": {
+						"type": "string",
+						"defaultValue": "weather.json"
+					},
+					"extractionDate": {
+						"type": "string",
+						"defaultValue": "2021-08-25"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat(utcnow(), '-', dataset().fileName)",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@concat(dataset().directory, '/extraction-date=', formatDateTime(dataset().extractionDate, 'yyyy-MM-dd'))",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().containerName",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
@@ -331,6 +407,48 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/rest_api')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "rest_api",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"baseURL": {
+							"value": "@dataset().baseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"baseURL": {
+						"type": "string",
+						"defaultValue": "https://atlas.microsoft.com/"
+					},
+					"relativeURL": {
+						"type": "string",
+						"defaultValue": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
+					}
+				},
+				"folder": {
+					"name": "source objects"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().relativeURL",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/rest_api')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/aws_s3_storage')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -384,7 +502,6 @@
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"type": "AzureFileStorage",
 				"parameters": {
 					"keyVaultSecretName": {
 						"type": "String",
@@ -396,6 +513,7 @@
 					}
 				},
 				"annotations": [],
+				"type": "AzureFileStorage",
 				"typeProperties": {
 					"connectionString": {
 						"type": "AzureKeyVaultSecret",
@@ -403,117 +521,16 @@
 							"referenceName": "azure_key_vault",
 							"type": "LinkedServiceReference"
 						},
-						"secretName": "[parameters('azure_file_storage_properties_typeProperties_connectionString_secretName')]"
+						"secretName": {
+							"value": "[parameters('azure_file_storage_properties_typeProperties_connectionString_secretName')]",
+							"type": "Expression"
+						}
 					},
 					"fileShare": "@{linkedService().fileShare}"
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/azure_key_vault')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/rest_api')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "rest_api",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"baseURL": {
-							"value": "@dataset().baseURL",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"baseURL": {
-						"type": "string",
-						"defaultValue": "https://atlas.microsoft.com/"
-					},
-					"relativeURL": {
-						"type": "string",
-						"defaultValue": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
-					}
-				},
-				"folder": {
-					"name": "source objects"
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "@dataset().relativeURL",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/rest_api')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/azure_data_lake_store_object_json')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "data_lake_storage_account",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"storageAccountName": {
-							"value": "@dataset().storageAccountName",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"storageAccountName": {
-						"type": "string",
-						"defaultValue": "andrdatalake001d"
-					},
-					"containerName": {
-						"type": "string",
-						"defaultValue": "bronze"
-					},
-					"directory": {
-						"type": "string",
-						"defaultValue": "weather/"
-					},
-					"fileName": {
-						"type": "string",
-						"defaultValue": "weather.json"
-					},
-					"extractionDate": {
-						"type": "string",
-						"defaultValue": "2021-08-25"
-					}
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@concat(utcnow(), '-', dataset().fileName)",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@concat(dataset().directory, '/extraction-date=', formatDateTime(dataset().extractionDate, 'yyyy-MM-dd'))",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().containerName",
-							"type": "Expression"
-						}
-					}
-				},
-				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/data_lake_storage_account')]"
 			]
 		},
 		{
@@ -743,6 +760,10 @@
 						}
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"parameters": {
 					"sourceServerFQDN": {
 						"type": "string",
@@ -767,6 +788,132 @@
 				"[concat(variables('factoryId'), '/datasets/metadata_objects_to_extract')]",
 				"[concat(variables('factoryId'), '/datasets/azure_sql_table')]",
 				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/rest-api-data-ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy JSON Results to Data Lake Store",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET"
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "rest_api",
+								"type": "DatasetReference",
+								"parameters": {
+									"baseURL": {
+										"value": "@pipeline().parameters.baseURL",
+										"type": "Expression"
+									},
+									"relativeURL": {
+										"value": "@pipeline().parameters.relativeURL",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "azure_data_lake_store_object_json",
+								"type": "DatasetReference",
+								"parameters": {
+									"storageAccountName": {
+										"value": "@pipeline().parameters.storageAccountName",
+										"type": "Expression"
+									},
+									"containerName": {
+										"value": "@pipeline().parameters.containerName",
+										"type": "Expression"
+									},
+									"directory": {
+										"value": "@pipeline().parameters.directory",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@pipeline().parameters.fileName",
+										"type": "Expression"
+									},
+									"extractionDate": {
+										"value": "@pipeline().parameters.extractionDate",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"extractionDate": {
+						"type": "string",
+						"defaultValue": "2021-08-25"
+					},
+					"storageAccountName": {
+						"type": "string",
+						"defaultValue": "andrdatalake001d"
+					},
+					"containerName": {
+						"type": "string",
+						"defaultValue": "bronze"
+					},
+					"directory": {
+						"type": "string",
+						"defaultValue": "weather/"
+					},
+					"fileName": {
+						"type": "string",
+						"defaultValue": "weather.json"
+					},
+					"baseURL": {
+						"type": "string",
+						"defaultValue": "https://atlas.microsoft.com/"
+					},
+					"relativeURL": {
+						"type": "string",
+						"defaultValue": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
+					}
+				},
+				"folder": {
+					"name": "data-ingestion/REST"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/rest_api')]",
+				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object_json')]"
 			]
 		},
 		{
@@ -916,128 +1063,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/rest-api-data-ingestion')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy JSON Results to Data Lake Store",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "GET"
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "rest_api",
-								"type": "DatasetReference",
-								"parameters": {
-									"baseURL": {
-										"value": "@pipeline().parameters.baseURL",
-										"type": "Expression"
-									},
-									"relativeURL": {
-										"value": "@pipeline().parameters.relativeURL",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "azure_data_lake_store_object_json",
-								"type": "DatasetReference",
-								"parameters": {
-									"storageAccountName": {
-										"value": "@pipeline().parameters.storageAccountName",
-										"type": "Expression"
-									},
-									"containerName": {
-										"value": "@pipeline().parameters.containerName",
-										"type": "Expression"
-									},
-									"directory": {
-										"value": "@pipeline().parameters.directory",
-										"type": "Expression"
-									},
-									"fileName": {
-										"value": "@pipeline().parameters.fileName",
-										"type": "Expression"
-									},
-									"extractionDate": {
-										"value": "@pipeline().parameters.extractionDate",
-										"type": "Expression"
-									}
-								}
-							}
-						]
-					}
-				],
-				"parameters": {
-					"extractionDate": {
-						"type": "string",
-						"defaultValue": "2021-08-25"
-					},
-					"storageAccountName": {
-						"type": "string",
-						"defaultValue": "andrdatalake001d"
-					},
-					"containerName": {
-						"type": "string",
-						"defaultValue": "bronze"
-					},
-					"directory": {
-						"type": "string",
-						"defaultValue": "weather/"
-					},
-					"fileName": {
-						"type": "string",
-						"defaultValue": "weather.json"
-					},
-					"baseURL": {
-						"type": "string",
-						"defaultValue": "https://atlas.microsoft.com/"
-					},
-					"relativeURL": {
-						"type": "string",
-						"defaultValue": "weather/currentConditions/json?subscription-key=8lSTicMGFukVS5LUfCG_8Ivq7q08YlGj5DBUZhC2nec&api-version=1.0&query=42.148735, -87.995445"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion/REST"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/rest_api')]",
-				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object_json')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/aws-s3-data-ingestion')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1118,6 +1143,10 @@
 						]
 					}
 				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
 				"parameters": {
 					"keyVaultName": {
 						"type": "string",
@@ -1139,98 +1168,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/s3_delimited_objects')]",
-				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/azure-file-data-ingestion')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy All Files From Folder",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "DelimitedTextSource",
-								"storeSettings": {
-									"type": "AzureFileStorageReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							},
-							"sink": {
-								"type": "ParquetSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "ParquetWriteSettings"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "azure_delimited_objects",
-								"type": "DatasetReference",
-								"parameters": {
-									"keyVaultSecretName": "andronpremfilesystem001d",
-									"fileShare": "files",
-									"directoryName": "/",
-									"fileName": "Actors.csv"
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "azure_data_lake_store_object",
-								"type": "DatasetReference",
-								"parameters": {
-									"storageAccountName": "andrdatalake001d",
-									"containerName": "bronze",
-									"directory": "southridge/onpremises/files",
-									"fileName": "actors.snappy.parquet",
-									"extractionDate": "2021-06-22"
-								}
-							}
-						]
-					}
-				],
-				"parameters": {
-					"extractionDateTime": {
-						"type": "string",
-						"defaultValue": "2021-06-06"
-					}
-				},
-				"folder": {
-					"name": "data-ingestion/Azure"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/azure_delimited_objects')]",
 				"[concat(variables('factoryId'), '/datasets/azure_data_lake_store_object')]"
 			]
 		}
